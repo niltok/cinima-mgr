@@ -1,0 +1,45 @@
+﻿@page "/Register"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@layout EmptyLayout
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService Storage
+
+<PageTitle>注册</PageTitle>
+
+<h1>注册</h1>
+<p>用户名:<input @bind="_user"/></p>
+<p>密码:<input @bind="_pwd" type="password"/></p>
+<p>@_msg</p>
+<p><button class="btn btn-primary" @onclick="RegisterEvent">注册</button></p>
+
+@code {
+    private string _user = "", _pwd = "";
+    private string _msg = "";
+    
+    async void RegisterEvent()
+    {
+        var db = new MgrContext();
+        var user = await db.Users.Where(u => u.Name == _user).FirstOrDefaultAsync();
+        if (user is not null)
+        {
+            _msg = "username is occupied";
+            return;
+        }
+        var newUser = new User
+        {
+            Name = _user,
+            Password = _pwd
+        };
+        db.Add(newUser);
+        var id = Guid.NewGuid().ToString();
+        db.Sessions.Add(new SessionState
+        {
+            Id = id,
+            User = _user
+        });
+        await Storage.SetItemAsStringAsync("id", id);
+        await db.SaveChangesAsync();
+        NavigationManager.NavigateTo("/");
+    }
+}

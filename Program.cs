@@ -12,6 +12,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<StateCache>();
 builder.Services.AddSession();
 
 var app = builder.Build();

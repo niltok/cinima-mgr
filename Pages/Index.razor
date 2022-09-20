@@ -1,7 +1,27 @@
 ﻿@page "/"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
 
 <PageTitle>主页</PageTitle>
 
 <h1>欢迎来到奇妙影院</h1>
 
 <p>这里用来展示一些电影</p>
+
+<ul>
+    @foreach (var m in _movies)
+    {
+        <li>@m.Name</li>
+    }
+</ul>
+
+@code
+{
+    List<Movie> _movies = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var db = new MgrContext();
+        _movies = await db.Movies.ToListAsync();
+    }
+}

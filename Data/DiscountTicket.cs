@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace cinima_mgr.Data;
 
-public class SessionState
+public class DiscountTicket
 {
     [Key]
     public string Id { get; set; }
-    
     public User User { get; set; }
-    
-    public DateTime CreateTime { get; set; } = DateTime.Now;
+    [Required]
+    public double Rate { get; set; }
+    public string Name { get; set; }
 }

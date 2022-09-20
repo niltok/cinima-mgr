@@ -30,7 +30,7 @@
         db.Sessions.Add(new SessionState
         {
             Id = id,
-            User = _user
+            User = user
         });
         await Storage.SetItemAsStringAsync("id", id);
         await db.SaveChangesAsync();

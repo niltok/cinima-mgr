@@ -1,0 +1,34 @@
+﻿@page "/MyDiscounts"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@inject StateCache StateCache
+@inject NavigationManager NavigationManager
+
+<PageTitle>我的优惠券</PageTitle>
+
+<ul>
+    @foreach (var t in _tickets)
+    {
+        <li>
+            @($"{t.Rate} 折券 - {t.Name}")
+        </li>
+    }
+</ul>
+
+@code {
+    List<DiscountTicket> _tickets = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        if (StateCache.User is null)
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
+        var db = new MgrContext();
+        _tickets = await db.DiscountTickets.Include(t => t.User)
+            .Where(t => t.User.Name == StateCache.User.Name).ToListAsync();
+    }
+}

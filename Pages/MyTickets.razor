@@ -1,0 +1,26 @@
+﻿@page "/MyTickets"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@inject StateCache StateCache
+@inject NavigationManager NavigationManager
+
+<PageTitle>我的电影票</PageTitle>
+
+
+
+@code {
+    List<Ticket> _tickets = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (StateCache.User is null)
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
+        var db = new MgrContext();
+        //_tickets = await db.Tickets.ToListAsync();
+    }
+
+}

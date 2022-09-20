@@ -2,25 +2,39 @@
 @using Microsoft.EntityFrameworkCore
 @inherits LayoutComponentBase
 @inject Blazored.LocalStorage.ILocalStorageService Storage
+@inject StateCache StateCache
 
 <PageTitle>奇妙影院</PageTitle>
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu/>
+        <NavMenu Logined="StateCache.User is not null" IsMgr="StateCache.User is not null && StateCache.User.IsMgr"/>
     </div>
 
     <main>
         <div class="top-row px-4">
-            @if (username is null)
+            @if (StateCache.User is null)
             {
-                <NavLink href="Login">Login</NavLink>
-                <NavLink href="Register">Register</NavLink>
+                <NavLink class="nav" href="Login">Login</NavLink>
+                <NavLink class="nav" href="Register">Register</NavLink>
             }
             else
             {
-                @username
-                <a @onclick="LogoutEvent" href="#">Logout</a>
+                <span class="px-3">
+                    <NavLink>
+                        @if (StateCache.User.VIPExpireTime < DateTime.Now)
+                        {
+                            @("充值 VIP")
+                        }
+                        else
+                        {
+                            @($"VIP 还剩 {(StateCache.User.VIPExpireTime - DateTime.Now).Days} 天")
+                        }
+                    </NavLink>
+                </span>
+                <span class="px-3">@StateCache.User.Name</span>
+                <span class="px-3"><a class="link-secondary" @onclick="LogoutEvent" href="#">Logout</a></span>
+                
             }
         </div>
 
@@ -32,17 +46,17 @@
 
 @code
 {
-    string? username;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (username is not null) return;
+        if (StateCache.User is not null) return;
         var id = await Storage.GetItemAsStringAsync("id");
         if (id is null) return;
-        var db = new MgrContext();
-        var session = await db.Sessions.Where(s => s.Id == id).FirstOrDefaultAsync();
+        await using var db = new MgrContext();
+        var session = await db.Sessions.Where(s => s.Id == id)
+            .Include(s => s.User).FirstOrDefaultAsync();
         if (session is null) return;
-        username = session.User;
+        StateCache.User = session.User;
         StateHasChanged();
     }
 
@@ -51,10 +65,11 @@
         var id = await Storage.GetItemAsStringAsync("id");
         if (id is null) return;
         await Storage.RemoveItemAsync("id");
-        var db = new MgrContext();
+        await using var db = new MgrContext();
         var session = await db.Sessions.Where(s => s.Id == id).FirstOrDefaultAsync();
         if (session is null) return;
         db.Remove(session);
-        username = null;
+        await db.SaveChangesAsync();
+        StateCache.User = null;
     }
 }

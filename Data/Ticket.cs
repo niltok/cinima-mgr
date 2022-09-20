@@ -5,5 +5,5 @@ namespace cinima_mgr.Data;
 public class Ticket
 {
     [Key] 
-    private string Id { get; set; }
+    public string Id { get; set; }
 }

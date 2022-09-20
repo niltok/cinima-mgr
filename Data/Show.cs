@@ -15,8 +15,8 @@ public class Show
     public DateTime Time { get; set; }
     [Required]
     public double BasePrice { get; set; }
-    [ForeignKey("Movie"), Required]
-    public string Movie { get; set; }
+    [Required]
+    public Movie Movie { get; set; }
     /// <summary>
     /// 有多少列
     /// </summary>

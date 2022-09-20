@@ -18,10 +18,10 @@ public class Movie
     [Required]
     public string Introduction { get; set; }
     
-    public ICollection<People> Persons { get; set; }
+    public ICollection<Person> Persons { get; set; }
 
-    public Url Preview { get; set; }
+    public string Preview { get; set; }
     
-    public Url CoverImg { get; set; }
+    public byte[] CoverImg { get; set; }
     
 }

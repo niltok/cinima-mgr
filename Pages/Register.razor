@@ -7,9 +7,11 @@
 
 <PageTitle>注册</PageTitle>
 
-<h1>注册</h1>
-<p>用户名:<input @bind="_user"/></p>
-<p>密码:<input @bind="_pwd" type="password"/></p>
+<h1 style="margin-bottom: 20px; margin-top: 20px">注册</h1>
+<div style="display: grid; grid-gap: 10px; grid-template-rows: 1fr 1fr; grid-template-columns: 1fr 4fr; max-width: 300px; width: 80%">
+    <label>用户名:</label><input @bind="_user"/>
+    <label>密码:</label><input @bind="_pwd" type="password"/>
+</div>
 <p>@_msg</p>
 <p><button class="btn btn-primary" @onclick="RegisterEvent">注册</button></p>
 

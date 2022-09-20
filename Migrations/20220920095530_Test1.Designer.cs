@@ -11,8 +11,8 @@ using cinima_mgr.Data;
 namespace cinima_mgr.Migrations
 {
     [DbContext(typeof(MgrContext))]
-    [Migration("20220920031945_MovieNull")]
-    partial class MovieNull
+    [Migration("20220920095530_Test1")]
+    partial class Test1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -291,7 +291,7 @@ namespace cinima_mgr.Migrations
             modelBuilder.Entity("cinima_mgr.Data.Show", b =>
                 {
                     b.HasOne("cinima_mgr.Data.Movie", "Movie")
-                        .WithMany("Shows")
+                        .WithMany()
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -319,11 +319,6 @@ namespace cinima_mgr.Migrations
                         .HasForeignKey("PersonsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
-                {
-                    b.Navigation("Shows");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.User", b =>

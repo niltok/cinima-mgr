@@ -4,7 +4,7 @@
 
 <PageTitle>主页</PageTitle>
 
-<h1>欢迎来到喵票票</h1>
+<h1 style="margin-bottom: 20px; margin-top: 20px">欢迎来到喵票票</h1>
 
 <div class="container">
     @foreach (var m in _movies)
@@ -14,6 +14,7 @@
                 <p><img class="movie_cover" src=@($"/Movie/Cover/{m.Name}") alt=@m.Name/></p>
                 <h3>@m.Name</h3>
                 <h6>@m.Type</h6>
+                <p>上映时间：@m.ReleaseDate.ToString("yyyy-M-d")</p>
                 <p>@m.Introduction</p>
                 <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn">
                     @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")

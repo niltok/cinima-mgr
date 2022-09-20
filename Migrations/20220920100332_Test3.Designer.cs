@@ -11,8 +11,8 @@ using cinima_mgr.Data;
 namespace cinima_mgr.Migrations
 {
     [DbContext(typeof(MgrContext))]
-    [Migration("20220920010720_Discount")]
-    partial class Discount
+    [Migration("20220920100332_Test3")]
+    partial class Test3
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -44,7 +44,7 @@ namespace cinima_mgr.Migrations
 
                     b.HasIndex("UserName");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.DiscountTicket", b =>
@@ -75,13 +75,68 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<long>("BoxOffice")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("CoverImg")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("Introduction")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Preview")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReleaseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.ToTable("Movies");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Person", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("People");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.RoomTemplate", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PosState")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("RoomTemplates");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.SessionState", b =>
@@ -103,6 +158,42 @@ namespace cinima_mgr.Migrations
                     b.ToTable("Sessions");
                 });
 
+            modelBuilder.Entity("cinima_mgr.Data.Show", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("BasePrice")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MovieId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PosState")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RoomName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MovieId");
+
+                    b.ToTable("Shows");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.Ticket", b =>
                 {
                     b.Property<string>("Id")
@@ -115,7 +206,7 @@ namespace cinima_mgr.Migrations
 
                     b.HasIndex("UserName");
 
-                    b.ToTable("Ticket");
+                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.User", b =>
@@ -139,6 +230,21 @@ namespace cinima_mgr.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("MoviePerson", b =>
+                {
+                    b.Property<string>("MoviesId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PersonsId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("MoviesId", "PersonsId");
+
+                    b.HasIndex("PersonsId");
+
+                    b.ToTable("MoviePerson");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Comment", b =>
@@ -182,11 +288,37 @@ namespace cinima_mgr.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("cinima_mgr.Data.Show", b =>
+                {
+                    b.HasOne("cinima_mgr.Data.Movie", "Movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Movie");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.Ticket", b =>
                 {
                     b.HasOne("cinima_mgr.Data.User", null)
                         .WithMany("Tickets")
                         .HasForeignKey("UserName");
+                });
+
+            modelBuilder.Entity("MoviePerson", b =>
+                {
+                    b.HasOne("cinima_mgr.Data.Movie", null)
+                        .WithMany()
+                        .HasForeignKey("MoviesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("cinima_mgr.Data.Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.User", b =>

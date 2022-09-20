@@ -11,7 +11,7 @@ public class User
     public byte[]? HeadPic { get; set; } = null;
     public DateTime VIPExpireTime { get; set; } = DateTime.MinValue;
     public bool IsMgr { get; set; } = false;
-    public List<Ticket> Tickets { get; set; } = new();
-    public List<DiscountTicket> Discounts { get; set; } = new();
-    public List<Comment> Comments { get; set; } = new();
+    public List<Ticket> Tickets { get; set; }
+    public List<DiscountTicket> Discounts { get; set; }
+    public List<Comment> Comments { get; set; }
 }

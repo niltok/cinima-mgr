@@ -11,8 +11,8 @@ using cinima_mgr.Data;
 namespace cinima_mgr.Migrations
 {
     [DbContext(typeof(MgrContext))]
-    [Migration("20220920014253_MovieF")]
-    partial class MovieF
+    [Migration("20220920094234_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -75,9 +75,8 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BoxOffice")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<long>("BoxOffice")
+                        .HasColumnType("INTEGER");
 
                     b.Property<byte[]>("CoverImg")
                         .IsRequired()
@@ -92,11 +91,9 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Preview")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ReleaseDate")
-                        .IsRequired()
+                    b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Type")

@@ -1,0 +1,32 @@
+﻿.sitpicker-container {
+    display: grid;
+    grid-gap: 5px;
+    height: 100%;
+    width: 100%;
+}
+
+.sit-d {
+    border: gray dashed 2px;
+}
+
+.sit {
+    padding-bottom: calc(100% - 4px);
+    height: 0;
+    width: 100%;
+}
+
+.sit-0, .sit-1, .sit-2, .sit-3 {
+    border: black solid 2px;
+}
+
+.sit-1 {
+    background-color: lightcoral;
+}
+
+.sit-2 {
+    background-color: skyblue;
+}
+
+.sit-3 {
+    background-color: lightgreen;
+}

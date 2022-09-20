@@ -1,0 +1,114 @@
+﻿@page "/Show/Range"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@inject StateCache StateCache
+@inject NavigationManager NavigationManager
+
+<div>
+    <p>
+        <label>房间名称:</label>
+        <input @bind="_show.RoomName"/>
+        <button class="btn btn-primary" @onclick="Submit">添加!</button>
+    </p>
+    <p>
+        <label>基准价格:</label>
+        <input type="number" @bind="_show.BasePrice" min="0" step="0.01"/>
+        <span>@_msg</span>
+    </p>
+    <p>
+        <label>放映时间:</label>
+        <input type="datetime-local" @bind="_show.Time"/>
+    </p>
+    <p class="movie-selector">
+        @foreach (var i in Enumerable.Range(0, _movies.Count))
+        {
+            <div class=@("item " + (i == _selected ? "selected-item" : "")) @onclick="() => _selected = i">
+                <p><img class="movie_cover" src=@($"/Movie/Cover/{_movies[i].Name}") alt=@_movies[i].Name/></p>
+                <p>@_movies[i].Name</p>
+            </div>
+        }
+    </p>
+    <p>
+        <label>排数:</label>
+        <input type="number" min="3" @bind="_show.Height" @onclick="ResetState"/>
+        <label>列数:</label>
+        <input type="number" min="3" @bind="_show.Width" @onclick="ResetState"/>
+    </p>
+    <p>
+        <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
+        <button @onclick="() => _show.PosState = PosStateHelper.GenSkip1(_show.Height, _show.Width)"
+                class="btn btn-secondary">
+            生成间隔座位（疫情专用）
+        </button>
+    </p>
+    <p>
+        <div style="max-width: 500px; width: 80%">
+            <SitPicker @bind-PosState="_show.PosState" Height="_show.Height" Width="_show.Width" Dev="true"></SitPicker>
+        </div>
+    </p>
+</div>
+
+@code {
+    string _msg = "";
+    
+    Show _show = new ()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Time = DateTime.Now,
+        Width = 10,
+        Height = 10,
+        PosState = PosStateHelper.GenAll0(10, 10),
+        BasePrice = 0
+    };
+
+    List<Movie> _movies;
+    int _selected = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        if (StateCache.User is null || !StateCache.User.IsMgr)
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
+
+        await using var db = new MgrContext();
+        _movies = await db.Movies.ToListAsync();
+    }
+
+    void ResetState()
+    {
+        _show.PosState = PosStateHelper.GenAll0(_show.Height, _show.Width);
+    }
+
+    async Task Submit()
+    {
+        try
+        {
+            await using var db = new MgrContext();
+            var ms = await db.Movies.Include(m => m.Shows)
+                .SingleAsync(m => m.Id == _movies[this._selected].Id);
+            _show.Movie = ms;
+            ms.Shows.Add(_show);
+            await db.SaveChangesAsync();
+            _show = new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Time = DateTime.Now,
+                Width = 10,
+                Height = 10,
+                PosState = PosStateHelper.GenAll0(10, 10),
+                BasePrice = 0
+            };
+            int _selected = 0;
+            _msg = "添加成功";
+        }
+        catch (Exception ex)
+        {
+            _msg = ex.Message;
+            throw;
+        }
+    }
+}

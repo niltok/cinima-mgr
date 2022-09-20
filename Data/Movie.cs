@@ -21,12 +21,12 @@ public class Movie
     [Required]
     public string Introduction { get; set; }
 
-    public ICollection<Person> Persons { get; set; } = new List<Person>();
+    public ICollection<Person> Persons { get; set; }
 
     public string? Preview { get; set; }
     
     public byte[] CoverImg { get; set; }
 
-    public ICollection<Show> Shows { get; set; } = new List<Show>();
+    public List<Show> Shows { get; set; }
 
 }

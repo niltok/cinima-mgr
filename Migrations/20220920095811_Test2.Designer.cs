@@ -11,8 +11,8 @@ using cinima_mgr.Data;
 namespace cinima_mgr.Migrations
 {
     [DbContext(typeof(MgrContext))]
-    [Migration("20220920024529_MovieZ")]
-    partial class MovieZ
+    [Migration("20220920095811_Test2")]
+    partial class Test2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -91,7 +91,6 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Preview")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ReleaseDate")
@@ -190,8 +189,6 @@ namespace cinima_mgr.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MovieId");
-
                     b.ToTable("Shows");
                 });
 
@@ -289,17 +286,6 @@ namespace cinima_mgr.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("cinima_mgr.Data.Show", b =>
-                {
-                    b.HasOne("cinima_mgr.Data.Movie", "Movie")
-                        .WithMany("Shows")
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Movie");
-                });
-
             modelBuilder.Entity("cinima_mgr.Data.Ticket", b =>
                 {
                     b.HasOne("cinima_mgr.Data.User", null)
@@ -320,11 +306,6 @@ namespace cinima_mgr.Migrations
                         .HasForeignKey("PersonsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
-                {
-                    b.Navigation("Shows");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.User", b =>

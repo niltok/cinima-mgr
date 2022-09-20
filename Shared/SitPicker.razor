@@ -1,0 +1,54 @@
+﻿@using System.Text
+@using System.Collections.Generic
+@using cinima_mgr.Data
+@using System.Collections
+
+<div class="sitpicker-container" 
+     style="grid-template-rows: repeat(@Height, 1fr); grid-template-columns: repeat(@Width, 1fr)">
+    @foreach (var i in Enumerable.Range(0, Height))
+    {
+        @foreach (var j in Enumerable.Range(0, Width))
+        {
+            <div @onclick="() => SetPos(i, j)" 
+                 class=@("sit " + (_mtx[i][j] == ' ' ? Dev ? "sit-d" : "" : "sit-" + _mtx[i][j]))>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] 
+    public bool Dev { get; set; } = false;
+    [Parameter]
+    public EventCallback<string> PosStateChanged { get; set; }
+    [Parameter]
+    public int Width { get; set; } = 10;
+    [Parameter]
+    public int Height { get; set; } = 10;
+    [Parameter]
+    public string PosState
+    {
+        get => PosStateHelper.Pack(_mtx);
+        set => _mtx = PosStateHelper.Unpack(value, Height, Width);
+    }
+    [Parameter]
+    public char State1 { get; set; } = ' ';
+    [Parameter]
+    public char State2 { get; set; } = '0';
+
+    List<List<char>> _mtx;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //_mtx = PosStateHelper.Unpack(PosState, Height, Width);
+    }
+
+    async Task SetPos(int x, int y)
+    {
+        if (_mtx[x][y] == State2) _mtx[x][y] = State1;
+        else if (_mtx[x][y] == State1) _mtx[x][y] = State2;
+        else return;
+        await PosStateChanged.InvokeAsync(PosState);
+    }
+}

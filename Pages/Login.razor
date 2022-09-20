@@ -8,7 +8,7 @@
 <PageTitle>登录</PageTitle>
 
 <h1>Login Page</h1>
-<p>用户名:<input @bind="_user"/></p>
+<p>手机号:<input @bind="_user"/></p>
 <p>密码:<input @bind="_pwd" type="password"/></p>
 <p>@_msg</p>
 <p><button class="btn btn-primary" @onclick="LoginEvent">登录</button><NavLink href="/Register">注册</NavLink></p>
@@ -21,11 +21,11 @@
     {
         var db = new MgrContext();
         var user = await db.Users.Where(u => u.Name == _user && u.Password == _pwd).FirstOrDefaultAsync();
-        if (user is null)
+        if (user is null || _user.length<11)
         {
-            _msg = "user or password incorrect";
+            _msg = "phone number or password incorrect";
             return;
-        }
+        }                
         var id = Guid.NewGuid().ToString();
         db.Sessions.Add(new SessionState
         {

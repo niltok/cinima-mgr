@@ -21,11 +21,11 @@
     {
         var db = new MgrContext();
         var user = await db.Users.Where(u => u.Name == _user && u.Password == _pwd).FirstOrDefaultAsync();
-        if (user is null)
+        if (user is null )
         {
-            _msg = "user or password incorrect";
+            _msg = "phone number or password incorrect";
             return;
-        }
+        }                
         var id = Guid.NewGuid().ToString();
         db.Sessions.Add(new SessionState
         {

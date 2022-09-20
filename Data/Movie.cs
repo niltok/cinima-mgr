@@ -10,18 +10,23 @@ public class Movie
     [Required]
     public string Name { get; set; }
     [Required] 
-    public string ReleaseDate { get; set; } 
+    public DateTime ReleaseDate { get; set; } 
     [Required] 
     public string Type { get; set; }
+    /// <summary>
+    /// 票房
+    /// </summary>
     [Required]
-    public string BoxOffice { get; set; }
+    public long BoxOffice { get; set; }
     [Required]
     public string Introduction { get; set; }
-    
-    public ICollection<Person> Persons { get; set; }
 
-    public string Preview { get; set; }
+    public ICollection<Person> Persons { get; set; } = new List<Person>();
+
+    public string? Preview { get; set; }
     
     public byte[] CoverImg { get; set; }
-    
+
+    public ICollection<Show> Shows { get; set; } = new List<Show>();
+
 }

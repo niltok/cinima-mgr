@@ -1,0 +1,19 @@
+﻿.movie_cover {
+    width: 100%;
+    height: auto;
+}
+
+.item {
+    width: 300px;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-around;
+    align-content: flex-start;
+    align-items: flex-start;
+}

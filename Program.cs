@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using cinima_mgr.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,13 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.MapGet("/Movie/Cover/{name}",  async (string name) =>
+{
+    await using var db = new MgrContext();
+    var movie = await db.Movies.SingleOrDefaultAsync(m => m.Name == name);
+    return Results.File(movie.CoverImg, "image/*", movie.Name);
+});
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

@@ -4,16 +4,24 @@
 
 <PageTitle>主页</PageTitle>
 
-<h1>欢迎来到奇妙影院</h1>
+<h1>欢迎来到喵票票</h1>
 
-<p>这里用来展示一些电影</p>
-
-<ul>
+<div class="container">
     @foreach (var m in _movies)
     {
-        <li>@m.Name</li>
+        <NavLink>
+            <div class="item">
+                <p><img class="movie_cover" src=@($"/Movie/Cover/{m.Name}") alt=@m.Name/></p>
+                <h3>@m.Name</h3>
+                <h6>@m.Type</h6>
+                <p>@m.Introduction</p>
+                <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn">
+                    @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
+                </button></p>
+            </div>
+        </NavLink>
     }
-</ul>
+</div>
 
 @code
 {

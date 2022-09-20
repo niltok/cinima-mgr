@@ -1,0 +1,78 @@
+﻿@page "/MgrMovie/Add"
+@using cinima_mgr.Data
+
+<PageTitle>添加电影</PageTitle>
+
+<p>
+    <label>名称:</label>
+    <input @bind="_movie.Name"/>
+</p>
+<p>
+    <label>类型:</label>
+    <input @bind="_movie.Type"/>
+</p>
+<p>
+    <label>简介:</label>
+    <textarea @bind="_movie.Introduction"></textarea>
+</p>
+<p>
+    <label>上映日期:</label>
+    <input type="date" @bind="_movie.ReleaseDate"/>
+</p>
+<p>
+    <label>图片:</label>
+    <InputFile OnChange="UploadFile"></InputFile>
+</p>
+<p>
+    <button class="btn-primary btn" @onclick="AddMovieEvent">添加!</button>
+    <span>@_msg</span>
+</p>
+
+
+@code {
+    string _msg = "";
+    Movie _movie = new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Name = "",
+        BoxOffice = 0,
+        Type = "",
+        Introduction = "",
+        ReleaseDate = DateTime.Today
+    };
+
+    async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount == 0) return;
+        var ms = new MemoryStream();
+        try
+        {
+            _msg = "文件上传中";
+            await e.File.OpenReadStream(5 * 1024 * 1024).CopyToAsync(ms);
+            _movie.CoverImg = ms.ToArray();
+            _msg = "文件上传成功";
+        }
+        catch (Exception ex)
+        {
+            _msg = ex.Message;
+        }
+    }
+
+    async Task AddMovieEvent()
+    {
+        var db = new MgrContext();
+        db.Movies.Add(_movie);
+        await db.SaveChangesAsync();
+        _msg = $"添加成功 {_movie.Name}";
+        _movie = new Movie
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            BoxOffice = 0,
+            Type = "",
+            Introduction = "",
+            CoverImg = null,
+            ReleaseDate = DateTime.Today
+        };
+    }
+}

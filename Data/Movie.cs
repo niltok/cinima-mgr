@@ -11,6 +11,8 @@ public class Movie
     public string Name { get; set; }
     [Required] 
     public DateTime ReleaseDate { get; set; } 
+    [Required]
+    public TimeSpan Duration { get; set; }
     [Required] 
     public string Type { get; set; }
     /// <summary>

@@ -80,6 +80,9 @@ namespace cinima_mgr.Migrations
                         .IsRequired()
                         .HasColumnType("BLOB");
 
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Introduction")
                         .IsRequired()
                         .HasColumnType("TEXT");

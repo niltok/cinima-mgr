@@ -4,11 +4,12 @@
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
 
-<div>
+<EditForm Model="_show">
+    <button class="btn btn-primary" @onclick="Submit">添加!</button>
     <p>
-        <label>房间名称:</label>
-        <input @bind="_show.RoomName"/>
-        <button class="btn btn-primary" @onclick="Submit">添加!</button>
+        <label>房间名称:
+            <InputText @bind-Value="_show.RoomName"/>
+        </label>
     </p>
     <p>
         <label>基准价格:</label>
@@ -46,7 +47,7 @@
             <SitPicker @bind-PosState="_show.PosState" Height="_show.Height" Width="_show.Width" Dev="true"></SitPicker>
         </div>
     </p>
-</div>
+</EditForm>
 
 @code {
     string _msg = "";

@@ -30,5 +30,6 @@ public class Movie
     public byte[] CoverImg { get; set; }
 
     public List<Show> Shows { get; set; }
-
+    
+    public List<Comment> Comments { get; set; }
 }

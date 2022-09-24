@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using cinima_mgr.Data;
 
@@ -10,9 +11,10 @@ using cinima_mgr.Data;
 namespace cinima_mgr.Migrations
 {
     [DbContext(typeof(MgrContext))]
-    partial class MgrContextModelSnapshot : ModelSnapshot
+    [Migration("20220923161046_Test5")]
+    partial class Test5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.9");
@@ -251,7 +253,7 @@ namespace cinima_mgr.Migrations
             modelBuilder.Entity("cinima_mgr.Data.Comment", b =>
                 {
                     b.HasOne("cinima_mgr.Data.Movie", "Movie")
-                        .WithMany("Comments")
+                        .WithMany()
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -324,8 +326,6 @@ namespace cinima_mgr.Migrations
 
             modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
                 {
-                    b.Navigation("Comments");
-
                     b.Navigation("Shows");
                 });
 

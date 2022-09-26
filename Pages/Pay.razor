@@ -1,0 +1,45 @@
+﻿@page "/Pay"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@using cinima_mgr.Ali
+@inject NavigationManager NavigationManager
+<PageTitle>购买</PageTitle>
+<h1>Pay</h1>
+
+<div class="container">
+    @foreach (var m in _movies)
+    {
+        <NavLink>
+            <div class="item">
+                <p><img class="movie_cover" src=@($"/Movie/Cover/{m.Name}") alt=@m.Name/></p>
+                <h3>@m.Name</h3>
+                <h6>@m.Type</h6>
+                <p>@m.Introduction</p>
+                <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn"
+                @onclick="payy">
+                    @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
+                </button></p>
+            </div>
+        </NavLink>
+    }
+</div>
+
+
+
+@code {
+
+    List<Movie> _movies = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var db = new MgrContext();
+        _movies = await db.Movies.ToListAsync();
+    }
+    Models p = new Models();
+    async Task payy()
+    {
+        NavigationManager.NavigateTo("asd", false);
+    }
+    
+
+}

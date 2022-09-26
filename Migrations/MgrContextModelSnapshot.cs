@@ -22,8 +22,15 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("Content")
-                        .HasColumnType("REAL");
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EditTime")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MovieId")
                         .IsRequired()
@@ -32,7 +39,7 @@ namespace cinima_mgr.Migrations
                     b.Property<double>("Rate")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -40,7 +47,9 @@ namespace cinima_mgr.Migrations
 
                     b.HasIndex("MovieId");
 
-                    b.HasIndex("UserName");
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EditTime", "UserId");
 
                     b.ToTable("Comments");
                 });
@@ -93,6 +102,12 @@ namespace cinima_mgr.Migrations
 
                     b.Property<string>("Preview")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("RateCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("RateSum")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");
@@ -258,7 +273,7 @@ namespace cinima_mgr.Migrations
 
                     b.HasOne("cinima_mgr.Data.User", "User")
                         .WithMany("Comments")
-                        .HasForeignKey("UserName")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

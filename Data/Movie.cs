@@ -15,6 +15,8 @@ public class Movie
     public TimeSpan Duration { get; set; }
     [Required] 
     public string Type { get; set; }
+    public double RateSum { get; set; }
+    public int RateCount { get; set; }
     /// <summary>
     /// 票房
     /// </summary>

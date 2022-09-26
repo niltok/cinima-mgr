@@ -1,10 +1,14 @@
-﻿.movie-info-container {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    grid-gap: 10px;
+﻿.container {
     max-width: 800px;
     width: 90%;
     margin: auto;
+}
+
+.movie-info-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-gap: 10px;
+    width: 100%;
 }
 
 .movie-detail-container {

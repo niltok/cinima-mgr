@@ -2,29 +2,49 @@
 @using cinima_mgr.Data
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
+@inject StateCache StateCache
 
-@if(found) {
-    @if (_movie is null)
-    {
-        <p>加载中...</p>
-    } 
+<div class="container">
+    @if(_found) {
+        @if (_movie is null)
+        {
+            <p>加载中...</p>
+        } 
+        else
+        {
+            <div class="movie-info-container">
+                <img class="movie-cover" src=@($"/Movie/Cover/{Id}")/>
+                <div class="movie-detail-container">
+                    <p><b>@_movie.Name</b></p>
+                    <p>@_movie.Type</p>
+                    <p>时长: @_movie.Duration.Minutes 分钟</p>
+                    <p>@_movie.Introduction</p>
+                </div>
+            </div>
+            @if (_comment is not null) {
+                <div>
+                    <label>评分: </label>
+                    <input type="number" @bind="_comment.Rate" max="10" step="0.01" min="0"/>
+                    <textarea @bind="_comment.Content"></textarea>
+                    <button @onclick="AddComment">发布评论!</button>
+                </div>
+            }
+            <div class="comments">
+                @foreach (var c in _movie.Comments.AsEnumerable().Reverse())
+                {
+                    <div>
+                        <p>评分: @c.Rate.ToString("N")</p>
+                        <p>@c.Content</p>
+                    </div>
+                }
+            </div>
+        }
+    }
     else
     {
-        <div class="movie-info-container">
-            <img class="movie-cover" src=@($"/Movie/Cover/{Id}")/>
-            <div class="movie-detail-container">
-                <p><b>@_movie.Name</b></p>
-                <p>@_movie.Type</p>
-                <p>时长: @_movie.Duration.Minutes 分钟</p>
-                <p>@_movie.Introduction</p>
-            </div>
-        </div>
+        <p>不存在该电影</p>
     }
-}
-else
-{
-    <p>不存在该电影</p>
-}
+</div>
 
 
 @code {
@@ -32,17 +52,57 @@ else
     public Guid Id { get; set; }
 
     Movie? _movie;
-    bool found = true;
+    Comment? _comment;
+    bool _found = true;
+    
+    async Task Init(MgrContext db) {
+        _movie = await db.Movies.SingleAsync(m => m.Id == Id.ToString());
+        if (_movie is null) _found = false;  // NavigationManager.NavigateTo("/404");
+        else
+        {
+            await db.Entry(_movie)
+                .Collection(m => m.Comments)
+                .LoadAsync();
+            if (StateCache.User is not null) 
+            _comment = _movie.Comments.Find(c => c.UserId == StateCache.User.Name) ?? new Comment
+            {
+                Id = new Guid().ToString(),
+                Rate = 10
+            };
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        var db = new MgrContext();
-        _movie = await db.Movies.SingleAsync(m => m.Id == Id.ToString());
-        if (_movie is null) found = false;  // NavigationManager.NavigateTo("/404");
+        await using var db = new MgrContext();
+        await Init(db);
+    }
+
+    async Task AddComment()
+    {
+        await using var db = new MgrContext();
+        var cc = await db.Comments.SingleOrDefaultAsync(c => c.Id == _comment!.Id);
+        var mv = await db.Movies.SingleAsync(m => m.Id == _movie.Id);
+        var usr = await db.Users.SingleAsync(u => u.Name == StateCache.User.Name);
+        if (cc is null)
+        {
+            mv.RateCount++;
+            mv.RateSum += _comment.Rate;
+            _comment.CreateTime = DateTime.Now;
+            _comment.EditTime = DateTime.Now;
+            db.Comments.Add(_comment);
+            _comment.Movie = mv;
+            _comment.User = usr;
+        }
         else
         {
-            await db.Entry(_movie).Collection(m => m.Comments).LoadAsync();
+            mv.RateSum += _comment.Rate - cc.Rate;
+            cc.Content = _comment.Content;
+            cc.Rate = _comment.Rate;
+            cc.EditTime = DateTime.Now;
         }
+        await db.SaveChangesAsync();
+        await Init(db);
     }
 }

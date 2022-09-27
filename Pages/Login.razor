@@ -7,11 +7,16 @@
 
 <PageTitle>登录</PageTitle>
 
-<h1>Login Page</h1>
-<p>用户名:<input @bind="_user"/></p>
-<p>密码:<input @bind="_pwd" type="password"/></p>
+<h1 style="margin-bottom: 20px; margin-top: 20px">登录</h1>
+<div style="display: grid; grid-gap: 10px; grid-template-rows: 1fr 1fr; grid-template-columns: 1fr 4fr; max-width: 300px; width: 80%">
+    <label>用户名:</label><input @bind="_user"/>
+    <label>密码:</label><input @bind="_pwd" type="password"/>
+</div>
 <p>@_msg</p>
-<p><button class="btn btn-primary" @onclick="LoginEvent">登录</button><NavLink href="/Register">注册</NavLink></p>
+<p>
+    <button class="btn btn-primary" @onclick="LoginEvent">登录</button>
+    <NavLink href="/Register" class="btn btn-secondary">注册</NavLink>
+</p>
 
 @code {
     private string _user = "", _pwd = "";

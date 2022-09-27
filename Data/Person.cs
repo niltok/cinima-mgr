@@ -9,5 +9,5 @@ public class Person
     [Required]
     public string Name { get; set; }
 
-    public ICollection<Movie> Movies { get; set; } = new List<Movie>();
+    public ICollection<Movie> Movies { get; set; }
 }

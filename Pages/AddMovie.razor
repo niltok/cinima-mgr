@@ -3,31 +3,42 @@
 
 <PageTitle>添加电影</PageTitle>
 
-<p>
-    <label>名称:</label>
-    <input @bind="_movie.Name"/>
-</p>
-<p>
-    <label>类型:</label>
-    <input @bind="_movie.Type"/>
-</p>
-<p>
-    <label>简介:</label>
-    <textarea @bind="_movie.Introduction"></textarea>
-</p>
-<p>
-    <label>上映日期:</label>
-    <input type="date" @bind="_movie.ReleaseDate"/>
-</p>
-<p>
-    <label>图片:</label>
-    <InputFile OnChange="UploadFile"></InputFile>
-</p>
-<p>
-    <button class="btn-primary btn" @onclick="AddMovieEvent">添加!</button>
-    <span>@_msg</span>
-</p>
-
+<EditForm Model="_movie">
+    <p>
+        <label>
+            名称:
+            <InputText @bind-Value="_movie.Name"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            类型:
+            <InputText @bind-Value="_movie.Type"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            简介:
+            <InputTextArea @bind-Value="_movie.Introduction"></InputTextArea>
+        </label>
+    </p>
+    <p>
+        <label>
+            上映日期:
+            <InputDate TValue="DateTime" @bind-Value="_movie.ReleaseDate"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            图片:
+            <InputFile OnChange="UploadFile"></InputFile>
+        </label>
+    </p>
+    <p>
+        <button class="btn-primary btn" @onclick="AddMovieEvent">添加!</button>
+        <span class="px-3">@_msg</span>
+    </p>
+</EditForm>
 
 @code {
     string _msg = "";

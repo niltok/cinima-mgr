@@ -34,10 +34,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.MapGet("/Movie/Cover/{name}",  async (string name) =>
+app.MapGet("/Movie/Cover/{id:guid}",  async (Guid id) =>
 {
     await using var db = new MgrContext();
-    var movie = await db.Movies.SingleOrDefaultAsync(m => m.Name == name);
+    var movie = await db.Movies.SingleOrDefaultAsync(m => m.Id == id.ToString());
     return Results.File(movie.CoverImg, "image/*", movie.Name);
 });
 

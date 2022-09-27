@@ -28,7 +28,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        var db = new MgrContext();
+        await using var db = new MgrContext();
         _movies = await db.Movies.ToListAsync();
     }
 }

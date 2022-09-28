@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using cinima_mgr.Data
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@inject NavigationManager NavigationManager
 
 <PageTitle>主页</PageTitle>
 
@@ -15,7 +17,7 @@
             <h6>@m.Type</h6>
             <p>上映时间：@m.ReleaseDate.ToString("yyyy-M-d")</p>
             <p>@m.Introduction</p>
-            <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn">
+            <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn" @onchange="() => ToShowInfo(m.Id)">
                 @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
             </button></p>
         </div>
@@ -30,5 +32,10 @@
         await base.OnInitializedAsync();
         await using var db = new MgrContext();
         _movies = await db.Movies.ToListAsync();
+    }
+
+    async Task ToShowInfo(string st)
+    {
+        NavigationManager.NavigateTo($"/ShowInfo/{st}");
     }
 }

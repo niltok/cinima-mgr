@@ -13,7 +13,7 @@
     <EditForm Model="model">
     <div class="top-row px-4">
         <InputRadioGroup ValueChanged="((DateTime dt) => FlashShowsInfoEvent(dt))"
-                         ValueExpression="() => _selectedday)"
+                         ValueExpression="() => _selectedday"
                          Value="_selectedday">
             @foreach (var i in _daysinfo)
             {
@@ -22,7 +22,7 @@
             }
         </InputRadioGroup><br/>
         <InputRadioGroup ValueChanged="(string st) => FindSelectedShow(st)"
-                         ValueExpression="() => _selectedshowId)"
+                         ValueExpression="() => _selectedshowId"
                          Value="_selectedshowId">
             @foreach (var i in _showsinfo)
             {

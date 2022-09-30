@@ -39,6 +39,9 @@
             <div style="max-width: 500px; width: 80%">
                 <SitPicker @bind-PosState="_selectedshow.PosState" Height="_selectedshow.Height" Width="_selectedshow.Width" State1="'0'" State2="'3'"></SitPicker>
             </div>
+            <div>
+                <button @onclick="MakeOrder"> 确认订单 </button>
+            </div>
         }
         else
         {
@@ -110,6 +113,11 @@
         await using var db = new MgrContext();
         _selectedshow = (await db.Shows
             .Where(t => t.Id == _selectedshowId).ToListAsync()).First();
+    }
+
+    async Task MakeOrder()
+    {
+        NavigationManager.NavigateTo($"/OrderConfirm");
     }
 
 }

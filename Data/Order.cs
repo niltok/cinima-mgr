@@ -14,6 +14,8 @@ public class Order
     // 订单状态
     // ’0‘ 表示未付款， ’1‘ 表示已付款， ’2‘ 表示已退款
     public int State { get; set; } = 0;
-    public Ticket Ticket { get; set; } = null;
+    public List<Ticket> Tickets { get; set; }
+    public List<DiscountTicket> Discounts { get; set; }
+    public double OriginalPrice { get; set; } = 0.0;
     public double Price { get; set; } = 0.0;
 }

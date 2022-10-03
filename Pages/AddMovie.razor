@@ -24,6 +24,12 @@
     </p>
     <p>
         <label>
+            时长:
+            <input type="number" @bind="_duration"/>
+        </label>
+    </p>
+    <p>
+        <label>
             上映日期:
             <InputDate TValue="DateTime" @bind-Value="_movie.ReleaseDate"/>
         </label>
@@ -42,6 +48,7 @@
 
 @code {
     string _msg = "";
+    int _duration = 0;
     Movie _movie = new()
     {
         Id = Guid.NewGuid().ToString(),
@@ -71,7 +78,8 @@
 
     async Task AddMovieEvent()
     {
-        var db = new MgrContext();
+        await using var db = new MgrContext();
+        _movie.Duration = TimeSpan.FromMinutes(_duration);
         db.Movies.Add(_movie);
         await db.SaveChangesAsync();
         _msg = $"添加成功 {_movie.Name}";

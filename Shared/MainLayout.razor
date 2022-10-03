@@ -3,6 +3,7 @@
 @inherits LayoutComponentBase
 @inject Blazored.LocalStorage.ILocalStorageService Storage
 @inject StateCache StateCache
+@inject NavigationManager NavigationManager
 
 <PageTitle>喵票票</PageTitle>
 
@@ -15,8 +16,8 @@
         <div class="top-row px-4">
             @if (StateCache.User is null)
             {
-                <NavLink class="nav" href="Login">Login</NavLink>
-                <NavLink class="nav" href="Register">Register</NavLink>
+                <NavLink class="nav" href="/Login">Login</NavLink>
+                <NavLink class="nav" href="/Register">Register</NavLink>
             }
             else
             {
@@ -33,7 +34,7 @@
                     </NavLink>
                 </span>
                 <span class="px-3">@StateCache.User.Name</span>
-                <span class="px-3"><a class="link-secondary" @onclick="LogoutEvent" href="#">Logout</a></span>
+                <span class="px-3"><a class="link-secondary" @onclick="LogoutEvent" href="javascript:">Logout</a></span>
                 
             }
         </div>
@@ -57,7 +58,8 @@
             .Include(s => s.User).FirstOrDefaultAsync();
         if (session is null) return;
         StateCache.User = session.User;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
+        // NavigationManager.NavigateTo(NavigationManager.Uri, true);
     }
 
     async Task LogoutEvent()
@@ -71,5 +73,7 @@
         db.Remove(session);
         await db.SaveChangesAsync();
         StateCache.User = null;
+        await InvokeAsync(StateHasChanged);
+        NavigationManager.NavigateTo(NavigationManager.Uri, true);
     }
 }

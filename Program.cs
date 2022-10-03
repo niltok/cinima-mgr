@@ -38,7 +38,7 @@ app.MapGet("/Movie/Cover/{id:guid}",  async (Guid id) =>
 {
     await using var db = new MgrContext();
     var movie = await db.Movies.SingleOrDefaultAsync(m => m.Id == id.ToString());
-    return Results.File(movie.CoverImg, "image/*", movie.Name);
+    return movie is null ? Results.NotFound() : Results.File(movie.CoverImg, "image/*", movie.Name);
 });
 
 app.MapBlazorHub();

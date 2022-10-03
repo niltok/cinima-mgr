@@ -1,0 +1,123 @@
+﻿@page "/ShowInfo/{MovieId}"
+@using cinima_mgr.Data
+@using Microsoft.AspNetCore.Mvc
+@inject StateCache StateCache
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle> 场次信息 </PageTitle>
+
+<h3>ShowInfo</h3>
+
+<main>
+    <EditForm Model="model">
+    <div class="top-row px-4">
+        <InputRadioGroup ValueChanged="((DateTime dt) => FlashShowsInfoEvent(dt))"
+                         ValueExpression="() => _selectedday"
+                         Value="_selectedday">
+            @foreach (var i in _daysinfo)
+            {
+                <InputRadio Value="@i"/>
+                <label> @i.ToString("MM月dd日") </label>
+            }
+        </InputRadioGroup><br/>
+        <InputRadioGroup ValueChanged="(string st) => FindSelectedShow(st)"
+                         ValueExpression="() => _selectedshowId"
+                         Value="_selectedshowId">
+            @foreach (var i in _showsinfo)
+            {
+                var _printime = i.Time.ToString("HH:mm") + " ~ " + (i.Time + i.Movie.Duration).ToString("HH:mm");
+                <InputRadio Value="@i.Id"/>
+                <label> @_printime </label>
+            }
+        </InputRadioGroup><br/>
+    </div><br>
+    </EditForm>
+    <div>
+        @if (_selectedshow != null)
+        {
+            <div style="max-width: 500px; width: 80%">
+                <SitPicker @bind-PosState="_selectedshow.PosState" Height="_selectedshow.Height" Width="_selectedshow.Width" State1="'0'" State2="'3'"></SitPicker>
+            </div>
+            <div>
+                <button @onclick="MakeOrder"> 确认订单 </button>
+            </div>
+        }
+        else
+        {
+            <label> 无场次信息 </label>
+        }
+    </div>
+</main>
+
+@code{
+    [Parameter]
+    public string MovieId { get; set; }
+
+    public List<Show> _showsinfo = new List<Show>();
+    
+    public List<DateTime> _daysinfo = new List<DateTime>();
+
+    public DateTime _selectedday;
+
+    public string _selectedshowId;
+    
+    public Show _selectedshow;
+
+    public inputmodel model = new inputmodel();
+    
+    public class inputmodel
+    {
+        
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (StateCache.User is null)
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
+        
+        await using var db = new MgrContext();
+        _showsinfo = (await db.Shows
+            .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())
+            .Where(t => t.Time + t.Movie.Duration < DateTime.Now).OrderBy(t => t.Time).ToList();
+        _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
+
+        if (_showsinfo != null)
+        {
+            _selectedday = _daysinfo.First();
+        }
+        if (_daysinfo != null)
+        {
+            _showsinfo = _showsinfo.Where(t => t.Time.Day == _selectedday.Day).ToList();
+        }
+        
+    }
+
+    async Task FlashShowsInfoEvent(DateTime dt)
+    {
+        _selectedday = dt;
+        await using var db = new MgrContext();
+        _showsinfo = (await db.Shows
+            .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())
+            .Where(t => t.Time.Day == _selectedday.Day && t.Time + t.Movie.Duration < DateTime.Now).ToList();
+    }
+
+    async Task FindSelectedShow(string st)
+    {
+        _selectedshowId = st;
+        await using var db = new MgrContext();
+        _selectedshow = (await db.Shows
+            .Where(t => t.Id == _selectedshowId).ToListAsync()).First();
+    }
+
+    async Task MakeOrder()
+    {
+        NavigationManager.NavigateTo($"/OrderConfirm");
+    }
+
+}

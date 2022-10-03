@@ -66,11 +66,22 @@ namespace cinima_mgr.Migrations
                     b.Property<double>("Rate")
                         .HasColumnType("REAL");
 
+                    b.Property<double>("Satisfy")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UsedInId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UsedInId");
 
                     b.HasIndex("UserName");
 
@@ -119,6 +130,37 @@ namespace cinima_mgr.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Movies");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Order", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("OriginalPrice")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("ShowId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShowId");
+
+                    b.HasIndex("UserName");
+
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Person", b =>
@@ -215,10 +257,22 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Column")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Row")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("UserName")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("UserName");
 
@@ -284,11 +338,36 @@ namespace cinima_mgr.Migrations
 
             modelBuilder.Entity("cinima_mgr.Data.DiscountTicket", b =>
                 {
+                    b.HasOne("cinima_mgr.Data.Order", "UsedIn")
+                        .WithMany("Discounts")
+                        .HasForeignKey("UsedInId");
+
                     b.HasOne("cinima_mgr.Data.User", "User")
                         .WithMany("Discounts")
                         .HasForeignKey("UserName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("UsedIn");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Order", b =>
+                {
+                    b.HasOne("cinima_mgr.Data.Show", "Show")
+                        .WithMany()
+                        .HasForeignKey("ShowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("cinima_mgr.Data.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Show");
 
                     b.Navigation("User");
                 });
@@ -317,9 +396,17 @@ namespace cinima_mgr.Migrations
 
             modelBuilder.Entity("cinima_mgr.Data.Ticket", b =>
                 {
+                    b.HasOne("cinima_mgr.Data.Order", "Order")
+                        .WithMany("Tickets")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("cinima_mgr.Data.User", null)
                         .WithMany("Tickets")
                         .HasForeignKey("UserName");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("MoviePerson", b =>
@@ -342,6 +429,13 @@ namespace cinima_mgr.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Shows");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Order", b =>
+                {
+                    b.Navigation("Discounts");
+
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.User", b =>

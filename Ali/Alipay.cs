@@ -3,9 +3,7 @@ using Aop.Api;
 using Aop.Api.Domain;
 using Aop.Api.Request;
 using Aop.Api.Response;
-using Aop.Api.Util;
 using Newtonsoft.Json;
-using System.Web;
 
 namespace cinima_mgr.Ali;
 
@@ -72,11 +70,11 @@ public class AlipayConfig
         return model;
     }
 
-    public void pay()
+    /*public void pay()
     {
         IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-        request.SetNotifyUrl("http://api.test.alipay.net/atinterface/receive_notify.htm");
+        request.SetNotifyUrl("");
         request.SetReturnUrl("https://m.alipay.com/Gk8NF23");
         Dictionary<string, object> bizContent = new Dictionary<string, object>();
         bizContent.Add("out_trade_no", "20210817010101004");
@@ -89,13 +87,15 @@ public class AlipayConfig
         request.BizContent = Contentjson;
         AlipayTradePagePayResponse response = client.pageExecute(request);
         Console.WriteLine(response.Body);
-    }
+
+    }*/
 
     public string Index()
     {
         DefaultAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
         //金额格式必须是小数点后两位数或是正整数且不是金额格式（即$123.00），以及非常重要的一个原则，传递的参数要么不传递这个参数（即传递的众多参数中，这个参数完全不存在
         AlipayTradePagePayModel model = AlipayConfig.creatModel("9.90", "测试商品", "测试商品支付");
+        
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
         //支付成功的回调地址
         request.SetReturnUrl("");
@@ -103,11 +103,18 @@ public class AlipayConfig
         request.SetNotifyUrl("xxxxxxxxxx");
         // 将业务model载入到request
         request.SetBizModel(model);
-
+        //String form = client.pageExecute(request).Body;//调用SDK生成表单
+        //httpResponse.ContentType = "text/html;charset=UTF-8";
+        //httpResponse.Write(form);//直接将完整的表单html输出到页面
+        //httpResponse.flush();
+        //httpResponse.getWriter().close();
         AlipayTradePagePayResponse response = null;
+
         try
         {
             response = client.pageExecute(request);
+            
+            Console.Write(response.Body);
             return response.Body;
         }
         catch (Exception exp)
@@ -177,8 +184,8 @@ public class AlipayConfig
     {
         int i = 0;
         Dictionary<string, string> sArray = new Dictionary<string, string>();
-        NameValueCollection coll;
-        coll = Request.Form;
+        System.Collections.Specialized.NameValueCollection coll;
+        coll = request.Form;
         String[] requestItem = coll.AllKeys;
         for (i = 0; i < requestItem.Length; i++)
         {

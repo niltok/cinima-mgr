@@ -1,0 +1,36 @@
+﻿@page "/pay"
+@using cinima_mgr.Ali
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Windows
+
+@convertedMarkdown
+<h3>Alipay</h3>
+
+<button onclick="window.open('/p')">
+    pay 
+</button>
+<button onclick="@TriggerClick">
+    requst 
+</button>
+
+@code {
+    private MarkupString convertedMarkdown;
+    [Parameter]
+    public string Text { get; set; }
+    protected override void OnParametersSet()
+    {
+
+        AlipayConfig m = new AlipayConfig();
+        string res=m.Index();
+        Text += res;
+        //var html = Markdig.Markdown.ToHtml(Text ?? "");
+        convertedMarkdown = (MarkupString)Text; 
+    } 
+    async Task TriggerClick()
+    {
+        AlipayConfig m = new AlipayConfig();
+        string res=m.Index();
+    }
+
+}

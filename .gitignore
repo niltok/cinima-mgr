@@ -6,3 +6,5 @@ riderModule.iml
 .idea
 .vs
 *.user
+app.db-shm
+app.db-wal

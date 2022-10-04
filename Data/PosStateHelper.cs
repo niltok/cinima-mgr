@@ -50,4 +50,17 @@ public static class PosStateHelper
         }
         return sb.ToString();
     }
+
+    public static string FilterSkip1(string s, int h, int w)
+    {
+        var sb = new StringBuilder();
+        for (int i = 0; i < h; i++)
+        {
+            for (int j = 0; j < w; j++)
+            {
+                sb.Append((i % 2 + j % 2) % 2 == 1 ? (i * w + j < s.Length ? s[i * w + j] : ' ') : ' ');
+            }
+        }
+        return sb.ToString();
+    }
 }

@@ -224,9 +224,6 @@ namespace cinima_mgr.Migrations
                     b.Property<double>("BasePrice")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("Height")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("MovieId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -236,18 +233,16 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RoomName")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Width")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("MovieId");
+
+                    b.HasIndex("RoomName");
 
                     b.ToTable("Shows");
                 });
@@ -391,7 +386,13 @@ namespace cinima_mgr.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("cinima_mgr.Data.RoomTemplate", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomName");
+
                     b.Navigation("Movie");
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Ticket", b =>

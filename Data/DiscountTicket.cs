@@ -17,6 +17,10 @@ public class DiscountTicket
     /// null 为未使用
     /// </summary>
     public Order? UsedIn { get; set; } = null;
+    /// <summary>
+    /// 当 Type 为 1 时为满减额度
+    /// 当 Type 为 2 时为折扣比率
+    /// </summary>
     public double Rate { get; set; }
     /// <summary>
     /// 优惠门槛

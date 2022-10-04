@@ -13,6 +13,11 @@
     border: black solid 2px;
 }
 
+.selector {
+    width: auto;
+    display: inline;
+}
+
 .movie-selector {
     width: 100%;
     display: flex;

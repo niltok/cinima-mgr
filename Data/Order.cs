@@ -12,7 +12,9 @@ public class Order
     [Required]
     public Show Show { get; set; }
     // 订单状态
-    // ’0‘ 表示未付款， ’1‘ 表示已付款， ’2‘ 表示已退款
+    /// <summary>
+    /// ’0‘ 表示未付款， ’1‘ 表示已付款， ’2‘ 表示已退款
+    /// </summary>
     public int State { get; set; } = 0;
     public List<Ticket> Tickets { get; set; }
     public List<DiscountTicket> Discounts { get; set; }

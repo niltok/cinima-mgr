@@ -1,14 +1,56 @@
-﻿@page "/OrderConfirm"
+﻿@page "/OrderConfirm/{ShowId}/{PosSelecition}"
 @using cinima_mgr.Data
 @inject NavigationManager NavigationManager
 
 <h3>确认订单信息</h3>
-
-<button @onclick="Payment" > 立即付款 </button>
-
-<Alipay/>
-
+<div>
+    @{
+        string _info = "电影名称:\t" + show.Movie.Name;
+        _info += "\n日期:\t" + show.Time.ToString("MM月dd日");
+        _info += "\n场次时间\t" + show.Time.ToString("hh:mm ~ ") + (show.Time + show.Movie.Duration).ToString("hh:mm");
+        _info += "\n房间\t" + show.RoomName;
+        _info += "\n购票数量:\t" + _pos.Count().ToString();
+        _info += "\n位置:\t";
+        foreach (var i in _pos)
+        {
+            _info += i + "、";
+        }
+        if (_pos.Count() != 0) _info = _info.Substring(0, _info.Length-1);
+    }
+    <label> @_info </label>
+</div>
+<EditForm Model="model">
+    <div>
+        
+    </div><br/>
+</EditForm>
+<div>
+    <button @onclick="Payment" > 立即付款 </button>
+    @* <Allipay Enable="" /> *@
+</div>
 @code {
+    [Parameter]
+    public string ShowId { get; set; }
+    [Parameter]
+    public string PosSelecition { get; set; }
+
+    public List<string> _pos = new List<string>();
+
+    public Show show;
+    
+    public inputmodel model = new inputmodel();
+    
+    public class inputmodel
+    {
+        
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var db = new MgrContext();
+        
+    }
+
 
     async Task Payment()
     {

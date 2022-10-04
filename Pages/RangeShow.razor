@@ -3,63 +3,69 @@
 @using Microsoft.EntityFrameworkCore
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
+@implements IAsyncDisposable
 
-<EditForm Model="_show">
-    <button class="btn btn-primary" @onclick="Submit">添加!</button>
+<div>
     <p>
-        <label>房间名称:
-            <InputText @bind-Value="_show.RoomName"/>
-        </label>
+        <label>房间:</label>
+        <select class="form-select selector" @onchange="e => SelectRoom(e.Value?.ToString())">
+            @foreach (var r in _rooms)
+            {
+                <option value=@r.Key>@r.Key</option>
+            }
+        </select>
     </p>
-    <p>
-        <label>基准价格:</label>
-        <input type="number" @bind="_show.BasePrice" min="0" step="0.01"/>
-        <span>@_msg</span>
-    </p>
-    <p>
-        <label>放映时间:</label>
-        <input type="datetime-local" @bind="_show.Time"/>
-    </p>
-    <p class="movie-selector">
-        @foreach (var i in Enumerable.Range(0, _movies.Count))
-        {
-            <div class=@("item " + (i == _selected ? "selected-item" : "")) @onclick="() => _selected = i">
-                <p><img class="movie_cover" src=@($"/Movie/Cover/{_movies[i].Id}") alt=@_movies[i].Name/></p>
-                <p>@_movies[i].Name</p>
+    @if (_room is not null)
+    {
+        <p>
+            <button class="btn btn-primary" @onclick="Submit">添加!</button>
+            <span>@_msg</span>
+        </p>
+        <p>
+            <label>基准价格:</label>
+            <input type="number" @bind="_show.BasePrice" min="0" step="0.01"/>
+        </p>
+        <p>
+            <label>放映时间:</label>
+            <input type="datetime-local" @bind="_show.Time"/>
+        </p>
+        <p class="movie-selector">
+            @for (var i = 0; i < _movies.Count; i++)
+            {
+                var ind = i;
+                <div class=@("item " + (i == _selected ? "selected-item" : "")) @onclick="() => _selected = ind">
+                    <p><img class="movie_cover" src=@($"/Movie/Cover/{_movies[i].Id}") alt=@_movies[i].Name/></p>
+                    <p>@_movies[i].Name</p>
+                </div>
+            }
+        </p>
+        <p>
+            <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
+            <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
+        </p>
+        <p>
+            <div style="max-width: 500px; width: 80%">
+                <SitPicker @bind-PosState="_show.PosState" Height="_room.Height" Width="_room.Width" Dev="true"/>
             </div>
-        }
-    </p>
-    <p>
-        <label>排数:</label>
-        <input type="number" min="3" @bind="_show.Height"/>
-        <label>列数:</label>
-        <input type="number" min="3" @bind="_show.Width"/>
-    </p>
-    <p>
-        <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
-        <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
-    </p>
-    <p>
-        <div style="max-width: 500px; width: 80%">
-            <SitPicker @bind-PosState="_show.PosState" Height="_show.Height" Width="_show.Width" Dev="true"></SitPicker>
-        </div>
-    </p>
-</EditForm>
+        </p>
+    }
+</div>
 
 @code {
+    MgrContext db;
     string _msg = "";
+
+    Dictionary<string, RoomTemplate> _rooms = new();
     
     Show _show = new ()
     {
         Id = Guid.NewGuid().ToString(),
         Time = DateTime.Now,
-        Width = 10,
-        Height = 10,
-        PosState = PosStateHelper.GenAll0(10, 10),
         BasePrice = 0
     };
 
-    List<Movie> _movies;
+    List<Movie> _movies = new();
+    RoomTemplate? _room;
     int _selected = 0;
 
     protected override async Task OnInitializedAsync()
@@ -72,32 +78,40 @@
             return;
         }
 
-        await using var db = new MgrContext();
-        _movies = await db.Movies.ToListAsync();
+        db = new MgrContext();
+        _movies = await db.Movies.Include(m => m.Shows).ToListAsync();
+        _rooms = await db.RoomTemplates.ToDictionaryAsync(r => r.Name);
+        if (_rooms.Count > 0)
+        {
+            _room = _rooms.First().Value;
+            _show.PosState = _room.PosState;
+        }
     }
 
     void ResetState()
     {
-        _show.PosState = PosStateHelper.GenAll0(_show.Height, _show.Width);
+        _show.PosState = PosStateHelper.GenAll0(_room.Height, _room.Width);
+    }
+
+    void SelectRoom(string? s)
+    {
+        _room = _rooms.ContainsKey(s) ? _rooms[s] : null;
+        _show.PosState = _room?.PosState;
     }
 
     async Task Submit()
     {
         try
         {
-            await using var db = new MgrContext();
-            var ms = await db.Movies.Include(m => m.Shows)
-                .SingleAsync(m => m.Id == _movies[this._selected].Id);
-            _show.Movie = ms;
-            ms.Shows.Add(_show);
+            _show.Movie = _movies[_selected];
+            _show.Movie.Shows.Add(_show);
+            _show.Room = _room;
             await db.SaveChangesAsync();
             _show = new()
             {
                 Id = Guid.NewGuid().ToString(),
                 Time = DateTime.Now,
-                Width = 10,
-                Height = 10,
-                PosState = PosStateHelper.GenAll0(10, 10),
+                PosState = _room.PosState,
                 BasePrice = 0
             };
             _selected = 0;
@@ -112,7 +126,12 @@
 
     private void FilterSkip()
     {
-        _show.PosState = PosStateHelper.FilterSkip1(_show.PosState, _show.Height, _show.Width);
+        _show.PosState = PosStateHelper.FilterSkip1(_show.PosState, _room.Height, _room.Width);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await db.DisposeAsync();
     }
 
 }

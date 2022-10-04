@@ -37,7 +37,10 @@
         @if (_selectedshow != null)
         {
             <div style="max-width: 500px; width: 80%">
-                <SitPicker @bind-PosState="_selectedshow.PosState" Height="_selectedshow.Height" Width="_selectedshow.Width" State1="'0'" State2="'3'"></SitPicker>
+                <SitPicker @bind-PosState="_selectedshow.PosState" 
+                           Height="_selectedshow.Room.Height" 
+                           Width="_selectedshow.Room.Width" 
+                           State1="'0'" State2="'3'"/>
             </div>
             <div>
                 <button @onclick="MakeOrder"> 确认订单 </button>
@@ -87,11 +90,11 @@
             .Where(t => t.Time + t.Movie.Duration < DateTime.Now).OrderBy(t => t.Time).ToList();
         _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
 
-        if (_showsinfo != null)
+        if (_daysinfo.Count > 0)
         {
             _selectedday = _daysinfo.First();
         }
-        if (_daysinfo != null)
+        if (_showsinfo.Count > 0)
         {
             _showsinfo = _showsinfo.Where(t => t.Time.Day == _selectedday.Day).ToList();
         }
@@ -103,7 +106,8 @@
         _selectedday = dt;
         await using var db = new MgrContext();
         _showsinfo = (await db.Shows
-            .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())
+            .Where(t => t.Movie.Id == MovieId)
+            .Include(t => t.Movie).ToListAsync())
             .Where(t => t.Time.Day == _selectedday.Day && t.Time + t.Movie.Duration < DateTime.Now).ToList();
     }
 
@@ -112,7 +116,9 @@
         _selectedshowId = st;
         await using var db = new MgrContext();
         _selectedshow = (await db.Shows
-            .Where(t => t.Id == _selectedshowId).ToListAsync()).First();
+            .Where(t => t.Id == _selectedshowId)
+            .Include(t => t.Room)
+            .ToListAsync()).First();
     }
 
     async Task MakeOrder()

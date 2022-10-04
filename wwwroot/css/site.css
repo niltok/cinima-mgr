@@ -22,6 +22,12 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
+.container-center {
+    max-width: 800px;
+    width: 90%;
+    margin: auto;
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

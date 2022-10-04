@@ -1,7 +1,120 @@
 ﻿@page "/RoomMgr"
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@implements IAsyncDisposable
 
 <PageTitle>管理房间</PageTitle>
 
+<div class="container-center">
+    @if (_rooms is null)
+    {
+        <p>加载中</p>
+    }
+    else
+    {
+        <div>
+            <label>房间:</label>
+            <select class="form-select selector" @onchange="s => SelectRoom(s.Value.ToString())">
+                <option value="">[新建]</option>
+                @foreach (var r in _rooms)
+                {
+                    <option value=@r.Key>@r.Key</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label>名称:</label>
+            <input type="text" @bind="_temp.Name" disabled=@(_selected != "")/>
+        </div>
+        <div>
+            <label>排数:</label>
+            <input type="number" min="3" @bind="_temp.Height"/>
+            <label>列数:</label>
+            <input type="number" min="3" @bind="_temp.Width"/>
+        </div>
+        <div>
+            <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
+            <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
+        </div>
+        <div>
+            <div style="max-width: 500px; width: 80%">
+                <SitPicker @bind-PosState="_temp.PosState" Height="_temp.Height" Width="_temp.Width" Dev="true"/>
+            </div>
+        </div>
+        <div>
+            <button class="btn-primary btn" @onclick="Save">保存</button>
+            <span class="px-3">@_msg</span>
+        </div>
+    }
+</div>
+
 @code {
+    MgrContext _db;
+    Dictionary<string, RoomTemplate>? _rooms;
+    string _selected = "";
+    string _msg = "";
+    RoomTemplate _temp = new()
+    {
+        Name = "",
+        Height = 10,
+        Width = 10,
+        PosState = PosStateHelper.GenAll0(10, 10)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _db = new MgrContext();
+        _rooms = await _db.RoomTemplates.ToDictionaryAsync(r => r.Name);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _db.DisposeAsync();
+    }
+
+    void ResetState()
+    {
+        _temp.PosState = PosStateHelper.GenAll0(_temp.Height, _temp.Width);
+    }
     
+    void FilterSkip()
+    {
+        _temp.PosState = PosStateHelper.FilterSkip1(_temp.PosState, _temp.Height, _temp.Width);
+    }
+
+    async Task Save()
+    {
+        if (_selected == "")
+        {
+            if (_temp.Name == "")
+            {
+                _msg = "名称不能为空";
+                return;
+            }
+            if (_rooms.ContainsKey(_temp.Name))
+            {
+                _msg = "名称重复";
+                return;
+            }
+            _db.RoomTemplates.Add(_temp);
+            _selected = _temp.Name;
+        }
+        await _db.SaveChangesAsync();
+        _rooms = await _db.RoomTemplates.ToDictionaryAsync(r => r.Name);
+        _temp = _rooms[_selected];
+        _msg = "保存成功";
+    }
+
+    void SelectRoom(string s)
+    {
+        _selected = s;
+        _temp = _selected != "" ? _rooms[_selected] : new()
+        {
+            Name = "",
+            Height = 10,
+            Width = 10,
+            PosState = PosStateHelper.GenAll0(10, 10)
+        };
+    }
 }

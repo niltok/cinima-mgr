@@ -1,9 +1,4 @@
-﻿.container {
-    max-width: 800px;
-    width: 90%;
-    margin: auto;
-}
-
+﻿
 .movie-info-container {
     display: grid;
     grid-template-columns: 1fr 2fr;

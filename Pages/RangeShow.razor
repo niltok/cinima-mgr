@@ -24,7 +24,7 @@
         @foreach (var i in Enumerable.Range(0, _movies.Count))
         {
             <div class=@("item " + (i == _selected ? "selected-item" : "")) @onclick="() => _selected = i">
-                <p><img class="movie_cover" src=@($"/Movie/Cover/{_movies[i].Id}") alt=@_movies[i].Name/></p>
+                <p><img class="movie_cover" src=@($"/Movie/Cover/{_movies[i].Name}") alt=@_movies[i].Name/></p>
                 <p>@_movies[i].Name</p>
             </div>
         }
@@ -100,7 +100,7 @@
                 PosState = PosStateHelper.GenAll0(10, 10),
                 BasePrice = 0
             };
-            _selected = 0;
+            int _selected = 0;
             _msg = "添加成功";
         }
         catch (Exception ex)

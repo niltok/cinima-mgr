@@ -30,10 +30,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await using var db = new MgrContext();
+        var db = new MgrContext();
         _movies = await db.Movies.ToListAsync();
     }
-
     async Task ToShowInfo(string st)
     {
         NavigationManager.NavigateTo($"/ShowInfo/{st}");

@@ -9,37 +9,14 @@
     grid-template-columns: 1fr 2fr;
     grid-gap: 10px;
     width: 100%;
-    margin-bottom: 2rem;
 }
 
 .movie-detail-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-}
-
-.container p, .container small {
-    margin-bottom: 0.5rem;
 }
 
 .movie-cover {
     width: 100%;
     height: auto;
-}
-
-.comment-add {
-    display: grid;
-    grid-template-areas: 
-            "a b d"
-            "c c d"
-            "e e e";
-    grid-template-columns: 50px 1fr 70px;
-    grid-template-rows: 30px 1fr auto;
-    grid-gap: 10px;
-    margin-bottom: 2rem;
-    align-items: center;
-}
-
-.comment {
-    margin-bottom: 1.5rem;
 }

@@ -12,57 +12,28 @@
         } 
         else
         {
-            <PageTitle>@_movie.Name</PageTitle>
             <div class="movie-info-container">
                 <img class="movie-cover" src=@($"/Movie/Cover/{Id}")/>
                 <div class="movie-detail-container">
-                    <div>
-                        <h4><b>@_movie.Name</b></h4>
-                        <p>
-                            <small class="text-secondary">
-                                <span>@_movie.Duration.Minutes 分钟</span>
-                                <span class="px-3">@_movie.Type</span>
-                            </small>
-                        </p>
-                        @if (_movie.RateCount == 0)
-                        {
-                            <p><small>暂无评分</small></p>
-                        }
-                        else
-                        {
-                            <p><small>
-                                评分: @((_movie.RateSum / _movie.RateCount).ToString("N")) (@_movie.RateCount)
-                            </small></p>
-                        }
-                        <p>@_movie.Introduction</p>
-                    </div>
-                    <button class="btn-primary btn" style="align-self: start">
-                        @(_movie.ReleaseDate > DateTime.Now ? "预定" : "购票")
-                    </button>
+                    <p><b>@_movie.Name</b></p>
+                    <p>@_movie.Type</p>
+                    <p>时长: @_movie.Duration.Minutes 分钟</p>
+                    <p>@_movie.Introduction</p>
                 </div>
             </div>
             @if (_comment is not null) {
-                <div class="comment-add">
-                    <label style="grid-area: a;">评分: </label>
-                    <input type="number" @bind="_comment.Rate" max="10" step="0.01" min="0" style="grid-area: b;"/>
-                    <textarea @bind="_comment.Content" style="grid-area: c;"></textarea>
-                    <button @onclick="AddComment" 
-                            disabled="@_processing" 
-                            style="grid-area: d; align-self: self-end;" 
-                            class="btn btn-primary">
-                        @_btnName
-                    </button>
-                    <div style="grid-area: e;">@_msg</div>
+                <div>
+                    <label>评分: </label>
+                    <input type="number" @bind="_comment.Rate" max="10" step="0.01" min="0"/>
+                    <textarea @bind="_comment.Content"></textarea>
+                    <button @onclick="AddComment">发布评论!</button>
                 </div>
             }
             <div class="comments">
-                @foreach (var c in _comments)
+                @foreach (var c in _movie.Comments.AsEnumerable().Reverse())
                 {
-                    <div class="comment">
-                        <div style="margin-bottom: 0.3rem">
-                            <b>@c.User.Name</b>
-                            <small class="text-secondary px-3">评分: @c.Rate.ToString("N")</small>
-                        </div>
+                    <div>
+                        <p>评分: @c.Rate.ToString("N")</p>
                         <p>@c.Content</p>
                     </div>
                 }
@@ -71,7 +42,7 @@
     }
     else
     {
-        <p>Sorry, 不存在该电影</p>
+        <p>不存在该电影</p>
     }
 </div>
 
@@ -82,92 +53,56 @@
 
     Movie? _movie;
     Comment? _comment;
-    List<Comment> _comments = new();
     bool _found = true;
-    string _btnName = "";
-    bool _processing = false;
-    string _msg = "";
     
-    async Task Init(MgrContext db)
-    {
+    async Task Init(MgrContext db) {
         _movie = await db.Movies.SingleAsync(m => m.Id == Id.ToString());
         if (_movie is null) _found = false;  // NavigationManager.NavigateTo("/404");
         else
         {
-            _comments = await db.Comments
-                .Where(c => c.Movie == _movie)
-                .OrderByDescending(c => c.EditTime)
-                .Include(c => c.User)
-                .ToListAsync(); 
-            if (StateCache.User is not null)
+            await db.Entry(_movie)
+                .Collection(m => m.Comments)
+                .LoadAsync();
+            if (StateCache.User is not null) 
+            _comment = _movie.Comments.Find(c => c.UserId == StateCache.User.Name) ?? new Comment
             {
-                var cc = _comments.Find(c => c.UserId == StateCache.User.Name);
-                if (cc is null)
-                {
-                    _btnName = "发布评论!";
-                    _comment = new Comment
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Rate = 10
-                    };
-                }
-                else
-                {
-                    _btnName = "修改评论!";
-                    _comment = new Comment
-                    {
-                        Id = cc.Id,
-                        Rate = cc.Rate,
-                        Content = cc.Content
-                    };
-                }
-            }
+                Id = new Guid().ToString(),
+                Rate = 10
+            };
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        _processing = true;
         await using var db = new MgrContext();
         await Init(db);
-        _processing = false;
     }
 
     async Task AddComment()
     {
-        _processing = true;
-        try
+        await using var db = new MgrContext();
+        var cc = await db.Comments.SingleOrDefaultAsync(c => c.Id == _comment!.Id);
+        var mv = await db.Movies.SingleAsync(m => m.Id == _movie.Id);
+        var usr = await db.Users.SingleAsync(u => u.Name == StateCache.User.Name);
+        if (cc is null)
         {
-            await using var db = new MgrContext();
-            var cc = await db.Comments.SingleOrDefaultAsync(c => c.Id == _comment!.Id);
-            var mv = await db.Movies.SingleAsync(m => m.Id == _movie.Id);
-            var usr = await db.Users.SingleAsync(u => u.Name == StateCache.User.Name);
-            if (cc is null)
-            {
-                mv.RateCount++;
-                mv.RateSum += _comment.Rate;
-                _comment.CreateTime = DateTime.Now;
-                _comment.EditTime = DateTime.Now;
-                db.Comments.Add(_comment);
-                _comment.Movie = mv;
-                _comment.User = usr;
-            }
-            else
-            {
-                mv.RateSum += _comment.Rate - cc.Rate;
-                cc.Content = _comment.Content;
-                cc.Rate = _comment.Rate;
-                cc.EditTime = DateTime.Now;
-            }
-            await db.SaveChangesAsync();
-            _msg = "操作成功!";
-            await Init(db);
+            mv.RateCount++;
+            mv.RateSum += _comment.Rate;
+            _comment.CreateTime = DateTime.Now;
+            _comment.EditTime = DateTime.Now;
+            db.Comments.Add(_comment);
+            _comment.Movie = mv;
+            _comment.User = usr;
         }
-        catch (Exception e)
+        else
         {
-            _msg = e.Message;
+            mv.RateSum += _comment.Rate - cc.Rate;
+            cc.Content = _comment.Content;
+            cc.Rate = _comment.Rate;
+            cc.EditTime = DateTime.Now;
         }
-        _processing = false;
+        await db.SaveChangesAsync();
+        await Init(db);
     }
 }

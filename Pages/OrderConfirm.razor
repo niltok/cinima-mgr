@@ -8,7 +8,7 @@
         string _info = "电影名称:\t" + show.Movie.Name;
         _info += "\n日期:\t" + show.Time.ToString("MM月dd日");
         _info += "\n场次时间\t" + show.Time.ToString("hh:mm ~ ") + (show.Time + show.Movie.Duration).ToString("hh:mm");
-        _info += "\n房间\t" + show.RoomName;
+        _info += "\n房间\t" + show.Room.Name;
         _info += "\n购票数量:\t" + _pos.Count().ToString();
         _info += "\n位置:\t";
         foreach (var i in _pos)

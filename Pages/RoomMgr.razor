@@ -1,6 +1,8 @@
 ﻿@page "/RoomMgr"
 @using cinima_mgr.Data
 @using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject StateCache StateCache
 @implements IAsyncDisposable
 
 <PageTitle>管理房间</PageTitle>
@@ -64,6 +66,11 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        if (StateCache.User is null || !StateCache.User.IsMgr)
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
         _db = new MgrContext();
         _rooms = await _db.RoomTemplates.ToDictionaryAsync(r => r.Name);
     }

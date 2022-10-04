@@ -117,7 +117,7 @@
 
     async Task MakeOrder()
     {
-        NavigationManager.NavigateTo($"/OrderConfirm");
+        NavigationManager.NavigateTo($"$/OrderConfirm/{_selectedshowId}/{_selectedshow.PosState}");
     }
 
 }

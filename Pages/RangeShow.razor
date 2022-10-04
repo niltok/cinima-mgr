@@ -31,16 +31,13 @@
     </p>
     <p>
         <label>排数:</label>
-        <input type="number" min="3" @bind="_show.Height" @onclick="ResetState"/>
+        <input type="number" min="3" @bind="_show.Height"/>
         <label>列数:</label>
-        <input type="number" min="3" @bind="_show.Width" @onclick="ResetState"/>
+        <input type="number" min="3" @bind="_show.Width"/>
     </p>
     <p>
         <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
-        <button @onclick="() => _show.PosState = PosStateHelper.GenSkip1(_show.Height, _show.Width)"
-                class="btn btn-secondary">
-            生成间隔座位（疫情专用）
-        </button>
+        <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
     </p>
     <p>
         <div style="max-width: 500px; width: 80%">
@@ -112,4 +109,10 @@
             throw;
         }
     }
+
+    private void FilterSkip()
+    {
+        _show.PosState = PosStateHelper.FilterSkip1(_show.PosState, _show.Height, _show.Width);
+    }
+
 }

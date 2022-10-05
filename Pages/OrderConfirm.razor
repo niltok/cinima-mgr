@@ -1,14 +1,31 @@
 ﻿@page "/OrderConfirm/{OrderType:int}/{Days:int}"
 @page "/OrderConfirm/{OrderType:int}/{ShowId}/{PosSelecition}"
 @using cinima_mgr.Data
+@using Markdig.Helpers
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
+@inject StateCache StateCache
 
 <h3>确认订单信息</h3>
-<div>
-    <label> @_info </label>
-</div>
-<EditForm Model="model">
+@if ( OrderType == 0 )
+{
+    <div>
+        <p> 电影名称: @show.Movie.Name </p>
+        <p> 日期: @show.Time.ToString("MM月dd日") </p>
+        @{ var _tempinfo = show.Time.ToString("hh:mm ~ ") + (show.Time + show.Movie.Duration).ToString("hh:mm"); }
+        <p> 场次时间: @_tempinfo </p>
+        <p> 房间: @show.Room.Name </p>
+        <p> 购票数量: @_pos.Count().ToString() </p>
+        
+        @{
+            _tempinfo = "";
+            foreach (var i in _pos) _tempinfo += i + "、";
+            if (_pos.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
+        }
+        <p> 位置: @_tempinfo </p>
+    </div><br/>
+}
+    <EditForm Model="model">
     <div>
         
     </div><br/>
@@ -42,6 +59,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
+        if (StateCache.User is null)
+        {
+            NavigationManager.NavigateTo("/Login");
+            return;
+        }
+        
         if (OrderType == 0)
         {
             await using var db = new MgrContext();

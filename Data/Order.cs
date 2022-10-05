@@ -9,11 +9,13 @@ public class Order
     public string Id { get; set; }
     [Required]
     public User User { get; set; }
-    [Required]
-    public Show Show { get; set; }
-    // 订单状态
     /// <summary>
-    /// ’0‘ 表示未付款， ’1‘ 表示已付款， ’2‘ 表示已退款
+    /// 订单类型： '0' 表示票务订单，'1' 表示会员订单
+    /// </summary>
+    [Required]
+    public int type { get; set; }
+    /// <summary>
+    /// 订单状态： ’0‘ 表示未付款， ’1‘ 表示已付款， ’2‘ 表示已退款
     /// </summary>
     public int State { get; set; } = 0;
     public List<Ticket> Tickets { get; set; }

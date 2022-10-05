@@ -34,7 +34,7 @@
     </div><br>
     </EditForm>
     <div>
-        @if (_selectedshow != null)
+        @if (_selectedshowId != null)
         {
             <div style="max-width: 500px; width: 80%">
                 <SitPicker @bind-PosState="_selectedshow.PosState" 
@@ -87,7 +87,7 @@
         await using var db = new MgrContext();
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())
-            .Where(t => t.Time + t.Movie.Duration < DateTime.Now).OrderBy(t => t.Time).ToList();
+            .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
         _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
 
         if (_daysinfo.Count > 0)
@@ -108,7 +108,8 @@
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId)
             .Include(t => t.Movie).ToListAsync())
-            .Where(t => t.Time.Day == _selectedday.Day && t.Time + t.Movie.Duration < DateTime.Now).ToList();
+            .Where(t => t.Time.Day == _selectedday.Day && t.Time + t.Movie.Duration > DateTime.Now).ToList();
+        int i;
     }
 
     async Task FindSelectedShow(string st)
@@ -123,7 +124,10 @@
 
     async Task MakeOrder()
     {
-        NavigationManager.NavigateTo($"$/OrderConfirm/{_selectedshowId}/{_selectedshow.PosState}");
+        NavigationManager.NavigateTo($"/OrderConfirm/{0}/{_selectedshowId}/{_selectedshow.PosState}");
+        // NavigationManager.NavigateTo($"/OrderConfirm/{1}/{30}");
+
+        
     }
 
 }

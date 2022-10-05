@@ -20,7 +20,7 @@
                         <h4><b>@_movie.Name</b></h4>
                         <p>
                             <small class="text-secondary">
-                                <span>@_movie.Duration.Minutes 分钟</span>
+                                <span>@((int)Math.Round(_movie.Duration.TotalMinutes)) 分钟</span>
                                 <span class="px-3">@_movie.Type</span>
                             </small>
                         </p>

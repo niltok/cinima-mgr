@@ -14,39 +14,45 @@
     }
     else
     {
-        <div>
+        <p>
             <label>房间:</label>
             <select class="form-select selector" @onchange="s => SelectRoom(s.Value.ToString())">
-                <option value="">[新建]</option>
+                <option value="" selected=@(_selected == "")>[新建]</option>
                 @foreach (var r in _rooms)
                 {
-                    <option value=@r.Key>@r.Key</option>
+                    <option value=@r.Key selected=@(_selected == r.Key)>@r.Key</option>
                 }
             </select>
-        </div>
-        <div>
+            <span class="px-2">
+                <button class="btn-primary btn" @onclick="Save">@(_selected == "" ? "添加!" : "保存!")</button>
+            </span>
+            @if (_selected != "" && _room.Shows.Count == 0)
+            {
+                <span class="px-2">
+                    <button class="btn-danger btn" @onclick="Delete">删除!</button>
+                </span>
+            }
+            <span class="px-3">@_msg</span>
+        </p>
+        <p>
             <label>名称:</label>
-            <input type="text" @bind="_temp.Name" disabled=@(_selected != "")/>
-        </div>
-        <div>
+            <input type="text" @bind="_room.Name"/>
+        </p>
+        <p>
             <label>排数:</label>
-            <input type="number" min="3" @bind="_temp.Height"/>
+            <input type="number" min="3" @bind="_room.Height"/>
             <label>列数:</label>
-            <input type="number" min="3" @bind="_temp.Width"/>
-        </div>
-        <div>
+            <input type="number" min="3" @bind="_room.Width"/>
+        </p>
+        <p>
             <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
             <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
-        </div>
-        <div>
-            <div style="max-width: 500px; width: 80%">
-                <SitPicker @bind-PosState="_temp.PosState" Height="_temp.Height" Width="_temp.Width" Dev="true"/>
+        </p>
+        <p>
+            <div style="width: 100%">
+                <SitPicker @bind-PosState="_room.PosState" Height="_room.Height" Width="_room.Width" Dev="true"/>
             </div>
-        </div>
-        <div>
-            <button class="btn-primary btn" @onclick="Save">保存</button>
-            <span class="px-3">@_msg</span>
-        </div>
+        </p>
     }
 </div>
 
@@ -55,8 +61,9 @@
     Dictionary<string, RoomTemplate>? _rooms;
     string _selected = "";
     string _msg = "";
-    RoomTemplate _temp = new()
+    RoomTemplate _room = new()
     {
+        Id = Guid.NewGuid().ToString(),
         Name = "",
         Height = 10,
         Width = 10,
@@ -72,7 +79,9 @@
             return;
         }
         _db = new MgrContext();
-        _rooms = await _db.RoomTemplates.ToDictionaryAsync(r => r.Name);
+        _rooms = await _db.RoomTemplates
+            .Include(r => r.Shows)
+            .ToDictionaryAsync(r => r.Name);
     }
 
     public async ValueTask DisposeAsync()
@@ -82,42 +91,66 @@
 
     void ResetState()
     {
-        _temp.PosState = PosStateHelper.GenAll0(_temp.Height, _temp.Width);
+        _room.PosState = PosStateHelper.GenAll0(_room.Height, _room.Width);
     }
     
     void FilterSkip()
     {
-        _temp.PosState = PosStateHelper.FilterSkip1(_temp.PosState, _temp.Height, _temp.Width);
+        _room.PosState = PosStateHelper.FilterSkip1(_room.PosState, _room.Height, _room.Width);
+    }
+
+    async Task Delete()
+    {
+        if (_room.Shows.Count > 0)
+        {
+            _msg = $"该房间内已规划 {_room.Shows.Count} 场电影";
+            return;
+        }
+        _db.RoomTemplates.Remove(_room);
+        await _db.SaveChangesAsync();
+        _rooms = await _db.RoomTemplates.ToDictionaryAsync(r => r.Name);
+        _selected = "";
+        _room = new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            Height = 10,
+            Width = 10,
+            PosState = PosStateHelper.GenAll0(10, 10)
+        };
+        _msg = "删除成功 " + DateTime.Now.ToString("HH:mm:ss");
     }
 
     async Task Save()
     {
+        if (_room.Name == "")
+        {
+            _msg = "名称不能为空";
+            return;
+        }
+        var named = _rooms.GetValueOrDefault(_room.Name);
+        if (named is not null && named != _room)
+        {
+            _msg = "名称重复";
+            return;
+        }
         if (_selected == "")
         {
-            if (_temp.Name == "")
-            {
-                _msg = "名称不能为空";
-                return;
-            }
-            if (_rooms.ContainsKey(_temp.Name))
-            {
-                _msg = "名称重复";
-                return;
-            }
-            _db.RoomTemplates.Add(_temp);
-            _selected = _temp.Name;
+            _db.RoomTemplates.Add(_room);
         }
         await _db.SaveChangesAsync();
         _rooms = await _db.RoomTemplates.ToDictionaryAsync(r => r.Name);
-        _temp = _rooms[_selected];
-        _msg = "保存成功";
+        _msg = "保存成功 " + DateTime.Now.ToString("HH:mm:ss");
+        _selected = _room.Name;
     }
 
-    void SelectRoom(string s)
+    async Task SelectRoom(string s)
     {
+        if (_selected != "") await _db.Entry(_room).ReloadAsync();
         _selected = s;
-        _temp = _selected != "" ? _rooms[_selected] : new()
+        _room = _selected != "" ? _rooms[_selected] : new()
         {
+            Id = Guid.NewGuid().ToString(),
             Name = "",
             Height = 10,
             Width = 10,

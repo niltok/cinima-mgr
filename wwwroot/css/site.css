@@ -26,6 +26,10 @@ a, .btn-link {
     max-width: 800px;
     width: 90%;
     margin: auto;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+    color: #18191c;
 }
 
 .valid.modified:not([type=checkbox]) {

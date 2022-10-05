@@ -13,10 +13,11 @@
     padding-bottom: calc(100% - 4px);
     height: 0;
     width: 100%;
+    border-radius: 30%;
 }
 
 .sit-0, .sit-1, .sit-2, .sit-3 {
-    border: black solid 2px;
+    border: grey solid 2px;
 }
 
 .sit-1 {

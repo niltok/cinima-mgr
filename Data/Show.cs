@@ -11,9 +11,7 @@ public class Show
 {
     [Key]
     public string Id { get; set; }
-    [Required]
     public DateTime Time { get; set; }
-    [Required]
     public double BasePrice { get; set; }
 
     public Movie Movie { get; set; }

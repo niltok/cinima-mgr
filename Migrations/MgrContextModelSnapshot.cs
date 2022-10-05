@@ -179,11 +179,15 @@ namespace cinima_mgr.Migrations
 
             modelBuilder.Entity("cinima_mgr.Data.RoomTemplate", b =>
                 {
-                    b.Property<string>("Name")
+                    b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PosState")
                         .IsRequired()
@@ -192,7 +196,10 @@ namespace cinima_mgr.Migrations
                     b.Property<int>("Width")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Name");
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("RoomTemplates");
                 });
@@ -232,7 +239,8 @@ namespace cinima_mgr.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("RoomName")
+                    b.Property<string>("RoomId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Time")
@@ -242,7 +250,7 @@ namespace cinima_mgr.Migrations
 
                     b.HasIndex("MovieId");
 
-                    b.HasIndex("RoomName");
+                    b.HasIndex("RoomId");
 
                     b.ToTable("Shows");
                 });
@@ -387,8 +395,10 @@ namespace cinima_mgr.Migrations
                         .IsRequired();
 
                     b.HasOne("cinima_mgr.Data.RoomTemplate", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomName");
+                        .WithMany("Shows")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Movie");
 
@@ -437,6 +447,11 @@ namespace cinima_mgr.Migrations
                     b.Navigation("Discounts");
 
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.RoomTemplate", b =>
+                {
+                    b.Navigation("Shows");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.User", b =>

@@ -8,7 +8,7 @@
 <PageTitle> 场次信息 </PageTitle>
 
 <h3>ShowInfo</h3>
-
+@* todo: 选择电影  *@
 <main>
     <EditForm Model="model">
     <div class="top-row px-4">
@@ -83,7 +83,7 @@
             NavigationManager.NavigateTo("/Login");
             return;
         }
-        
+        // todo: show canceled disabled or canbuyafter
         await using var db = new MgrContext();
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())

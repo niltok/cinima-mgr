@@ -15,6 +15,10 @@ public class Movie
     public TimeSpan Duration { get; set; }
     [Required] 
     public string Type { get; set; }
+    /// <summary>
+    /// 0 表示已隐藏，1 表示在映，2 表示不在映
+    /// </summary>
+    public int Status { get; set; }
     public double RateSum { get; set; }
     public int RateCount { get; set; }
     /// <summary>

@@ -130,6 +130,7 @@
         _room = _rooms.ContainsKey(s) ? _rooms[s] : null;
         _shows = _room.Shows.ToDictionary(s => s.Id);
         LoadLabel();
+        _selectedShow = "";
         _show = new Show
         {
             Id = Guid.NewGuid().ToString(),

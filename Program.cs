@@ -1,9 +1,6 @@
 using Blazored.LocalStorage;
-using Blazored.SessionStorage;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using cinima_mgr.Data;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using cinima_mgr.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +11,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<StateCache>();
+builder.Services.AddSingleton<EventMgr>();
 builder.Services.AddSession();
 
 var app = builder.Build();

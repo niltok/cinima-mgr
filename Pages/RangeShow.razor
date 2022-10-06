@@ -68,7 +68,7 @@
 </div>
 
 @code {
-    MgrContext _db;
+    MgrContext _db = new();
     string _msg = "";
 
     Dictionary<string, RoomTemplate> _rooms = new();
@@ -103,7 +103,6 @@
             return;
         }
 
-        _db = new MgrContext();
         _movies = await _db.Movies
             .Include(m => m.Shows)
             .OrderByDescending(m => m.ReleaseDate)

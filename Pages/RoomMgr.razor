@@ -77,7 +77,7 @@
 </div>
 
 @code {
-    MgrContext _db;
+    MgrContext _db = new();
     Dictionary<string, RoomTemplate>? _rooms, _enabledRooms;
     List<(string, string)> _label = new(), _disabledLabel = new();
     string _selected = "";
@@ -124,7 +124,6 @@
             NavigationManager.NavigateTo("");
             return;
         }
-        _db = new MgrContext();
         await Load();
     }
 

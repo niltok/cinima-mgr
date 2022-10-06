@@ -91,6 +91,23 @@ namespace cinima_mgr.Migrations
                     b.ToTable("DiscountTickets");
                 });
 
+            modelBuilder.Entity("cinima_mgr.Data.Event", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Closure")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TriggerTime")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Events");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
                 {
                     b.Property<string>("Id")

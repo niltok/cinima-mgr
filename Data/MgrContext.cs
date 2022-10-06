@@ -12,6 +12,7 @@ public class MgrContext : DbContext
     public DbSet<RoomTemplate> RoomTemplates { get; set; }
     public DbSet<Person> People { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<Event> Events { get; set; }
     public DbSet<SessionState> Sessions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

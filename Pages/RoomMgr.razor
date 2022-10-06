@@ -1,7 +1,214 @@
 ﻿@page "/RoomMgr"
+@using cinima_mgr.Data
+@using cinima_mgr.Service
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject StateCache StateCache
+@implements IAsyncDisposable
 
 <PageTitle>管理房间</PageTitle>
 
+<div class="container-center">
+    @if (_rooms is null)
+    {
+        <p>加载中</p>
+    }
+    else
+    {
+        <p>
+            <input class="form-check-input" type="checkbox" checked=@_showDisabled @onchange="SwitchShowDisabled"/>
+            <label>始终显示停用房间</label>
+        </p>
+        <p>
+            <label>房间:</label>
+            <select class="form-select" @onchange="s => SelectRoom(s.Value.ToString())">
+                <option value="" selected=@(_selected == "")>[新建]</option>
+                @foreach (var r in _label)
+                {
+                    <option value=@r.Item1 selected=@(_selected == r.Item1)>@r.Item2</option>
+                }
+                @if (_showDisabled || _selected != "" && _rooms[_selected].Status == 0)
+                {
+                    <option disabled>---↓已停用↓---</option>
+                    @foreach (var r in _disabledLabel)
+                    {
+                        <option value=@r.Item1 selected=@(_selected == r.Item1)>@r.Item2</option>
+                    }
+                }
+            </select>
+            <span class="px-2">
+                <button class="btn-primary btn" @onclick="Save">@(_selected == "" ? "添加!" : "保存!")</button>
+            </span>
+            @if (_selected != "" && _room.Shows.Count == 0)
+            {
+                <span class="px-2">
+                    <button class="btn-danger btn" @onclick="Delete">删除!</button>
+                </span>
+            }
+            <span class="px-3">@_msg</span>
+        </p>
+        <p>
+            <label>名称:</label>
+            <input class="form-control" type="text" @bind="_room.Name"/>
+        </p>
+        <p>
+            <label>状态:</label>
+            <select class="form-select" @bind="_room.Status">
+                <option value=0>停用</option>
+                <option value=1>启用</option>
+            </select>
+        </p>
+        <p>
+            <label>排数:</label>
+            <input class="form-control" type="number" min="3" @bind="_room.Height"/>
+            <label>列数:</label>
+            <input class="form-control" type="number" min="3" @bind="_room.Width"/>
+        </p>
+        <p>
+            <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
+            <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
+        </p>
+        <p>
+            <div style="width: 100%">
+                <SitPicker @bind-PosState="_room.PosState" Height="_room.Height" Width="_room.Width" Dev="true"/>
+            </div>
+        </p>
+    }
+</div>
+
 @code {
+    MgrContext _db;
+    Dictionary<string, RoomTemplate>? _rooms, _enabledRooms;
+    List<(string, string)> _label = new(), _disabledLabel = new();
+    string _selected = "";
+    string _msg = "";
+    bool _showDisabled = false;
+    RoomTemplate _room = new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Name = "",
+        Height = 10,
+        Width = 10,
+        Status = 1,
+        PosState = PosStateHelper.GenAll0(10, 10)
+    };
+
+    async Task Load()
+    {
+        _rooms = await _db.RoomTemplates
+            .Include(r => r.Shows)
+            .ToDictionaryAsync(r => r.Id);
+        _enabledRooms = _rooms.Values.Where(r => r.Status == 1).ToDictionary(r => r.Name);
+        var disabled = _rooms.Values
+            .Where(r => r.Status == 0).ToList();
+        var count = disabled
+            .GroupBy(r => r.Name)
+            .Select(g => (g.Key, g.Count()))
+            .ToDictionary(g => g.Key);
+        _label = _enabledRooms.Values.Select(r => (r.Id, 
+            _showDisabled && count.ContainsKey(r.Name)
+                ? $"{r.Name} (创建于 {r.CreateTime:yyyy-MM-dd HH:mm:ss})" 
+                : r.Name)).ToList();
+        _disabledLabel = disabled.Select(r => (r.Id, 
+            _enabledRooms.ContainsKey(r.Name) || count[r.Name].Item2 > 1 
+                ? $"{r.Name} (创建于 {r.CreateTime:yyyy-MM-dd HH:mm:ss})" 
+                : r.Name)
+            ).ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (StateCache.User is null || !StateCache.User.IsMgr)
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
+        _db = new MgrContext();
+        await Load();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _db.DisposeAsync();
+    }
+
+    void ResetState()
+    {
+        _room.PosState = PosStateHelper.GenAll0(_room.Height, _room.Width);
+    }
     
+    void FilterSkip()
+    {
+        _room.PosState = PosStateHelper.FilterSkip1(_room.PosState, _room.Height, _room.Width);
+    }
+
+    async Task Delete()
+    {
+        if (_room.Shows.Count > 0)
+        {
+            _msg = $"该房间内已规划 {_room.Shows.Count} 场电影";
+            return;
+        }
+        _db.RoomTemplates.Remove(_room);
+        await _db.SaveChangesAsync();
+        await Load();
+        _selected = "";
+        _room = new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            Height = 10,
+            Width = 10,
+            Status = 1,
+            PosState = PosStateHelper.GenAll0(10, 10)
+        };
+        _msg = "删除成功 " + DateTime.Now.ToString("HH:mm:ss");
+    }
+
+    async Task Save()
+    {
+        if (_room.Name == "")
+        {
+            _msg = "名称不能为空";
+            return;
+        }
+        var named = _enabledRooms.GetValueOrDefault(_room.Name);
+        if (named is not null && named != _room)
+        {
+            _msg = "与已启用的房间名称重复";
+            return;
+        }
+        if (_selected == "")
+        {
+            _room.CreateTime = DateTime.Now;
+            _db.RoomTemplates.Add(_room);
+        }
+        await _db.SaveChangesAsync();
+        await Load();
+        _msg = "保存成功 " + DateTime.Now.ToString("HH:mm:ss");
+        _selected = _room.Id;
+    }
+
+    async Task SelectRoom(string s)
+    {
+        if (_selected != "") await _db.Entry(_room).ReloadAsync();
+        _selected = s;
+        _room = _selected != "" ? _rooms[_selected] : new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            Height = 10,
+            Width = 10,
+            Status = 1,
+            PosState = PosStateHelper.GenAll0(10, 10)
+        };
+    }
+
+    async Task SwitchShowDisabled(ChangeEventArgs e)
+    {
+        _showDisabled = (bool) e.Value!;
+        await Load();
+    }
+
 }

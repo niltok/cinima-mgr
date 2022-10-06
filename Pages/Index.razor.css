@@ -1,6 +1,9 @@
 ﻿.movie_cover {
     width: 100%;
     height: auto;
+    box-shadow: 0 0 0 1px #ced4da;
+    outline: 0;
+    border-radius: 5%;
 }
 
 .item {

@@ -1,10 +1,11 @@
 ﻿@page "/Movie/Info/{Id:guid}"
 @using cinima_mgr.Data
+@using cinima_mgr.Service
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
 @inject StateCache StateCache
 
-<div class="container">
+<div class="container-center">
     @if(_found) {
         @if (_movie is null)
         {
@@ -20,7 +21,7 @@
                         <h4><b>@_movie.Name</b></h4>
                         <p>
                             <small class="text-secondary">
-                                <span>@_movie.Duration.Minutes 分钟</span>
+                                <span>@((int)Math.Round(_movie.Duration.TotalMinutes)) 分钟</span>
                                 <span class="px-3">@_movie.Type</span>
                             </small>
                         </p>

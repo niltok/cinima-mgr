@@ -1,0 +1,32 @@
+﻿.movie_cover {
+    width: 100%;
+    height: auto;
+    box-shadow: 0 0 0 1px #ced4da;
+    outline: 0;
+    border-radius: 5%;
+    transition: box-shadow .15s ease-in-out;
+}
+
+.item {
+    width: 100px;
+    margin: 15px;
+}
+
+.movie_cover:hover:not(.selected-item) {
+    box-shadow: 0 0 0 4px rgb(13 110 253 / 25%);
+}
+
+.selected-item {
+    box-shadow: 0 0 8px 5px rgb(13 110 253 / 50%);
+}
+
+.movie-selector {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-content: flex-start;
+    align-items: flex-start;
+}

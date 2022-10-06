@@ -17,7 +17,7 @@
 }
 
 .selected-item {
-    box-shadow: 0 0 8px 8px rgb(13 110 253 / 50%);
+    box-shadow: 0 0 8px 5px rgb(13 110 253 / 50%);
 }
 
 .movie-selector {

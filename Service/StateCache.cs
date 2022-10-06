@@ -1,4 +1,6 @@
-﻿namespace cinima_mgr.Data;
+﻿using cinima_mgr.Data;
+
+namespace cinima_mgr.Service;
 
 public class StateCache
 {

@@ -10,12 +10,55 @@
     private MarkupString convertedMarkdown;
     [Parameter]
     public bool Enable { get; set; } = false;
+    [Parameter]
+    public string out_trade_no { get; set; }
+    public string price { get; set; }
     protected override void OnParametersSet()
     {
-        //if (!Enable) return;
+        if (!Enable) return;
         AlipayConfig m = new AlipayConfig();
-        string res=m.Index();
-        //var html = Markdig.Markdown.ToHtml(Text ?? "");
+        Query();
+        string res=m.Pay(m.creatModel(out_trade_no,price));
         convertedMarkdown = (MarkupString)res; 
+    }
+    async Task Query()
+    {
+        await using var db = new MgrContext();
+        var dbstate = (await db.Orders
+            .Where(t => t.Id == out_trade_no).Select(t => t.State).ToListAsync());
+        if(dbstate == null)
+        {
+            Console.WriteLine("订单不存在");
+        }
+        else
+        {
+            if(dbstate[0] == 0)
+            {
+                Console.WriteLine("订单未付款");
+            }
+            else if(dbstate[0] == 1)
+            {
+                Console.WriteLine("订单已付款");
+            }
+            else if(dbstate[0] == 2)
+            {
+                Console.WriteLine("订单已退款");
+            }
+            else if(dbstate[0] == 3)
+            {
+                Console.WriteLine("订单已取消");
+            }
+            else if(dbstate[0] == 4)
+            {
+                Console.WriteLine("订单不存在");
+            }
+            else
+            {
+                Console.WriteLine("订单不存在");
+            }
+        }
+        var dbprice = (await db.Orders
+            .Where(t => t.Id == out_trade_no).Select(t => t.Price).ToListAsync());
+        price = dbprice[0].ToString("0.00");
     }
 }

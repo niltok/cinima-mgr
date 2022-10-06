@@ -1,0 +1,82 @@
+﻿@page "/refund"
+@using System.Text.Json
+@using cinima_mgr.Ali
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Windows
+@using Newtonsoft.Json
+
+<div>
+    <TextBox Value="@resu"/>
+</div>
+
+@code {
+    private MarkupString convertedMarkdown;
+    [Parameter]
+    public bool Enable { get; set; } = false;
+    [Parameter]
+    public string out_trade_no { get; set; } = "20221005142119485";
+    [Parameter]
+    public string price { get; set; } = "9.90";
+    [Parameter]
+    public string resu { get; set; }
+    protected override void OnParametersSet()
+    {
+        //if (!Enable) return;
+        AlipayConfig m = new AlipayConfig();
+        string res = m.Refund(out_trade_no, price);
+        string jsonString = m.RefundQuery(out_trade_no);
+
+        int n = 0, v = 0;
+        using(JsonDocument document = JsonDocument.Parse(jsonString))
+        {
+            JsonElement root = document.RootElement;
+            JsonElement Element = root.GetProperty("alipay_trade_fastpay_refund_query_response");
+
+            foreach(JsonProperty element in Element.EnumerateObject())
+            {
+                if (element.Name == "refund_status")
+                {
+                    n = 1;
+                    if(element.Value.GetString() == "REFUND_SUCCESS")
+                    {
+                        v = 1;
+                        Console.WriteLine("退款成功!");
+                    }
+                    else
+                    {
+                        v = -1;
+                        Console.WriteLine("退款失败!");
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+
+            }
+            if(n == 1 && v == 1)
+            {
+                resu = "退款成功!";
+            }
+            else
+            {
+                resu = "退款失败!";
+            }
+        }
+    }
+
+        //if(this.JsonToDictionary(res1))
+        //{
+        //    resu = "退款成功！";
+        //}
+        //else
+        //{
+        //    resu = "退款失败！";
+        //}
+        //var html = Markdig.Markdown.ToHtml(res1 ?? "");
+        //convertedMarkdown = (MarkupString)html; 
+    }
+    
+    
+

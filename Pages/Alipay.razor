@@ -12,7 +12,7 @@
     public bool Enable { get; set; } = false;
     protected override void OnParametersSet()
     {
-        if (!Enable) return;
+        //if (!Enable) return;
         AlipayConfig m = new AlipayConfig();
         string res=m.Index();
         //var html = Markdig.Markdown.ToHtml(Text ?? "");

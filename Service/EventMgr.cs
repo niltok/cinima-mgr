@@ -2,37 +2,101 @@
 using System.Reflection;
 using System.Text.Json;
 using cinima_mgr.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace cinima_mgr.Service;
 
-public class EventMgr : IAsyncDisposable
+public class EventMgr : IDisposable
 {
     [Serializable]
     private record TypedObject(string Type, string Object);
     [Serializable]
     private record ClosureCall(string ClassName, string MethodName, TypedObject? Caller, List<TypedObject> Parameters);
     
-    private MgrContext _db = new MgrContext();
-    
-    
-    private void EventCircle() {}
+    private readonly PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(100));
+
+    private static object? RecoverObject(TypedObject obj)
+    {
+        var t = Type.GetType(obj.Type)!;
+        return JsonSerializer.Deserialize(obj.Object, t);
+    }
+
+    private async Task EventCircle()
+    {
+        while (await _timer.WaitForNextTickAsync())
+        {
+            await using var db = new MgrContext();
+            var run = true;
+            while (run) {
+                var recent = await db.Events.OrderBy(r => r.TriggerTime).FirstAsync();
+                if (recent.TriggerTime > DateTime.Now) run = false;
+                else
+                {
+                    db.Events.Remove(recent);
+                    await db.SaveChangesAsync();
+                    var closure = JsonSerializer.Deserialize<ClosureCall>(recent.Closure)!;
+                    var method = Type.GetType(closure.ClassName)!
+                        .GetMethod(closure.MethodName, 
+                            BindingFlags.Public | 
+                            BindingFlags.NonPublic | 
+                            BindingFlags.Static )!;
+                    method.Invoke(
+                        closure.Caller is null ? null : RecoverObject(closure.Caller), 
+                        closure.Parameters
+                            .Select(RecoverObject)
+                            .ToArray());
+                }
+            }
+        }
+    }
 
     public EventMgr()
     {
+        EventCircle();
     }
 
+    /// <summary>
+    /// 注册事件
+    /// </summary>
+    /// <param name="triggerTime">
+    /// 触发时间
+    /// </param>
+    /// <param name="callback">
+    /// 必须是一个没有参数的 Lambda 表达式，函数体只能是一个函数调用。
+    /// 函数调用的调用者以及参数必须是可序列化的（静态函数没有调用者）。
+    /// 当注册函数被调用时调用者以及参数将会被计算（请不要写入任何带副作用的内容）。
+    /// </param>
+    /// <returns>
+    /// 事件编号（用于取消）
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// await EventMgr.Subscribe(
+    ///     DateTime.Now + TimeSpan.FromSeconds(5),
+    ///     () => Console.WriteLine("{0}", Math.Sin(1))
+    /// );
+    /// </code>
+    /// </example>
     public async Task<string> Subscribe(DateTime triggerTime, Expression<Action> callback)
     {
         var id = Guid.NewGuid().ToString();
         var closure = SerializeAction(callback);
-        _db.Events.Add(new Event
+        await using var db = new MgrContext();
+        db.Events.Add(new Event
         {
             Id = id,
             TriggerTime = triggerTime,
             Closure = JsonSerializer.Serialize(closure)
         });
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
         return id;
+    }
+
+    public async Task Cancel(string id)
+    {
+        await using var db = new MgrContext();
+        db.Events.Remove(await db.Events.SingleAsync(e => e.Id == id));
+        await db.SaveChangesAsync();
     }
 
     [Obsolete]
@@ -79,9 +143,9 @@ public class EventMgr : IAsyncDisposable
             call.Object is null ? null : SerializeExpression(call.Object),
             call.Arguments.Select(SerializeExpression).ToList());
     }
-    
-    public async ValueTask DisposeAsync()
+
+    public void Dispose()
     {
-        await _db.DisposeAsync();
+        _timer.Dispose();
     }
 }

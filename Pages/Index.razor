@@ -1,8 +1,6 @@
 ﻿@page "/"
-@using cinima_mgr.Data
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @inject NavigationManager NavigationManager
+@inject EventMgr EventMgr
 
 <PageTitle>主页</PageTitle>
 
@@ -26,6 +24,12 @@
 
 @code
 {
+    static async Task PE()
+    {
+        Console.WriteLine("test");
+        await Global.App.Services.GetService<EventMgr>()!
+            .Subscribe(DateTime.Now + TimeSpan.FromSeconds(5), () => PE());
+    }
     List<Movie> _movies = new();
     protected override async Task OnInitializedAsync()
     {

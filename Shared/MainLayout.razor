@@ -74,6 +74,8 @@
             await InvokeAsync(StateHasChanged);
             return;
         }
+        session.UpdateTime = DateTime.Now;
+        await db.SaveChangesAsync();
         _user = session.User;
         StateCache.User = session.User;
         _loading = false;

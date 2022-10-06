@@ -11,4 +11,5 @@ public class SessionState
     public User User { get; set; }
     
     public DateTime CreateTime { get; set; } = DateTime.Now;
+    public DateTime UpdateTime { get; set; } = DateTime.Now;
 }

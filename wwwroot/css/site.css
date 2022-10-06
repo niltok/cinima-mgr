@@ -26,10 +26,20 @@ a, .btn-link {
     max-width: 800px;
     width: 90%;
     margin: auto;
-    overflow: hidden;
     word-wrap: break-word;
     word-break: break-word;
     color: #18191c;
+}
+
+.form-select {
+    min-width: 200px;
+    display: inline;
+    width: auto;
+}
+
+.form-control {
+    display: inline;
+    width: auto;
 }
 
 .valid.modified:not([type=checkbox]) {

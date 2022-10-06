@@ -3,12 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cinima_mgr.Data;
 
-[Index(nameof(Name), IsUnique = true)]
 public class RoomTemplate
 {
     [Key]
     public string Id { get; set; }
     public string Name { get; set; }
+    /// <summary>
+    /// 0 为停用，1 为启用
+    /// </summary>
+    public int Status { get; set; }
+    public DateTime CreateTime { get; set; }
     /// <summary>
     /// 有多少列
     /// </summary>

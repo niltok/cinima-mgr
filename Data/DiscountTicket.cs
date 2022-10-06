@@ -17,6 +17,7 @@ public class DiscountTicket
     /// null 为未使用
     /// </summary>
     public Order? UsedIn { get; set; } = null;
+    public DateTime ExpireTime { get; set; }
     /// <summary>
     /// 当 Type 为 1 时为满减额度
     /// 当 Type 为 2 时为折扣比率

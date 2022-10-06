@@ -1,0 +1,26 @@
+﻿@using cinima_mgr.Data
+
+<div class="movie-selector">
+    @foreach (var m in Movies)
+    {
+        <div class="item" @onclick="() => MovieChanged.InvokeAsync(m)">
+            <p>
+                <img class=@("movie_cover" + (m == Movie ? " selected-item" : ""))
+                     src=@($"/Movie/Cover/{m.Id}") 
+                     alt=@m.Name/>
+            </p>
+            <p>@m.Name</p>
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public List<Movie> Movies { get; set; } = new();
+    [Parameter]
+    public Movie? Movie { get; set; }
+    [Parameter]
+    public EventCallback<Movie?> MovieChanged { get; set; }
+    
+}

@@ -19,32 +19,40 @@
     {
         <p>
             <label>场次:</label>
-            <select class="form-select selector" @onchange="e => SelectShow(e.Value.ToString())">
+            <select class="form-select" @onchange="e => SelectShow(e.Value.ToString())">
                 <option value="" selected=@(_selectedShow == "")>[新建]</option>
                 @foreach (var s in _showLabel)
                 {
-                    <option value=@s.Key selected=@(_selectedShow == s.Key)>@s.Value</option>
+                    <option value=@s.Item1 selected=@(_selectedShow == s.Item1)>@s.Item2</option>
                 }
             </select>
             <button class="btn btn-primary" @onclick="Submit">@(_selectedShow == "" ? "添加!" : "保存!")</button>
             <span>@_msg</span>
         </p>
         <p>
+            <label>状态:</label>
+            <select class="form-select" @bind="_show.Status">
+                <option value=0>隐藏</option>
+                <option value=1>启用</option>
+                <option value=2>取消</option>
+            </select>
+        </p>
+        <p>
             <label>基准价格:</label>
-            <input type="number" @bind="_show.BasePrice" min="0" step="0.01"/>
+            <input class="form-control" type="number" @bind="_show.BasePrice" min="0" step="0.01"/>
         </p>
         <p>
             <label>放映时间:</label>
-            <input type="datetime-local" @bind="_show.Time"/>
+            <input class="form-control" type="datetime-local" @bind="_show.Time"/>
+            <span> ~ @((_show.Time + _show.Movie.Duration).ToString("HH:mm"))</span>
         </p>
-        <p class="movie-selector">
-            @foreach (var m in _movies)
-            {
-                <div class=@("item " + (m == _show.Movie ? "selected-item" : "")) @onclick="() => _show.Movie = m">
-                    <p><img class="movie_cover" src=@($"/Movie/Cover/{m.Id}") alt=@m.Name/></p>
-                    <p>@m.Name</p>
-                </div>
-            }
+        <p>
+            <label>可购买时间:</label>
+            <input class="form-control" type="datetime-local" @bind="_show.CanBuyAfter"/>
+            <q class="small">状态为启用时未到时间不可购买</q>
+        </p>
+        <p>
+            <MoviePicker Movies="_movies" @bind-Movie="_show.Movie"/>
         </p>
         <p>
             <button @onclick="ResetState" class="btn btn-secondary">重置可用座位至房间状态</button>
@@ -68,17 +76,19 @@
     Dictionary<string, Show> _shows = new();
     string _selectedShow = "";
     Show _show = new ();
-    List<KeyValuePair<string, string>> _showLabel = new();
+    List<(string, string)> _showLabel = new();
 
     List<Movie> _movies = new();
+    readonly string[] _statusLabel = {"[已隐藏]", "", "[已取消]"};
 
     void LoadLabel()
     {
-        _showLabel = _room.Shows.OrderByDescending(s => s.Time).Select(s =>
+        _showLabel = _room.Shows.Where(s => s.Time > DateTime.Now)
+            .OrderByDescending(s => s.Time).Select(s =>
         {
             var st = s.Time.ToString("yyyy-MM-dd HH:mm");
             var et = (s.Time + s.Movie.Duration).ToString("HH:mm");
-            return new KeyValuePair<string, string>(s.Id, $"{st} => {et}");
+            return (s.Id, $"{st} ~ {et} {_statusLabel[s.Status]}");
         }).ToList();
     }
     
@@ -98,6 +108,7 @@
             .OrderByDescending(m => m.ReleaseDate)
             .ToListAsync();
         _rooms = await _db.RoomTemplates
+            .Where(r => r.Status == 1)
             .Include(r => r.Shows)
             .ToDictionaryAsync(r => r.Name);
         if (_rooms.Count > 0)
@@ -115,7 +126,9 @@
                 PosState = _room.PosState,
                 Room = _room,
                 Movie = _movies.First(),
-                BasePrice = 0
+                BasePrice = 0,
+                CanBuyAfter = DateTime.Now,
+                Status = 0
             };
         }
     }
@@ -130,6 +143,7 @@
         _room = _rooms.ContainsKey(s) ? _rooms[s] : null;
         _shows = _room.Shows.ToDictionary(s => s.Id);
         LoadLabel();
+        _selectedShow = "";
         _show = new Show
         {
             Id = Guid.NewGuid().ToString(),
@@ -137,7 +151,9 @@
             PosState = _room.PosState,
             Room = _room,
             Movie = _movies.First(),
-            BasePrice = 0
+            BasePrice = 0,
+            CanBuyAfter = DateTime.Now,
+            Status = 0
         };
     }
 
@@ -152,7 +168,9 @@
             PosState = _room.PosState,
             Room = _room,
             Movie = _movies.First(),
-            BasePrice = 0
+            BasePrice = 0,
+            CanBuyAfter = DateTime.Now,
+            Status = 0
         };
     }
 
@@ -167,7 +185,7 @@
             {
                 var st = conflict.Time.ToString("yyyy-MM-dd HH:mm");
                 var et = (conflict.Time + conflict.Movie.Duration).ToString("HH:mm");
-                _msg = $"时间冲突 {st} => {et}";
+                _msg = $"时间冲突 {st} ~ {et}";
                 return;
             }
             if (_selectedShow == "")

@@ -12,7 +12,7 @@
 {
     <div>
         <p> 订单号: @_order.Id </p>
-        <p> 用户名: @StateCache.User.Name </p>
+        <p> 用户名: @_order.User.Name </p>
         <p> 电影名称: @show.Movie.Name </p>
         <p> 日期: @show.Time.ToString("MM月dd日") </p>
         @{ var _tempinfo = show.Time.ToString("hh:mm ~ ") + (show.Time + show.Movie.Duration).ToString("hh:mm"); }
@@ -30,17 +30,19 @@
     
     <EditForm Model="model">
         <div>
-            <InputSelect TValue="DiscountTicket" @bind-Value="">
-                
-                <option></option>
-            </InputSelect>
+            @* <InputSelect TValue="DiscountTicket" @bind-Value="_selectedDT"> *@
+            @*     @foreach (var i in _discounttickets) *@
+            @*     { *@
+            @*         <option value="@i" > @i.Name </option> *@
+            @*     } *@
+            @* </InputSelect> *@
         </div><br/>
     </EditForm>
 }else if ( OrderType == 1 )
 {
     <div>
         <p> 订单号: @_order.Id </p>
-        <p> 用户名: @StateCache.User.Name </p>
+        <p> 用户名: @_order.User.Name </p>
         <p> 购买时长: @Days 天 </p>
         @* todo: 购买会员价格  *@
         <p> 支付金额: ？元 </p>
@@ -69,6 +71,8 @@
     };
 
     public List<string> _pos = new List<string>();
+    public List<DiscountTicket> _discounttickets = new List<DiscountTicket>();
+    public DiscountTicket _selectedDT;
 
     public Show show;
 
@@ -101,25 +105,28 @@
             await using var db = new MgrContext();
             show = (await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).Include(t => t.Movie).ToListAsync()).ToList().First();
             int cnt = 0;
-            foreach (var i in PosSelecition.ToCharArray())
-            {
-                if (i == '3')
-                {
-                    db.Tickets.Add(
-                        new()
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Order = _order,
-                            Show = show,
-                            // todo: 更改票状态
-                            Status = 0,
-                            Row = show.Room.Height,
-                            Column = show.Room.Width
-                        }) ;
-                    _pos.Add($"{cnt / show.Room.Width + 1}排{cnt % show.Room.Width + 1}座");
-                }
-                cnt++;
-            }
+            // foreach (var i in PosSelecition.ToCharArray())
+            // {
+            //     Ticket ticket = new()
+            //     {
+            //         Id = Guid.NewGuid().ToString(),
+            //         Order = _order,
+            //         Show = show,
+            //         
+            //         // todo: 更改票状态
+            //         
+            //         Status = 0,
+            //         Row = show.Room.Height,
+            //         Column = show.Room.Width
+            //     };
+            //     if (i == '3')
+            //     {
+            //         db.Tickets.Add(ticket) ;
+            //         _pos.Add($"{cnt / show.Room.Width + 1}排{cnt % show.Room.Width + 1}座");
+            //     }
+            //     _order.Tickets.Add(ticket);
+            //     cnt++;
+            // }
         }else if (OrderType == 1)
         {
             _order.Days = Days;

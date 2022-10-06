@@ -9,38 +9,39 @@
 <PageTitle> 场次信息 </PageTitle>
 
 <h3>ShowInfo</h3>
-
+@* todo: 选择电影  *@
 <main>
+    <MoviePicker></MoviePicker>
     <EditForm Model="model">
-    <div class="top-row px-4">
-        <InputRadioGroup ValueChanged="((DateTime dt) => FlashShowsInfoEvent(dt))"
-                         ValueExpression="() => _selectedday"
-                         Value="_selectedday">
-            @foreach (var i in _daysinfo)
-            {
-                <InputRadio Value="@i"/>
-                <label> @i.ToString("MM月dd日") </label>
-            }
-        </InputRadioGroup><br/>
-        <InputRadioGroup ValueChanged="(string st) => FindSelectedShow(st)"
-                         ValueExpression="() => _selectedshowId"
-                         Value="_selectedshowId">
-            @foreach (var i in _showsinfo)
-            {
-                var _printime = i.Time.ToString("HH:mm") + " ~ " + (i.Time + i.Movie.Duration).ToString("HH:mm");
-                <InputRadio Value="@i.Id"/>
-                <label> @_printime </label>
-            }
-        </InputRadioGroup><br/>
-    </div><br>
+        <div class="top-row px-4">
+            <InputRadioGroup ValueChanged="((DateTime dt) => FlashShowsInfoEvent(dt))"
+                             ValueExpression="() => _selectedday"
+                             Value="_selectedday">
+                @foreach (var i in _daysinfo)
+                {
+                    <InputRadio Value="@i"/>
+                    <label> @i.ToString("MM月dd日") </label>
+                }
+            </InputRadioGroup><br/>
+            <InputRadioGroup ValueChanged="(string st) => FindSelectedShow(st)"
+                             ValueExpression="() => _selectedshowId"
+                             Value="_selectedshowId">
+                @foreach (var i in _showsinfo)
+                {
+                    var _printime = i.Time.ToString("HH:mm") + " ~ " + (i.Time + i.Movie.Duration).ToString("HH:mm");
+                    <InputRadio Value="@i.Id"/>
+                    <label> @_printime </label>
+                }
+            </InputRadioGroup><br/>
+        </div><br>
     </EditForm>
     <div>
         @if (_selectedshowId != null)
         {
             <div style="max-width: 500px; width: 80%">
-                <SitPicker @bind-PosState="_selectedshow.PosState" 
-                           Height="_selectedshow.Room.Height" 
-                           Width="_selectedshow.Room.Width" 
+                <SitPicker @bind-PosState="_selectedshow.PosState"
+                           Height="_selectedshow.Room.Height"
+                           Width="_selectedshow.Room.Width"
                            State1="'0'" State2="'3'"/>
             </div>
             <div>
@@ -84,7 +85,7 @@
             NavigationManager.NavigateTo("/Login");
             return;
         }
-        
+        // todo: show canceled disabled or canbuyafter
         await using var db = new MgrContext();
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())

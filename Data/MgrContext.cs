@@ -13,6 +13,7 @@ public class MgrContext : DbContext
     public DbSet<Person> People { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<SessionState> Sessions { get; set; }
+    public DbSet<Order> Orders { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlite($"Data Source={Path.Join(Environment.CurrentDirectory, "app.db")}");

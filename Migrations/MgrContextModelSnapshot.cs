@@ -163,25 +163,25 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CancelTime")
+                    b.Property<DateTime?>("CancelTime")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Days")
+                    b.Property<int?>("Days")
                         .HasColumnType("INTEGER");
 
                     b.Property<double>("OriginalPrice")
                         .HasColumnType("REAL");
 
-                    b.Property<DateTime>("PayTime")
+                    b.Property<DateTime?>("PayTime")
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Price")
                         .HasColumnType("REAL");
 
-                    b.Property<DateTime>("RefundTime")
+                    b.Property<DateTime?>("RefundTime")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("State")
@@ -317,6 +317,9 @@ namespace cinima_mgr.Migrations
                     b.Property<int>("Column")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatTime")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("OrderId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -330,6 +333,9 @@ namespace cinima_mgr.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UsedTime")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
                         .HasColumnType("TEXT");

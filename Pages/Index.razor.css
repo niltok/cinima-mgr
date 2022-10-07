@@ -4,6 +4,11 @@
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
     border-radius: 5%;
+    transition: box-shadow .15s ease-in-out;
+}
+
+.movie_cover:hover {
+    box-shadow: 0 0 8px 6px rgb(13 110 253 / 50%);
 }
 
 .item {

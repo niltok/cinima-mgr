@@ -19,7 +19,7 @@
 .movie-info-container {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    grid-gap: 10px;
+    grid-gap: 1rem;
     width: 100%;
     margin-bottom: 2rem;
 }
@@ -37,6 +37,10 @@
 .movie-cover {
     width: 100%;
     height: auto;
+    box-shadow: 0 0 0 1px #ced4da;
+    outline: 0;
+    border-radius: 5%;
+    transition: box-shadow .15s ease-in-out;
 }
 
 .comment-add {
@@ -47,7 +51,7 @@
             "e e e";
     grid-template-columns: 50px 1fr 70px;
     grid-template-rows: 30px 1fr auto;
-    grid-gap: 10px;
+    grid-gap: 1rem;
     margin-bottom: 2rem;
     align-items: center;
 }

@@ -1,6 +1,7 @@
 ﻿@page "/Movie/Info/{Id:guid}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
+@using Markdig
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
 @inject StateCache StateCache
@@ -18,24 +19,36 @@
                 <img class="movie-cover" src=@($"/Movie/Cover/{Id}")/>
                 <div class="movie-detail-container">
                     <div>
-                        <h4><b>@_movie.Name</b></h4>
-                        <p>
+                        <h3>
+                            <b>@_movie.Name</b>
+                            <small class="text-secondary px-1">(@(_movie.ReleaseDate.ToString("yyyy-M")))</small>
+                        </h3>
+                        <div>
                             <small class="text-secondary">
-                                <span>@((int)Math.Round(_movie.Duration.TotalMinutes)) 分钟</span>
-                                <span class="px-3">@_movie.Type</span>
+                                @if (_movie.Duration == TimeSpan.Zero)
+                                {
+                                    <span>时长未知</span>
+                                }
+                                else
+                                {
+                                    <span>@_movie.Duration.TotalMinutes 分钟</span>
+                                }
+                                <span class="px-2">@_movie.Type</span>
                             </small>
+                        </div>
+                        <p>
+                            @if (_movie.RateCount == 0)
+                            {
+                                <small>暂无评分</small>
+                            }
+                            else
+                            {
+                                <small>
+                                    评分: @((_movie.RateSum / _movie.RateCount).ToString("N")) (@_movie.RateCount)
+                                </small>
+                            }
                         </p>
-                        @if (_movie.RateCount == 0)
-                        {
-                            <p><small>暂无评分</small></p>
-                        }
-                        else
-                        {
-                            <p><small>
-                                评分: @((_movie.RateSum / _movie.RateCount).ToString("N")) (@_movie.RateCount)
-                            </small></p>
-                        }
-                        <p>@_movie.Introduction</p>
+                        <div>@(new MarkupString(Markdown.ToHtml(_movie.Introduction, _pipeline)))</div>
                     </div>
                     <button class="btn-primary btn" style="align-self: start">
                         @(_movie.ReleaseDate > DateTime.Now ? "预定" : "购票")
@@ -58,7 +71,8 @@
                     <input class="form-control" 
                            type="number" @bind="_comment.Rate" 
                            max="10" step="0.01" min="0" style="grid-area: b;"/>
-                    <textarea class="form-control" @bind="_comment.Content" style="grid-area: c;"></textarea>
+                    <textarea class="form-control" @bind="_comment.Content" style="grid-area: c; height: 150px;">
+                    </textarea>
                     <button @onclick="AddComment" 
                             disabled="@_processing" 
                             style="grid-area: d; align-self: self-end;" 
@@ -76,7 +90,7 @@
                             <b>@c.User.Name</b>
                             <small class="text-secondary px-3">评分: @c.Rate.ToString("N")</small>
                         </div>
-                        <p>@c.Content</p>
+                        <p>@(new MarkupString(Markdown.ToHtml(c.Content, _pipeline)))</p>
                     </div>
                 }
             </div>
@@ -100,6 +114,12 @@
     string _btnName = "";
     bool _processing = false;
     string _msg = "";
+    MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
+        .DisableHtml()
+        .UseSoftlineBreakAsHardlineBreak()
+        .UseAutoLinks()
+        .UseEmojiAndSmiley()
+        .Build();
     
     async Task Init(MgrContext db)
     {

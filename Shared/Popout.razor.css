@@ -20,6 +20,8 @@
     max-height: 70%;
     overflow: auto;
     width: fit-content;
+    box-shadow: 0 0 12px 3px rgb(0 0 0 / 50%);
+    border-radius: 10px;
 }
 
 @media (max-width: 641px) {

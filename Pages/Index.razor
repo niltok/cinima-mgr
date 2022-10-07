@@ -5,22 +5,35 @@
 <PageTitle>主页</PageTitle>
 
 
-<h1 style="margin-bottom: 20px; margin-top: 20px">欢迎来到喵票票</h1>
+<h1 style="margin: 3rem;">欢迎来到喵票票</h1>
 
 <div class="container-index">
     @foreach (var m in _movies)
     {
         <div class="item">
             <p>
-                <img class="movie_cover" 
-                     src=@($"/Movie/Cover/{m.Id}") 
-                     alt=@($"Cover of {m.Name}") @onclick="() => Pop(m.Id)"/>
+                <NavLink href=@($"/Movie/Info/{m.Id}")>
+                    <img class="movie_cover"
+                         src=@($"/Movie/Cover/{m.Id}")
+                         alt=@($"Cover of {m.Name}")/>
+                </NavLink>
             </p>
             <div>
-                <h3><NavLink href=@($"/Movie/Info/{m.Id}")>@m.Name</NavLink></h3>
-                <h6>@m.Type</h6>
-                <p>时长：@m.Duration.TotalMinutes 分钟</p>
-                <p>上映时间：@m.ReleaseDate.ToString("yyyy-M-d")</p>
+                <h3>
+                    <b>@m.Name</b>
+                    <small class="text-secondary px-1">(@(m.ReleaseDate.ToString("yyyy-M")))</small>
+                </h3>
+                <p class="text-secondary">
+                    @if (m.Duration == TimeSpan.Zero)
+                    {
+                        <span>时长未知</span>
+                    }
+                    else
+                    {
+                        <span>@m.Duration.TotalMinutes 分钟</span>
+                    }
+                    <span class="px-2">@m.Type</span>
+                </p>
                 @* <p>@m.Introduction</p> *@
                 <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn" @onclick="() => ToShowInfo(m.Id)">
                     @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")

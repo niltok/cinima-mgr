@@ -55,16 +55,20 @@
                  src=@($"/Movie/Cover/{_movie.Id}") 
                  alt=@($"Cover of {_movie.Name}")/>
         }
-        <InputFile OnChange="UploadFile"></InputFile>
+        <InputFile class="px-2" OnChange="UploadFile"></InputFile>
     </p>
     <p>
-        <button class="btn-primary btn" @onclick="AddMovieEvent">添加!</button>
+        <button class="btn-primary btn" @onclick="AddMovieEvent" disabled="@(_status != 0)">
+            @(_status == 2 ? "文件上传中..." : _selected == "" ? "添加!" : "修改!")
+        </button>
     </p>
 </div>
 
 <Popout @bind-Enable="_msgbox">
-    <p>@_msg</p>
-    <p><button class="btn" @onclick="() => _msgbox = true">关闭</button></p>
+    <div style="display: flex; flex-direction: column; align-items: center">
+        <span style="margin: 3rem">@_msg</span>
+        <button class="btn btn-primary" @onclick="() => _msgbox = true">关闭</button>
+    </div>
 </Popout>
 
 @code {
@@ -73,6 +77,7 @@
     bool _msgbox;
     string _msg = "";
     int _duration = 0;
+    int _status = 0;
     Movie _movie = new()
     {
         Id = Guid.NewGuid().ToString(),
@@ -91,10 +96,18 @@
 
     async Task LoadLabel()
     {
+        if (_status != 0)
+        {
+            _msg = "Busyyyyyyyyyy!!!";
+            _msgbox = true;
+            return;
+        }
+        _status = 1;
         _movies = await _db.Movies.ToDictionaryAsync(m => m.Id);
         _label = _movies.Values
             .Select(m => (m.Id, $"{m.Name}({m.ReleaseDate:yyyy-M}){m.StatusLabel()}"))
             .ToList();
+        _status = 0;
     }
 
     protected override async Task OnInitializedAsync()
@@ -105,7 +118,15 @@
 
     async Task SelectMovie(string s)
     {
+        if (_status != 0)
+        {
+            _msg = "Busyyyyyyyyyy!!!";
+            _msgbox = true;
+            return;
+        }
+        _status = 1;
         if (_selected != "") await _db.Entry(_movie).ReloadAsync();
+        _status = 0;
         _selected = s;
         _movie = _movies.GetValueOrDefault(s) ?? new Movie
         {
@@ -124,6 +145,13 @@
     async Task UploadFile(InputFileChangeEventArgs e)
     {
         if (e.FileCount == 0) return;
+        if (_status != 0)
+        {
+            _msg = "Busyyyyyyyyyy!!!";
+            _msgbox = true;
+            return;
+        }
+        _status = 2;
         var ms = new MemoryStream();
         try
         {
@@ -139,25 +167,45 @@
             _msg = ex.Message;
             _msgbox = true;
         }
+        _status = 0;
     }
 
     async Task AddMovieEvent()
     {
         _movie.Duration = TimeSpan.FromMinutes(_duration);
+        if (_movie.Name == "")
+        {
+            _msg = "电影名不能为空";
+            _msgbox = true;
+            return;
+        }
+        if (_movie.CoverImg is null)
+        {
+            _msg = "封面不能为空";
+            _msgbox = true;
+            return;
+        }
+        if (_status != 0)
+        {
+            _msg = "Busyyyyyyyyyy!!!";
+            _msgbox = true;
+            return;
+        }
+        _status = 1;
         if (_selected == "")
         {
             _db.Movies.Add(_movie);
         }
         await _db.SaveChangesAsync();
+        _status = 0;
         await LoadLabel();
-        _selected = _movie.Id;
-        _msg = $"添加成功 {_movie.Name}";
+        _msg = (_selected == "" ? "添加" : "修改") + "成功 " + _movie.Name;
         _msgbox = true;
+        _selected = _movie.Id;
     }
 
     public async ValueTask DisposeAsync()
     {
         await _db.DisposeAsync();
     }
-
 }

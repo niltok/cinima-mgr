@@ -33,6 +33,7 @@ public class Movie
 
     public string Preview { get; set; }
     
+    // TODO: 移出 Movie，不然在大量创建 Movie 时很影响性能
     public byte[] CoverImg { get; set; }
 
     public List<Show> Shows { get; set; }

@@ -1,0 +1,96 @@
+﻿@page "/MovieMgr"
+
+<PageTitle>添加电影</PageTitle>
+
+<EditForm Model="_movie">
+    <p>
+        <label>
+            名称:
+            <InputText @bind-Value="_movie.Name"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            类型:
+            <InputText @bind-Value="_movie.Type"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            简介:
+            <InputTextArea @bind-Value="_movie.Introduction"></InputTextArea>
+        </label>
+    </p>
+    <p>
+        <label>
+            时长:
+            <input type="number" @bind="_duration"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            上映日期:
+            <InputDate TValue="DateTime" @bind-Value="_movie.ReleaseDate"/>
+        </label>
+    </p>
+    <p>
+        <label>
+            图片:
+            <InputFile OnChange="UploadFile"></InputFile>
+        </label>
+    </p>
+    <p>
+        <button class="btn-primary btn" @onclick="AddMovieEvent">添加!</button>
+        <span class="px-3">@_msg</span>
+    </p>
+</EditForm>
+
+@code {
+    string _msg = "";
+    int _duration = 0;
+    Movie _movie = new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Name = "",
+        BoxOffice = 0,
+        Type = "",
+        Introduction = "",
+        ReleaseDate = DateTime.Today
+    };
+
+    async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount == 0) return;
+        var ms = new MemoryStream();
+        try
+        {
+            _msg = "文件上传中";
+            await e.File.OpenReadStream(5 * 1024 * 1024).CopyToAsync(ms);
+            _movie.CoverImg = ms.ToArray();
+            _msg = "文件上传成功";
+        }
+        catch (Exception ex)
+        {
+            _msg = ex.Message;
+        }
+    }
+
+    async Task AddMovieEvent()
+    {
+        await using var db = new MgrContext();
+        _movie.Duration = TimeSpan.FromMinutes(_duration);
+        db.Movies.Add(_movie);
+        await db.SaveChangesAsync();
+        _msg = $"添加成功 {_movie.Name}";
+        _movie = new Movie
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            BoxOffice = 0,
+            Type = "",
+            Introduction = "",
+            CoverImg = null,
+            ReleaseDate = DateTime.Today
+        };
+    }
+}

@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<div class="container-center">
+<div class="container-form">
     <p>
         <label>房间:</label>
         <select class="form-select selector" @onchange="e => SelectRoom(e.Value?.ToString())">
@@ -27,8 +27,6 @@
                     <option value=@s.Item1 selected=@(_selectedShow == s.Item1)>@s.Item2</option>
                 }
             </select>
-            <button class="btn btn-primary" @onclick="Submit">@(_selectedShow == "" ? "添加!" : "保存!")</button>
-            <span>@_msg</span>
         </p>
         <p>
             <label>状态:</label>
@@ -55,20 +53,26 @@
         <p>
             <MoviePicker Movies="_movies" @bind-Movie="_show.Movie"/>
         </p>
-        <p>
+        <p style="line-height: 3rem">
             <button @onclick="ResetState" class="btn btn-secondary">重置可用座位至房间状态</button>
             <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
         </p>
         <p>
-            <div style="width: 100%">
+            <span style="display: flex; justify-content: center;">
                 <SitPicker @bind-PosState="_show.PosState" Height="_room.Height" Width="_room.Width" Dev="true"/>
-            </div>
+            </span>
+        </p>
+        <p>
+            <button class="btn btn-primary" @onclick="Submit">@(_selectedShow == "" ? "添加!" : "保存!")</button>
+        </p>
+        <p>
+            <span>@_msg</span>
         </p>
     }
 </div>
 
 @code {
-    MgrContext _db;
+    MgrContext _db = new();
     string _msg = "";
 
     Dictionary<string, RoomTemplate> _rooms = new();
@@ -103,7 +107,6 @@
             return;
         }
 
-        _db = new MgrContext();
         _movies = await _db.Movies
             .Include(m => m.Shows)
             .OrderByDescending(m => m.ReleaseDate)

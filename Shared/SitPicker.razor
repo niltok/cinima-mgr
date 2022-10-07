@@ -4,7 +4,10 @@
 @using System.Collections
 
 <div class="sitpicker-container" 
-     style="grid-template-rows: repeat(@Height, 1fr); grid-template-columns: repeat(@Width, 1fr)">
+     style="grid-template-rows: repeat(@Height, 1fr); 
+            grid-template-columns: repeat(@Width, 1fr); 
+            max-height: @(Height * 50)px; 
+            max-width: @(Width * 50)px;">
     @foreach (var i in Enumerable.Range(0, Height))
     {
         @foreach (var j in Enumerable.Range(0, Width))

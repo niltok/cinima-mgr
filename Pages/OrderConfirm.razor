@@ -132,7 +132,6 @@
                         Show = show,
                         CreatTime = DateTime.Now,
                         // todo: 更改票状态
-                    
                         Status = 0,
                         Row = cnt / show.Room.Width + 1,
                         Column = cnt % show.Room.Width + 1
@@ -147,6 +146,7 @@
             }
             show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
                 Include(t => t.Movie).SingleAsync();
+            // string testst = new string(_posstate);
             foreach (var i in _order.Tickets)
             {
                 if (show.PosState[(i.Row - 1) * show.Room.Width + (i.Column - 1)] != '0')
@@ -155,7 +155,6 @@
                     return;
                 }
             }
-            // todo: change PosState
             show.PosState = new string(_posstate);
             await db.SaveChangesAsync();
             _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();

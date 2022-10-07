@@ -5,7 +5,7 @@
     {
         <div class="item">
             <p>
-                <img class=@("movie_cover" + (m == Movie ? " selected-item" : ""))
+                <img class=@("movie_cover" + (m.Id == Movie?.Id ? " selected-item" : ""))
                      src=@($"/Movie/Cover/{m.Id}") 
                      alt=@m.Name @onclick="() => MovieChanged.InvokeAsync(m)"/>
             </p>

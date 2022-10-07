@@ -10,6 +10,9 @@
 .item {
     width: 100px;
     margin: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .movie_cover:hover:not(.selected-item) {
@@ -22,11 +25,10 @@
 
 .movie-selector {
     width: 100%;
-    display: flex;
+    display: grid;
     flex-wrap: nowrap;
     overflow-x: auto;
     flex-direction: row;
-    justify-content: flex-start;
-    align-content: flex-start;
-    align-items: flex-start;
+    grid-auto-flow: column;
+    justify-content: start;
 }

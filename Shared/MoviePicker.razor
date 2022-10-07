@@ -3,13 +3,16 @@
 <div class="movie-selector">
     @foreach (var m in Movies)
     {
-        <div class="item" @onclick="() => MovieChanged.InvokeAsync(m)">
+        <div class="item">
             <p>
                 <img class=@("movie_cover" + (m == Movie ? " selected-item" : ""))
                      src=@($"/Movie/Cover/{m.Id}") 
-                     alt=@m.Name/>
+                     alt=@m.Name @onclick="() => MovieChanged.InvokeAsync(m)"/>
             </p>
-            <p>@m.Name</p>
+            <div>
+                <div>@m.Name</div>
+                <div><small>时长: @m.Duration.TotalMinutes 分钟</small></div>
+            </div>
         </div>
     }
 </div>

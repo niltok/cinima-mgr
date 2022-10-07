@@ -31,11 +31,29 @@ public class Movie
 
     public ICollection<Person> Persons { get; set; }
 
-    public string? Preview { get; set; }
+    public string Preview { get; set; }
     
     public byte[] CoverImg { get; set; }
 
     public List<Show> Shows { get; set; }
     
     public List<Comment> Comments { get; set; }
+    
+}
+
+public static class MovieHelper
+{
+    
+    static readonly string[] _statusLabel = {"[已隐藏]", "[在映]", "[未上映]"};
+
+    public static string StatusLabel(this Movie m)
+    {
+        return m.Status switch
+        {
+            1 when m.ReleaseDate > DateTime.Now => "[待映]",
+            2 when m.ReleaseDate < DateTime.Now => "[已下映]",
+            _ => _statusLabel[m.Status]
+        };
+    }
+    
 }

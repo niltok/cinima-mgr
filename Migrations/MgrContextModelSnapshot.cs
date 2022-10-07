@@ -105,6 +105,8 @@ namespace cinima_mgr.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TriggerTime");
+
                     b.ToTable("Events");
                 });
 
@@ -132,6 +134,7 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Preview")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("RateCount")
@@ -195,7 +198,7 @@ namespace cinima_mgr.Migrations
 
                     b.HasIndex("UserName");
 
-                    b.ToTable("Order");
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Person", b =>
@@ -315,6 +318,7 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("OrderId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Row")
@@ -460,7 +464,9 @@ namespace cinima_mgr.Migrations
                 {
                     b.HasOne("cinima_mgr.Data.Order", "Order")
                         .WithMany("Tickets")
-                        .HasForeignKey("OrderId");
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("cinima_mgr.Data.Show", "Show")
                         .WithMany("Tickets")

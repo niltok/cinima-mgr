@@ -1,51 +1,76 @@
 ﻿@page "/MovieMgr"
+@implements IAsyncDisposable
 
-<PageTitle>添加电影</PageTitle>
+<PageTitle>管理电影</PageTitle>
 
-<EditForm Model="_movie">
+<div class="container-form">
     <p>
-        <label>
-            名称:
-            <InputText @bind-Value="_movie.Name"/>
-        </label>
+        <label>电影:</label>
+        <select class="form-select" @onchange="e => SelectMovie((string) e.Value)">
+            <option value="" selected=@(_selected == "")>[新建]</option>
+            @foreach (var m in _label)
+            {
+                <option value=@m.Item1 selected=@(_selected == m.Item1)>@m.Item2</option>
+            }
+        </select>
     </p>
     <p>
-        <label>
-            类型:
-            <InputText @bind-Value="_movie.Type"/>
-        </label>
+        <label class="form-label">名称:</label>
+        <input class="form-control" type="text" @bind="_movie.Name"/>
     </p>
     <p>
-        <label>
-            简介:
-            <InputTextArea @bind-Value="_movie.Introduction"></InputTextArea>
-        </label>
+        <label>状态:</label>
+        <select class="form-select" @bind="_movie.Status">
+            <option value=0>已隐藏</option>
+            <option value=1>在映</option>
+            <option value=2>不在映</option>
+        </select>
+        <q><small>未到上映日期的在映电影显示为待映</small></q>
     </p>
     <p>
-        <label>
-            时长:
-            <input type="number" @bind="_duration"/>
-        </label>
+        <label>类型:</label>
+        <input class="form-control" type="text" @bind="_movie.Type"/>
     </p>
     <p>
-        <label>
-            上映日期:
-            <InputDate TValue="DateTime" @bind-Value="_movie.ReleaseDate"/>
-        </label>
+        <label>简介:</label>
+        <textarea class="form-control" @bind="_movie.Introduction" style="height: 300px"></textarea>
     </p>
     <p>
-        <label>
-            图片:
-            <InputFile OnChange="UploadFile"></InputFile>
-        </label>
+        <label>时长(分钟):</label>
+        <input class="form-control" type="number" @bind="_duration"/>
+    </p>
+    <p>
+        <label>上映日期:</label>
+        <input class="form-control" type="date" @bind="_movie.ReleaseDate"/>
+    </p>
+    <p>
+        <label>预告片:</label>
+        <input class="form-control" type="text" @bind="_movie.Preview"/>
+    </p>
+    <p>
+        <label>图片:</label>
+        @if (_movie.CoverImg is not null)
+        {
+            <img class="movie_cover" 
+                 src=@($"/Movie/Cover/{_movie.Id}") 
+                 alt=@($"Cover of {_movie.Name}")/>
+        }
+        <InputFile OnChange="UploadFile"></InputFile>
     </p>
     <p>
         <button class="btn-primary btn" @onclick="AddMovieEvent">添加!</button>
-        <span class="px-3">@_msg</span>
     </p>
-</EditForm>
+</div>
+
+<Popout @bind-Enable="_msgbox">
+    <p>@_msg</p>
+    <p><button class="btn" @onclick="() => _msgbox = true">关闭</button></p>
+</Popout>
 
 @code {
+    MgrContext _db = new();
+
+    bool _msgbox;
     string _msg = "";
     int _duration = 0;
     Movie _movie = new()
@@ -55,8 +80,46 @@
         BoxOffice = 0,
         Type = "",
         Introduction = "",
-        ReleaseDate = DateTime.Today
+        ReleaseDate = DateTime.Today,
+        Status = 0,
+        Preview = ""
     };
+
+    Dictionary<string, Movie> _movies = new();
+    List<(string, string)> _label = new();
+    string _selected = "";
+
+    async Task LoadLabel()
+    {
+        _movies = await _db.Movies.ToDictionaryAsync(m => m.Id);
+        _label = _movies.Values
+            .Select(m => (m.Id, $"{m.Name}({m.ReleaseDate:yyyy-M}){m.StatusLabel()}"))
+            .ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadLabel();
+    }
+
+    async Task SelectMovie(string s)
+    {
+        if (_selected != "") await _db.Entry(_movie).ReloadAsync();
+        _selected = s;
+        _movie = _movies.GetValueOrDefault(s) ?? new Movie
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            BoxOffice = 0,
+            Type = "",
+            Introduction = "",
+            ReleaseDate = DateTime.Today,
+            Status = 0,
+            Preview = ""
+        };
+        _duration = (int)_movie.Duration.TotalMinutes;
+    }
 
     async Task UploadFile(InputFileChangeEventArgs e)
     {
@@ -65,32 +128,36 @@
         try
         {
             _msg = "文件上传中";
+            _msgbox = true;
             await e.File.OpenReadStream(5 * 1024 * 1024).CopyToAsync(ms);
             _movie.CoverImg = ms.ToArray();
             _msg = "文件上传成功";
+            _msgbox = true;
         }
         catch (Exception ex)
         {
             _msg = ex.Message;
+            _msgbox = true;
         }
     }
 
     async Task AddMovieEvent()
     {
-        await using var db = new MgrContext();
         _movie.Duration = TimeSpan.FromMinutes(_duration);
-        db.Movies.Add(_movie);
-        await db.SaveChangesAsync();
-        _msg = $"添加成功 {_movie.Name}";
-        _movie = new Movie
+        if (_selected == "")
         {
-            Id = Guid.NewGuid().ToString(),
-            Name = "",
-            BoxOffice = 0,
-            Type = "",
-            Introduction = "",
-            CoverImg = null,
-            ReleaseDate = DateTime.Today
-        };
+            _db.Movies.Add(_movie);
+        }
+        await _db.SaveChangesAsync();
+        await LoadLabel();
+        _selected = _movie.Id;
+        _msg = $"添加成功 {_movie.Name}";
+        _msgbox = true;
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _db.DisposeAsync();
+    }
+
 }

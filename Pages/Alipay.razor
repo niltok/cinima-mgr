@@ -1,0 +1,21 @@
+﻿@page "/pay"
+@using cinima_mgr.Ali
+@using cinima_mgr.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Windows
+
+@convertedMarkdown
+
+@code {
+    private MarkupString convertedMarkdown;
+    [Parameter]
+    public bool Enable { get; set; } = false;
+    protected override void OnParametersSet()
+    {
+        //if (!Enable) return;
+        AlipayConfig m = new AlipayConfig();
+        string res=m.Index();
+        //var html = Markdig.Markdown.ToHtml(Text ?? "");
+        convertedMarkdown = (MarkupString)res; 
+    }
+}

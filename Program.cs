@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using cinima_mgr;
 using cinima_mgr.Data;
 using cinima_mgr.Service;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,9 @@ builder.Services.AddScoped<StateCache>();
 builder.Services.AddSingleton<EventMgr>();
 builder.Services.AddSession();
 
-var app = builder.Build();
+Global.App = builder.Build();
+
+var app = Global.App;
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

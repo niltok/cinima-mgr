@@ -3,6 +3,7 @@ using Aop.Api;
 using Aop.Api.Domain;
 using Aop.Api.Request;
 using Aop.Api.Response;
+using Aop.Api.Util;
 using Newtonsoft.Json;
 
 namespace cinima_mgr.Ali;
@@ -92,15 +93,15 @@ public class AlipayConfig
 
     public string Index()
     {
-        DefaultAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
+        IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
         //金额格式必须是小数点后两位数或是正整数且不是金额格式（即$123.00），以及非常重要的一个原则，传递的参数要么不传递这个参数（即传递的众多参数中，这个参数完全不存在
         AlipayTradePagePayModel model = AlipayConfig.creatModel("9.90", "测试商品", "测试商品支付");
         
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
         //支付成功的回调地址
-        request.SetReturnUrl("");
+        request.SetReturnUrl("https://localhost:7220/");
         // 设置异步通知接收地址，需要公网能够访问
-        request.SetNotifyUrl("xxxxxxxxxx");
+        request.SetNotifyUrl("");
         // 将业务model载入到request
         request.SetBizModel(model);
         //String form = client.pageExecute(request).Body;//调用SDK生成表单
@@ -123,75 +124,79 @@ public class AlipayConfig
         }
 
     }
-    /*
-    public void notify()
+
+
+    public string Refund(string out_trade_no,string price)
     {
-        Dictionary<string, string> sArray = GetRequestPost();
-        if (sArray.Count > 0)
+        IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
+        // 商户订单号，和交易号不能同时为空
+        //string out_trade_no = WIDout_trade_no.Text.Trim();
+
+        // 支付宝交易号，和商户订单号不能同时为空
+        
+
+        // 退款金额，不能大于订单总金额
+        string refund_amount = price;
+
+        // 退款原因
+        string refund_reason = "正常退款";
+
+        // 退款单号，同一笔多次退款需要保证唯一，部分退款该参数必填。
+        //string out_request_no = WIDout_request_no.Text.Trim();
+
+        AlipayTradeRefundModel model = new AlipayTradeRefundModel();
+        model.OutTradeNo = out_trade_no;
+        //model.TradeNo = trade_no;
+        model.RefundAmount = refund_amount;
+        model.RefundReason = refund_reason;
+        //model.OutRequestNo = out_request_no;
+
+        AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
+        request.SetBizModel(model);
+
+        AlipayTradeRefundResponse response = null;
+        try
         {
-
-
-            //调用SDK验签方法
-            bool signVerified = AlipaySignature.RSACheckV1(sArray, AlipayConfig.alipayPublicKey, AlipayConfig.charset);
-            //此判断结果中书写业务逻辑代码
-            if (signVerified)   //验证支付发过来的消息，签名是否正确
-            {
-                //商户订单号
-                string out_trade_no = Request.Form["out_trade_no"];
-
-                //支付宝交易号
-                string trade_no = Request.Form["trade_no"];
-
-                //交易状态
-                string trade_status = Request.Form["trade_status"];
-
-
-                if (Request.Form["trade_status"] == "TRADE_FINISHED")
-                {
-                    //判断该笔订单是否在商户网站中已经做过处理
-                    //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
-                    //如果有做过处理，不执行商户的业务程序
-
-                    //注意：
-                    //退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
-                }
-                else if (Request.Form["trade_status"] == "TRADE_SUCCESS")
-                {
-                    //判断该笔订单是否在商户网站中已经做过处理
-                    //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
-                    //如果有做过处理，不执行商户的业务程序
-
-                    //注意：
-                    //付款完成后，支付宝系统发送该交易状态通知
-
-                    //请在这里加上商户的业务逻辑程序代码
-
-                }
-                else
-                {
-                }
-                Response.Write("success");     //返回给支付宝消息，成功,这里不要动！！！
-            }
-            else
-            {
-                Response.Write("fail");
-            }
+            response = client.Execute(request);
+            return response.Body;
         }
-
+        catch (Exception exp)
+        {
+            throw exp;
+        }
     }
 
-    public Dictionary<string, string> GetRequestPost()
+    public string RefundQuery(string out_trade_no)
     {
-        int i = 0;
-        Dictionary<string, string> sArray = new Dictionary<string, string>();
-        System.Collections.Specialized.NameValueCollection coll;
-        coll = request.Form;
-        String[] requestItem = coll.AllKeys;
-        for (i = 0; i < requestItem.Length; i++)
-        {
-            sArray.Add(requestItem[i], Request.Form[requestItem[i]]);
-        }
-        return sArray;
+        DefaultAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
 
-    }*/
+        // 商户订单号，和交易号不能同时为空
+        //string out_trade_no = WIDout_trade_no.Text.Trim();
+
+        // 支付宝交易号，和商户订单号不能同时为空
+        //string trade_no = WIDtrade_no.Text.Trim();
+
+        // 请求退款接口时，传入的退款号，如果在退款时未传入该值，则该值为创建交易时的商户订单号，必填。
+        string out_request_no = out_trade_no;
+
+        AlipayTradeFastpayRefundQueryModel model = new AlipayTradeFastpayRefundQueryModel();
+        model.OutTradeNo = out_trade_no;
+        //model.TradeNo = trade_no;
+        model.OutRequestNo = out_request_no;
+
+        AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
+        request.SetBizModel(model);
+        AlipayTradeFastpayRefundQueryResponse response = null;
+        try
+        {
+            response = client.Execute(request);
+            Console.WriteLine(response.Body);
+            return response.Body;
+        }
+        catch (Exception exp)
+        {
+            throw exp;
+        }
+    }
+    
 }

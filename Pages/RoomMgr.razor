@@ -8,7 +8,7 @@
 
 <PageTitle>管理房间</PageTitle>
 
-<div class="container-center">
+<div class="container-form">
     @if (_rooms is null)
     {
         <p>加载中</p>
@@ -36,16 +36,6 @@
                     }
                 }
             </select>
-            <span class="px-2">
-                <button class="btn-primary btn" @onclick="Save">@(_selected == "" ? "添加!" : "保存!")</button>
-            </span>
-            @if (_selected != "" && _room.Shows.Count == 0)
-            {
-                <span class="px-2">
-                    <button class="btn-danger btn" @onclick="Delete">删除!</button>
-                </span>
-            }
-            <span class="px-3">@_msg</span>
         </p>
         <p>
             <label>名称:</label>
@@ -61,23 +51,37 @@
         <p>
             <label>排数:</label>
             <input class="form-control" type="number" min="3" @bind="_room.Height"/>
+        </p>
+        <p>
             <label>列数:</label>
             <input class="form-control" type="number" min="3" @bind="_room.Width"/>
         </p>
-        <p>
+        <p style="line-height: 3rem">
             <button @onclick="ResetState" class="btn btn-secondary">重置可用座位</button>
             <button @onclick="FilterSkip" class="btn btn-secondary">选择间隔座位（疫情专用）</button>
         </p>
         <p>
-            <div style="width: 100%">
+            <span style="display: flex; justify-content: center;">
                 <SitPicker @bind-PosState="_room.PosState" Height="_room.Height" Width="_room.Width" Dev="true"/>
-            </div>
+            </span>
+        </p>
+        <p style="line-height: 3rem">
+            <button class="btn-primary btn" @onclick="Save">@(_selected == "" ? "添加!" : "保存!")</button>
+            @if (_selected != "" && _room.Shows.Count == 0)
+            {
+                <span class="px-2">
+                    <button class="btn-danger btn" @onclick="Delete">删除!</button>
+                </span>
+            }
+        </p>
+        <p>
+            @_msg
         </p>
     }
 </div>
 
 @code {
-    MgrContext _db;
+    MgrContext _db = new();
     Dictionary<string, RoomTemplate>? _rooms, _enabledRooms;
     List<(string, string)> _label = new(), _disabledLabel = new();
     string _selected = "";
@@ -124,7 +128,6 @@
             NavigationManager.NavigateTo("");
             return;
         }
-        _db = new MgrContext();
         await Load();
     }
 

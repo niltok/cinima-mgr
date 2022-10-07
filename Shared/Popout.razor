@@ -1,0 +1,21 @@
+﻿
+@if (Enable)
+{
+    <div class="background" @onclick="() => EnableChanged.InvokeAsync(false)">
+        <div class="container">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public bool Enable { get; set; }
+    
+    [Parameter]
+    public EventCallback<bool> EnableChanged { get; set; }
+
+}

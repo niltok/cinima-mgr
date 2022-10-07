@@ -19,8 +19,9 @@
             <div>
                 <h3><NavLink href=@($"/Movie/Info/{m.Id}")>@m.Name</NavLink></h3>
                 <h6>@m.Type</h6>
+                <p>时长：@m.Duration.TotalMinutes 分钟</p>
                 <p>上映时间：@m.ReleaseDate.ToString("yyyy-M-d")</p>
-                <p>@m.Introduction</p>
+                @* <p>@m.Introduction</p> *@
                 <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn" @onclick="() => ToShowInfo(m.Id)">
                     @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
                 </button></p>

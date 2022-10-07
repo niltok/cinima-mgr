@@ -2,6 +2,9 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    word-wrap: break-word;
+    word-break: break-word;
+    color: #18191c;
 }
 
 h1:focus {
@@ -22,24 +25,21 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
-.container-center {
+.container-form {
     max-width: 800px;
     width: 90%;
     margin: auto;
-    word-wrap: break-word;
-    word-break: break-word;
-    color: #18191c;
 }
 
 .form-select {
-    min-width: 200px;
+    /*min-width: 200px;*/
     display: inline;
-    width: auto;
+    /*width: auto;*/
 }
 
 .form-control {
     display: inline;
-    width: auto;
+    /*width: auto;*/
 }
 
 .valid.modified:not([type=checkbox]) {

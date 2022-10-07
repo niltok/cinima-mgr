@@ -19,6 +19,7 @@
     max-width: 70%;
     max-height: 70%;
     overflow: auto;
+    width: fit-content;
 }
 
 @media (max-width: 641px) {

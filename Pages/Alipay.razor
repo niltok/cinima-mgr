@@ -25,30 +25,30 @@
     {
         await using var db = new MgrContext();
         var dbstate = (await db.Orders
-            .Where(t => t.Id == out_trade_no).Select(t => t.State).ToListAsync());
+            .Where(t => t.Id == out_trade_no).Select(t => t.State).SingleOrDefaultAsync());
         if(dbstate == null)
         {
             Console.WriteLine("订单不存在");
         }
         else
         {
-            if(dbstate[0] == 0)
+            if(dbstate == 0)
             {
                 Console.WriteLine("订单未付款");
             }
-            else if(dbstate[0] == 1)
+            else if(dbstate == 1)
             {
                 Console.WriteLine("订单已付款");
             }
-            else if(dbstate[0] == 2)
+            else if(dbstate == 2)
             {
                 Console.WriteLine("订单已退款");
             }
-            else if(dbstate[0] == 3)
+            else if(dbstate == 3)
             {
                 Console.WriteLine("订单已取消");
             }
-            else if(dbstate[0] == 4)
+            else if(dbstate == 4)
             {
                 Console.WriteLine("订单不存在");
             }
@@ -58,7 +58,7 @@
             }
         }
         var dbprice = (await db.Orders
-            .Where(t => t.Id == out_trade_no).Select(t => t.Price).ToListAsync());
-        price = dbprice[0].ToString("0.00");
+            .Where(t => t.Id == out_trade_no).Select(t => t.Price).SingleAsync());
+        price = dbprice.ToString("0.00");
     }
 }

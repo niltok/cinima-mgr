@@ -4,8 +4,10 @@
 @using cinima_mgr.Service
 @using Markdig.Helpers
 @using Microsoft.EntityFrameworkCore
+@using Org.BouncyCastle.Utilities
 @inject NavigationManager NavigationManager
 @inject StateCache StateCache
+@implements IAsyncDisposable
 
 <h3>确认订单信息</h3>
 @if ( OrderType == 0 )
@@ -30,12 +32,21 @@
     
     <EditForm Model="model">
         <div>
-            @* <InputSelect TValue="DiscountTicket" @bind-Value="_selectedDT"> *@
-            @*     @foreach (var i in _discounttickets) *@
-            @*     { *@
-            @*         <option value="@i" > @i.Name </option> *@
-            @*     } *@
-            @* </InputSelect> *@
+            <p> 选择优惠卷: </p>
+            @if (_discounttickets.Count != 0)
+            {
+                <InputSelect TValue="string" @bind-Value="_selectedDT">
+                    @foreach (var i in _discounttickets)
+                    {
+                        _tempinfo = (i.Type == 1 ? $"满{i.Satisfy}减{i.Rate}" : $"{i.Rate * 10}折") + i.Name;
+                        <option value="@i.Id"> @_tempinfo </option>
+                    }
+                </InputSelect>
+            }
+            else
+            {
+                <p> 无可用优惠卷！ </p>
+            }
         </div><br/>
     </EditForm>
 }else if ( OrderType == 1 )
@@ -51,9 +62,13 @@
 
 <div>
     <button @onclick="Payment" > 立即付款 </button>
+    @if ( ToPay )
+    {
+        <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>
+    }
 </div>
 
-@* <Allipay Enable="ToPay" OrderId="@_order.Id" /> *@
+
 
 @code {
     [Parameter]
@@ -68,23 +83,22 @@
     Order _order = new()
     {
         Id = Guid.NewGuid().ToString(),
+        Tickets = new List<Ticket>(),
+        Discounts = new List<DiscountTicket>()
     };
 
+    MgrContext db = new MgrContext();
     public List<string> _pos = new List<string>();
     public List<DiscountTicket> _discounttickets = new List<DiscountTicket>();
-    public DiscountTicket _selectedDT;
-
+    // Dictionary<DiscountTicket, double> _sorteddisticked = new Dictionary<DiscountTicket, double>();
+    public string _selectedDT;
     public Show show;
-
-    public string _info;
+    public string _info = "";
     public bool ToPay = false;
     
     public inputmodel model = new inputmodel();
     
-    public class inputmodel
-    {
-        
-    }
+    public class inputmodel {}
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,51 +110,93 @@
             return;
         }
 
-        _order.User = StateCache.User;
+        _order.User = await db.Users.SingleAsync(t => t.Name == StateCache.User.Name);
         _order.Type = OrderType;
         _order.State = 0;
         
         if (OrderType == 0)
         {
-            await using var db = new MgrContext();
-            show = (await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).Include(t => t.Movie).ToListAsync()).ToList().First();
+            show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
+                                    Include(t => t.Movie).SingleAsync();
             int cnt = 0;
-            // foreach (var i in PosSelecition.ToCharArray())
-            // {
-            //     Ticket ticket = new()
-            //     {
-            //         Id = Guid.NewGuid().ToString(),
-            //         Order = _order,
-            //         Show = show,
-            //         
-            //         // todo: 更改票状态
-            //         
-            //         Status = 0,
-            //         Row = show.Room.Height,
-            //         Column = show.Room.Width
-            //     };
-            //     if (i == '3')
-            //     {
-            //         db.Tickets.Add(ticket) ;
-            //         _pos.Add($"{cnt / show.Room.Width + 1}排{cnt % show.Room.Width + 1}座");
-            //     }
-            //     _order.Tickets.Add(ticket);
-            //     cnt++;
-            // }
+            char[] _posstate = PosSelecition.ToCharArray();
+            foreach (var i in _posstate)
+            {
+                if (i == '3')
+                {
+                    _posstate[cnt] = '1';
+                    Ticket ticket = new()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Order = _order,
+                        Show = show,
+                        CreatTime = DateTime.Now,
+                        // todo: 更改票状态
+                    
+                        Status = 0,
+                        Row = cnt / show.Room.Width + 1,
+                        Column = cnt % show.Room.Width + 1
+                    };
+                    // db.Tickets.Add(ticket) ;
+                    // await db.SaveChangesAsync();
+                    _order.Tickets.Add(ticket);
+                    await db.SaveChangesAsync();
+                    _pos.Add($"{ticket.Row}排{ticket.Column}座");
+                }
+                cnt++;
+            }
+            show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
+                Include(t => t.Movie).SingleAsync();
+            foreach (var i in _order.Tickets)
+            {
+                if (show.PosState[(i.Row - 1) * show.Room.Width + (i.Column - 1)] != '0')
+                {
+                    // todo: 弹窗提示座位已选
+                    return;
+                }
+            }
+            // todo: change PosState
+            show.PosState = new string(_posstate);
+            await db.SaveChangesAsync();
+            _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
+            
+            _discounttickets = await db.DiscountTickets.Where(t => t.User == StateCache.User && t.Type != 0 && _order.OriginalPrice > t.Satisfy).ToListAsync();
+            
+            // _discounttickets.OrderBy(t => t.Type == 1 ? t.Rate)
+            
         }else if (OrderType == 1)
         {
             _order.Days = Days;
             _order.Price = 30.0;
+            _order.OriginalPrice = _order.Price;
         }
 
     }
 
     async Task Payment()
     {
-        await using var db = new MgrContext();
         _order.CreateTime = DateTime.Now;
+        
+        if (_selectedDT != null)
+        {
+            DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
+            _order.Discounts.Add(_sdt);
+            _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
+                : (_order.OriginalPrice * _sdt.Rate);
+        }
+        else
+        {
+            _order.Price = _order.OriginalPrice;
+        }
         db.Orders.Add(_order);
+        await db.SaveChangesAsync();
         ToPay = true;
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        await db.DisposeAsync();
+    }
+
 }

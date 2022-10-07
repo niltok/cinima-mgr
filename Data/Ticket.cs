@@ -12,6 +12,8 @@ public class Ticket
     /// 0 为无效票，1 为未使用，2 为已验票
     /// </summary>
     public int Status { get; set; }
+    public DateTime CreatTime { get; set; }
+    public DateTime? UsedTime { get; set; }
     public int Row { get; set; }
     public int Column { get; set; }
 }

@@ -88,7 +88,7 @@
         // todo: show canceled disabled or canbuyafter
         await using var db = new MgrContext();
         _showsinfo = (await db.Shows
-            .Where(t => t.Movie.Id == MovieId).Include(t => t.Movie).ToListAsync())
+            .Where(t => t.Movie.Id == MovieId && t.Status == 1).Include(t => t.Movie).ToListAsync())
             .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
         _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
 

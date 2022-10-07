@@ -31,21 +31,21 @@
     
     <EditForm Model="model">
         <div>
-            <InputSelect TValue="string" @bind-Value="_selectedDT">
-                @foreach (var i in _discounttickets)
-                {
-                    // switch (i.Type)
-                    // {
-                    //     case 0:
-                    //         
-                    //         break;
-                    //     case 1:
-                    //     case 2:
-                    //         break;
-                    // }
-                    <option value="@i.Id" > @i.Name </option>
-                }
-            </InputSelect>
+            <p> 选择优惠卷: </p>
+            @if (_discounttickets.Count != 0)
+            {
+                <InputSelect TValue="string" @bind-Value="_selectedDT">
+                    @foreach (var i in _discounttickets)
+                    {
+                        _tempinfo = (i.Type == 1 ? $"满{i.Satisfy}减{i.Rate}" : $"{i.Rate * 10}折") + i.Name;
+                        <option value="@i.Id"> @_tempinfo </option>
+                    }
+                </InputSelect>
+            }
+            else
+            {
+                <p> 无可用优惠卷！ </p>
+            }
         </div><br/>
     </EditForm>
 }else if ( OrderType == 1 )
@@ -63,7 +63,7 @@
     <button @onclick="Payment" > 立即付款 </button>
 </div>
 
-@* <Allipay Enable="ToPay" OrderId="@_order.Id" /> *@
+<Alipay Enable="ToPay" OrderId="@_order.Id" />
 
 @code {
     [Parameter]
@@ -84,7 +84,7 @@
 
     public List<string> _pos = new List<string>();
     public List<DiscountTicket> _discounttickets = new List<DiscountTicket>();
-    Dictionary<DiscountTicket, double> _sorteddisticked = new Dictionary<DiscountTicket, double>();
+    // Dictionary<DiscountTicket, double> _sorteddisticked = new Dictionary<DiscountTicket, double>();
     public string _selectedDT;
     public Show show;
     public string _info = "";
@@ -152,9 +152,10 @@
             }
             // todo: change PosState
             show.PosState = new string(_posstate);
+            _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
             await db.SaveChangesAsync();
-
-            _discounttickets = await db.DiscountTickets.Where(t => t.User == StateCache.User).ToListAsync();
+            
+            _discounttickets = await db.DiscountTickets.Where(t => t.User == StateCache.User && t.Type != 0 && _order.OriginalPrice > t.Satisfy).ToListAsync();
             
             // _discounttickets.OrderBy(t => t.Type == 1 ? t.Rate)
             
@@ -170,6 +171,18 @@
     {
         await using var db = new MgrContext();
         _order.CreateTime = DateTime.Now;
+        
+        if (_selectedDT != null)
+        {
+            DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
+            _order.Discounts.Add(_sdt);
+            _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
+                : (_order.OriginalPrice * _sdt.Rate);
+        }
+        else
+        {
+            _order.Price = _order.OriginalPrice;
+        }
         db.Orders.Add(_order);
         ToPay = true;
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");

@@ -9,77 +9,84 @@
 @inject StateCache StateCache
 @implements IAsyncDisposable
 
-<h3>确认订单信息</h3>
-@if ( OrderType == 0 )
-{
-    <div>
-        <p> 订单号: @_order.Id </p>
-        <p> 用户名: @_order.User.Name </p>
-        <p> 电影名称: @show.Movie.Name </p>
-        <p> 日期: @show.Time.ToString("MM月dd日") </p>
-        @{ var _tempinfo = show.Time.ToString("hh:mm ~ ") + (show.Time + show.Movie.Duration).ToString("hh:mm"); }
-        <p> 场次时间: @_tempinfo </p>
-        <p> 房间: @show.Room.Name </p>
-        <p> 购票数量: @_pos.Count().ToString() </p>
-
-        @{
-            _tempinfo = "";
-            foreach (var i in _pos) _tempinfo += i + "、";
-            if (_pos.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
-        }
-        <p> 位置: @_tempinfo </p>
-    </div><br/>
+<main class="container-form">
     
-    <EditForm Model="model">
+    <h3>确认订单信息</h3>
+    
+    @if (OrderType == 0)
+    {
         <div>
-            <p> 选择优惠卷: </p>
-            @if (_discounttickets.Count != 0)
-            {
-                <InputSelect TValue="string" @bind-Value="_selectedDT">
-                    @foreach (var i in _discounttickets)
-                    {
-                        _tempinfo = (i.Type == 1 ? $"满{i.Satisfy}减{i.Rate}" : $"{i.Rate * 10}折") + i.Name;
-                        <option value="@i.Id"> @_tempinfo </option>
-                    }
-                </InputSelect>
+            <p> 订单号: @_order.Id </p>
+            <p> 用户名: @_order.User.Name </p>
+            <p> 电影名称: @show.Movie.Name </p>
+            <p> 日期: @show.Time.ToString("MM月dd日") </p>
+            @{ var _tempinfo = show.Time.ToString("hh:mm ~ ") + (show.Time + show.Movie.Duration).ToString("hh:mm"); }
+            <p> 场次时间: @_tempinfo </p>
+            <p> 房间: @show.Room.Name </p>
+            <p> 购票数量: @_pos.Count().ToString() </p>
+
+            @{
+                _tempinfo = "";
+                foreach (var i in _pos) _tempinfo += i + "、";
+                if (_pos.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
             }
-            else
-            {
-                <p> 无可用优惠卷！ </p>
-            }
+            <p> 位置: @_tempinfo </p>
         </div><br/>
-    </EditForm>
-    <div>
-        <p> 原始价格: @_order.OriginalPrice </p>
-        <p> 优惠价格: @_order.Price </p>
-    </div>
-}else if ( OrderType == 1 )
-{
-    <div>
-        <p> 订单号: @_order.Id </p>
-        <p> 用户名: @_order.User.Name </p>
-        <p> 购买时长: @Days 天 </p>
-        @* todo: 购买会员价格  *@
-        <p> 支付金额: ？元 </p>
-    </div>
-}
 
-<div>
-    @if (_poserror)
-    {
-        string _src = $"/ShowInfo/{show.Movie.Id}";
-        <MsgBox Msg="test" OnClosed="() => { NavigationManager.NavigateTo(_src); }"></MsgBox>
+        <EditForm Model="model">
+            <div>
+                <p> 选择优惠卷: </p>
+                @if (_discounttickets.Count != 0)
+                {
+                    <InputSelect TValue="string" @bind-Value="_selectedDT">
+                        @foreach (var i in _discounttickets)
+                        {
+                            _tempinfo = (i.Type == 1 ? $"满{i.Satisfy}减{i.Rate}" : $"{i.Rate * 10}折") + i.Name;
+                            <option value="@i.Id"> @_tempinfo </option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <p> 无可用优惠卷！ </p>
+                }
+            </div><br/>
+        </EditForm>
+        <div>
+            <p> 原始价格: @_order.OriginalPrice </p>
+            @if (_selectedDT != null)
+            {
+                <p> 优惠价格: @_order.Price </p>
+            }
+        </div>
     }
-    else
+    else if (OrderType == 1)
     {
-        <button @onclick="Payment"> 立即付款 </button>
-        @if (ToPay)
+        <div>
+            <p> 订单号: @_order.Id </p>
+            <p> 用户名: @_order.User.Name </p>
+            <p> 购买时长: @Days 天 </p>
+            @* todo: 购买会员价格  *@
+            <p> 支付金额: ？元 </p>
+        </div>
+    }
+
+    <div>
+        @if (_poserror)
         {
-            <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>
+            string _src = $"/ShowInfo/{show.Movie.Id}";
+            <MsgBox Msg="test" OnClosed="() => { NavigationManager.NavigateTo(_src); }"></MsgBox>
         }
-    }
-</div>
-
+        else
+        {
+            <button @onclick="Payment"> 立即付款 </button>
+            @if (ToPay)
+            {
+                <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>
+            }
+        }
+    </div>
+</main>
 
 
 @code {

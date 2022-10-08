@@ -71,6 +71,8 @@
             NavigationManager.NavigateTo($"/ShowInfo/{_movieid}");
         }
     </Popout>
+    @{ string temp = $"/ShowInfo/{_movieid}";}
+    <MsgBox Msg="" OnClosed="() => { NavigationManager.NavigateTo(temp); }"></MsgBox>
     @if (ToPay)
     {
         <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>

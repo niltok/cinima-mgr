@@ -49,6 +49,10 @@
             }
         </div><br/>
     </EditForm>
+    <div>
+        <p> 原始价格: @_order.OriginalPrice </p>
+        <p> 优惠价格: @_order.Price </p>
+    </div>
 }else if ( OrderType == 1 )
 {
     <div>
@@ -61,21 +65,18 @@
 }
 
 <div>
-    <button @onclick="Payment"> 立即付款 </button>
-    <Popout Enable="true">
-        <p> test </p>
-        @{ bool change = false; }
-        <button @onclick="() => change = true" > 返回 </button>
-        @if ( change )
-        {
-            NavigationManager.NavigateTo($"/ShowInfo/{_movieid}");
-        }
-    </Popout>
-    @{ string temp = $"/ShowInfo/{_movieid}";}
-    <MsgBox Msg="" OnClosed="() => { NavigationManager.NavigateTo(temp); }"></MsgBox>
-    @if (ToPay)
+    @if (_poserror)
     {
-        <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>
+        string _src = $"/ShowInfo/{show.Movie.Id}";
+        <MsgBox Msg="test" OnClosed="() => { NavigationManager.NavigateTo(_src); }"></MsgBox>
+    }
+    else
+    {
+        <button @onclick="Payment"> 立即付款 </button>
+        @if (ToPay)
+        {
+            <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>
+        }
     }
 </div>
 
@@ -90,8 +91,6 @@
     public string ShowId { get; set; }
     [Parameter]
     public string PosSelecition { get; set; }
-
-    public string _movieid;
 
     Order _order = new()
     {
@@ -108,6 +107,7 @@
     public Show show;
     public string _info = "";
     public bool ToPay = false;
+    public bool _poserror = false;
     
     public inputmodel model = new inputmodel();
     
@@ -131,7 +131,7 @@
         {
             show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
                                     Include(t => t.Movie).SingleAsync();
-            _movieid = show.Movie.Id;
+            
             int cnt = 0;
             char[] _posstate = PosSelecition.ToCharArray();
             foreach (var i in _posstate)
@@ -160,19 +160,19 @@
             }
             show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
                 Include(t => t.Movie).SingleAsync();
-            // string testst = new string(_posstate);
+            
             foreach (var i in _order.Tickets)
             {
                 if (show.PosState[(i.Row - 1) * show.Room.Width + (i.Column - 1)] != '0')
-                {
-                    // todo: 弹窗提示座位已选
-                    return;
-                }
+                    _poserror = true;
             }
-            show.PosState = new string(_posstate);
-            await db.SaveChangesAsync();
-            _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
+            if (!_poserror)
+            {
+                show.PosState = new string(_posstate);
+                await db.SaveChangesAsync();
+            }
             
+            _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
             _discounttickets = await db.DiscountTickets.Where(t => t.User == StateCache.User && t.Type != 0 && _order.OriginalPrice > t.Satisfy).ToListAsync();
             
             // _discounttickets.OrderBy(t => t.Type == 1 ? t.Rate)

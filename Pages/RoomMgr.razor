@@ -146,7 +146,7 @@
     {
         if (_room.Shows.Count > 0)
         {
-            _msg = $"该房间内已规划 {_room.Shows.Count} 场电影";
+            _msg = $"[{DateTime.Now}] 该房间内已规划 {_room.Shows.Count} 场电影";
             return;
         }
         _db.RoomTemplates.Remove(_room);
@@ -162,20 +162,20 @@
             Status = 1,
             PosState = PosStateHelper.GenAll0(10, 10)
         };
-        _msg = "删除成功 " + DateTime.Now.ToString("HH:mm:ss");
+        _msg = $"[{DateTime.Now}] 删除成功";
     }
 
     async Task Save()
     {
         if (_room.Name == "")
         {
-            _msg = "名称不能为空";
+            _msg = $"[{DateTime.Now}] 名称不能为空";
             return;
         }
         var named = _enabledRooms.GetValueOrDefault(_room.Name);
         if (named is not null && named != _room)
         {
-            _msg = "与已启用的房间名称重复";
+            _msg = $"[{DateTime.Now}] 与已启用的房间名称重复";
             return;
         }
         if (_selected == "")
@@ -185,7 +185,7 @@
         }
         await _db.SaveChangesAsync();
         await Load();
-        _msg = "保存成功 " + DateTime.Now.ToString("HH:mm:ss");
+        _msg = $"[{DateTime.Now}] 保存成功";
         _selected = _room.Id;
     }
 

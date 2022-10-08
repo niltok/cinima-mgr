@@ -39,7 +39,7 @@
     height: auto;
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
-    border-radius: 5%;
+    border-radius: min(2vmin, 20px);
     transition: box-shadow .15s ease-in-out;
 }
 
@@ -60,7 +60,7 @@
     margin-bottom: 1.5rem;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 550px) {
     .comment-add {
         display: flex;
         flex-direction: column;

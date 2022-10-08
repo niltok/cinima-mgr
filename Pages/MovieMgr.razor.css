@@ -1,8 +1,27 @@
 ﻿.movie_cover {
-    width: 100px;
+    margin: auto;
+    max-width: 300px;
+    width: 100%;
     height: auto;
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
-    border-radius: 5%;
+    border-radius: min(25px, 5vmin);
     display: block;
+    transition: box-shadow .15s ease-in-out;
+}
+
+.movie_cover:hover {
+    box-shadow: 0 0 0 4px rgb(13 110 253 / 25%);
+}
+
+.movie_cover:focus {
+    box-shadow: 0 0 8px 5px rgb(13 110 253 / 50%);
+}
+
+.pic-label {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    width: fit-content;
+    margin: auto;
 }

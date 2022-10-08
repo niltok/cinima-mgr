@@ -3,12 +3,16 @@
     height: auto;
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
-    border-radius: 5%;
+    border-radius: 21px;
     transition: box-shadow .15s ease-in-out;
 }
 
 .movie_cover:hover {
-    box-shadow: 0 0 8px 6px rgb(13 110 253 / 50%);
+    box-shadow: 0 0 0 4px rgb(13 110 253 / 25%);
+}
+
+.movie_cover:focus {
+    box-shadow: 0 0 8px 5px rgb(13 110 253 / 50%);
 }
 
 .item {

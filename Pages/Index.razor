@@ -12,7 +12,7 @@
         <div class="item">
             <p>
                 <NavLink href=@($"/Movie/Info/{m.Id}")>
-                    <img class="movie_cover"
+                    <img class="movie_cover" tabindex="0"
                          src=@($"/Movie/Cover/{m.Id}")
                          alt=@($"Cover of {m.Name}")/>
                 </NavLink>

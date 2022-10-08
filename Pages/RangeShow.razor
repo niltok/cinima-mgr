@@ -94,9 +94,9 @@
         _showLabel = _room.Shows.Where(s => s.Time > DateTime.Now)
             .OrderByDescending(s => s.Time).Select(s =>
         {
-            var st = s.Time.ToString("yyyy-MM-dd HH:mm");
+            var st = s.Time.ToString("MM-dd HH:mm");
             var et = (s.Time + s.Movie.Duration).ToString("HH:mm");
-            return (s.Id, $"{st} ~ {et} {_statusLabel[s.Status]}");
+            return (s.Id, $"{st} ~ {et} ({s.Movie.Name}) {_statusLabel[s.Status]}");
         }).ToList();
     }
     
@@ -186,7 +186,7 @@
             {
                 var st = conflict.Time.ToString("yyyy-MM-dd HH:mm");
                 var et = (conflict.Time + conflict.Movie.Duration).ToString("HH:mm");
-                _msg = $"时间冲突 {st} ~ {et}";
+                _msg = $"[{DateTime.Now}] 时间冲突 {st} ~ {et}";
                 return;
             }
             if (_selectedShow == "")
@@ -199,12 +199,12 @@
                 _db.Entry(s).Reference(s => s.Movie).LoadAsync()));
             _shows = _room.Shows.ToDictionary(s => s.Id);
             LoadLabel();
-            _msg = (_selectedShow == "" ? "添加" : "保存") + "成功 " + DateTime.Now.ToString("HH:mm:ss");
+            _msg = $"[{DateTime.Now}] " + (_selectedShow == "" ? "添加" : "保存") + "成功 " + DateTime.Now.ToString("HH:mm:ss");
             _selectedShow = _show.Id;
         }
         catch (Exception ex)
         {
-            _msg = ex.Message;
+            _msg = $"[{DateTime.Now}] 错误: {ex.Message}";
             throw;
         }
     }

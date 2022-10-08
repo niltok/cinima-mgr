@@ -38,8 +38,17 @@ app.UseRouting();
 app.MapGet("/Movie/Cover/{id:guid}",  async (Guid id) =>
 {
     await using var db = new MgrContext();
-    var movie = await db.Movies.SingleOrDefaultAsync(m => m.Id == id.ToString());
-    return movie is null ? Results.NotFound() : Results.File(movie.CoverImg, "image/*", movie.Name);
+    var movie = await db.Movies
+        .Include(m => m.Cover)
+        .SingleOrDefaultAsync(m => m.Id == id.ToString());
+    return movie is null ? Results.NotFound() : Results.File(movie.Cover.Data, "image/*", movie.Name);
+});
+
+app.MapGet("/Binary/Img/{id:guid}",  async (Guid id) =>
+{
+    await using var db = new MgrContext();
+    var bin = await db.Binaries.SingleOrDefaultAsync(b => b.Id == id.ToString());
+    return bin is null ? Results.NotFound() : Results.File(bin.Data, "image/*", bin.Id);
 });
 
 app.MapBlazorHub();

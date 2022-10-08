@@ -1,0 +1,20 @@
+﻿
+<Popout @bind-Enable="_msgbox">
+    <div style="display: flex; flex-direction: column; align-items: center">
+        <span style="margin: 3rem">@Msg</span>
+        <button class="btn btn-primary" @onclick="() => _msgbox = false">关闭</button>
+    </div>
+</Popout>
+
+@code {
+    bool _msgbox;
+    [Parameter]
+    public string Msg { get; set; } = "";
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Msg != "") _msgbox = true;
+    }
+
+}

@@ -17,6 +17,20 @@ namespace cinima_mgr.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.9");
 
+            modelBuilder.Entity("cinima_mgr.Data.Binary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Binaries");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.Comment", b =>
                 {
                     b.Property<string>("Id")
@@ -52,6 +66,20 @@ namespace cinima_mgr.Migrations
                     b.HasIndex("EditTime", "UserId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Config", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("Configs");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.DiscountTicket", b =>
@@ -118,9 +146,9 @@ namespace cinima_mgr.Migrations
                     b.Property<long>("BoxOffice")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("CoverImg")
+                    b.Property<string>("CoverId")
                         .IsRequired()
-                        .HasColumnType("BLOB");
+                        .HasColumnType("TEXT");
 
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("TEXT");
@@ -154,6 +182,8 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoverId");
 
                     b.ToTable("Movies");
                 });
@@ -423,6 +453,17 @@ namespace cinima_mgr.Migrations
                     b.Navigation("UsedIn");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
+                {
+                    b.HasOne("cinima_mgr.Data.Binary", "Cover")
+                        .WithMany()
+                        .HasForeignKey("CoverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cover");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Order", b =>

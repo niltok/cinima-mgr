@@ -4,4 +4,5 @@
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
     border-radius: 5%;
+    display: block;
 }

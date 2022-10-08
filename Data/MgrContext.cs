@@ -15,6 +15,8 @@ public class MgrContext : DbContext
     public DbSet<Event> Events { get; set; }
     public DbSet<SessionState> Sessions { get; set; }
     public DbSet<Order> Orders { get; set; }
+    public DbSet<Config> Configs { get; set; }
+    public DbSet<Binary> Binaries { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlite($"Data Source={Path.Join(Environment.CurrentDirectory, "app.db")}");

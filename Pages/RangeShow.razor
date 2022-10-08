@@ -53,7 +53,7 @@
             <q class="small">状态为启用时未到时间不可购买</q>
         </p>
         <p>
-            <MoviePicker Movies="_movies" @bind-Movie="_show.Movie"/>
+            <MoviePicker Movies="_movies" @bind-Movie="_show.Movie" ShowRelease="true"/>
         </p>
         <p style="line-height: 3rem">
             <button @onclick="ResetState" class="btn btn-secondary">重置可用座位至房间状态</button>
@@ -67,11 +67,10 @@
         <p>
             <button class="btn btn-primary" @onclick="Submit">@(_selectedShow == "" ? "添加!" : "保存!")</button>
         </p>
-        <p>
-            <span>@_msg</span>
-        </p>
     }
 </div>
+
+<MsgBox Msg="@_msg"/>
 
 @code {
     MgrContext _db = new();
@@ -111,7 +110,7 @@
 
         _movies = await _db.Movies
             .Include(m => m.Shows)
-            .OrderByDescending(m => m.ReleaseDate)
+            .DisplayMovie(true)
             .ToListAsync();
         _rooms = await _db.RoomTemplates
             .Where(r => r.Status == 1)

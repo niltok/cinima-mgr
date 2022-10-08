@@ -10,8 +10,27 @@
                      alt=@m.Name @onclick="() => MovieChanged.InvokeAsync(m)"/>
             </p>
             <div>
-                <div>@m.Name</div>
-                <div><small>时长: @m.Duration.TotalMinutes 分钟</small></div>
+                <div>
+                    <b>@m.Name</b>
+                </div>
+                @if (ShowRelease)
+                {
+                    <div>
+                        <small class="text-secondary">(@(m.ReleaseDate.ToString("yyyy-M-d")))</small>
+                    </div>
+                }
+                <div>
+                    <small class="text-secondary">
+                        @if (m.Duration == TimeSpan.Zero)
+                        {
+                            <span>时长未知</span>
+                        }
+                        else
+                        {
+                            <span>@m.Duration.TotalMinutes 分钟</span>
+                        }
+                    </small>
+                </div>
             </div>
         </div>
     }
@@ -25,5 +44,8 @@
     public Movie? Movie { get; set; }
     [Parameter]
     public EventCallback<Movie?> MovieChanged { get; set; }
-    
+
+    [Parameter]
+    public bool ShowRelease { get; set; } = false;
+
 }

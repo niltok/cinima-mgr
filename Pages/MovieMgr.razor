@@ -1,4 +1,5 @@
 ﻿@page "/MovieMgr"
+@using System.Buffers.Text
 @implements IAsyncDisposable
 
 <PageTitle>管理电影</PageTitle>
@@ -49,10 +50,10 @@
     </p>
     <p>
         <label>图片:</label>
-        @if (_movie.CoverImg is not null)
+        @if (_movie.Cover.Data is not null)
         {
             <img class="movie_cover" 
-                 src=@($"/Movie/Cover/{_movie.Id}") 
+                 src=@($"data:image/jpg;base64,{Convert.ToBase64String(_movie.Cover.Data)}") 
                  alt=@($"Cover of {_movie.Name}")/>
         }
         <InputFile class="px-2" OnChange="UploadFile"></InputFile>
@@ -64,17 +65,11 @@
     </p>
 </div>
 
-<Popout @bind-Enable="_msgbox">
-    <div style="display: flex; flex-direction: column; align-items: center">
-        <span style="margin: 3rem">@_msg</span>
-        <button class="btn btn-primary" @onclick="() => _msgbox = true">关闭</button>
-    </div>
-</Popout>
+<MsgBox Msg="@_msg"/>
 
 @code {
     MgrContext _db = new();
 
-    bool _msgbox;
     string _msg = "";
     int _duration = 0;
     int _status = 0;
@@ -87,7 +82,11 @@
         Introduction = "",
         ReleaseDate = DateTime.Today,
         Status = 0,
-        Preview = ""
+        Preview = "",
+        Cover = new Binary
+        {
+            Id = Guid.NewGuid().ToString()
+        }
     };
 
     Dictionary<string, Movie> _movies = new();
@@ -99,12 +98,12 @@
         if (_status != 0)
         {
             _msg = "Busyyyyyyyyyy!!!";
-            _msgbox = true;
             return;
         }
         _status = 1;
         _movies = await _db.Movies.ToDictionaryAsync(m => m.Id);
         _label = _movies.Values
+            .DisplayMovie(true)
             .Select(m => (m.Id, $"{m.Name}({m.ReleaseDate:yyyy-M}){m.StatusLabel()}"))
             .ToList();
         _status = 0;
@@ -121,12 +120,10 @@
         if (_status != 0)
         {
             _msg = "Busyyyyyyyyyy!!!";
-            _msgbox = true;
             return;
         }
         _status = 1;
         if (_selected != "") await _db.Entry(_movie).ReloadAsync();
-        _status = 0;
         _selected = s;
         _movie = _movies.GetValueOrDefault(s) ?? new Movie
         {
@@ -137,8 +134,15 @@
             Introduction = "",
             ReleaseDate = DateTime.Today,
             Status = 0,
-            Preview = ""
+            Preview = "",
+            Cover = new Binary
+            {
+                Id = Guid.NewGuid().ToString()
+            }
         };
+        if (_selected != "") 
+            await _db.Entry(_movie).Reference(m => m.Cover).LoadAsync();
+        _status = 0;
         _duration = (int)_movie.Duration.TotalMinutes;
     }
 
@@ -148,7 +152,6 @@
         if (_status != 0)
         {
             _msg = "Busyyyyyyyyyy!!!";
-            _msgbox = true;
             return;
         }
         _status = 2;
@@ -156,42 +159,36 @@
         try
         {
             _msg = "文件上传中";
-            _msgbox = true;
             await e.File.OpenReadStream(5 * 1024 * 1024).CopyToAsync(ms);
-            _movie.CoverImg = ms.ToArray();
+            _movie.Cover.Data = ms.ToArray();
             _msg = "文件上传成功";
-            _msgbox = true;
         }
         catch (Exception ex)
         {
             _msg = ex.Message;
-            _msgbox = true;
         }
         _status = 0;
     }
 
     async Task AddMovieEvent()
     {
-        _movie.Duration = TimeSpan.FromMinutes(_duration);
         if (_movie.Name == "")
         {
             _msg = "电影名不能为空";
-            _msgbox = true;
             return;
         }
-        if (_movie.CoverImg is null)
+        if (_movie.Cover.Data is null)
         {
             _msg = "封面不能为空";
-            _msgbox = true;
             return;
         }
         if (_status != 0)
         {
             _msg = "Busyyyyyyyyyy!!!";
-            _msgbox = true;
             return;
         }
         _status = 1;
+        _movie.Duration = TimeSpan.FromMinutes(_duration);
         if (_selected == "")
         {
             _db.Movies.Add(_movie);
@@ -200,7 +197,6 @@
         _status = 0;
         await LoadLabel();
         _msg = (_selected == "" ? "添加" : "修改") + "成功 " + _movie.Name;
-        _msgbox = true;
         _selected = _movie.Id;
     }
 

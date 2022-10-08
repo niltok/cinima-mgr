@@ -33,8 +33,8 @@ public class Movie
 
     public string Preview { get; set; }
     
-    // TODO: 移出 Movie，不然在大量创建 Movie 时很影响性能
-    public byte[] CoverImg { get; set; }
+    public Binary Cover { get; set; }
+    public string CoverId { get; set; }
 
     public List<Show> Shows { get; set; }
     
@@ -44,8 +44,7 @@ public class Movie
 
 public static class MovieHelper
 {
-    
-    static readonly string[] _statusLabel = {"[已隐藏]", "[在映]", "[未上映]"};
+    private static readonly string[] StatusLabelTable = {"[已隐藏]", "[在映]", "[未上映]"};
 
     public static string StatusLabel(this Movie m)
     {
@@ -53,8 +52,28 @@ public static class MovieHelper
         {
             1 when m.ReleaseDate > DateTime.Now => "[待映]",
             2 when m.ReleaseDate < DateTime.Now => "[已下映]",
-            _ => _statusLabel[m.Status]
+            _ => StatusLabelTable[m.Status]
         };
     }
-    
+
+    public static IEnumerable<Movie> DisplayMovie(this IEnumerable<Movie> ms, 
+        bool showDisabled = false, 
+        bool showOffline = true)
+    {
+        return ms
+            .Where(m => (showDisabled || m.Status != 0) && (showOffline || m.Status != 2))
+            .OrderBy(m => m.Status != 1).ThenBy(m => m.Status != 2)
+            .ThenBy(m => m.ReleaseDate > DateTime.Now ? m.ReleaseDate : DateTime.MaxValue)
+            .ThenByDescending(m => m.RateSum);
+    }
+    public static IQueryable<Movie> DisplayMovie(this IQueryable<Movie> ms, 
+        bool showDisabled = false, 
+        bool showOffline = true)
+    {
+        return ms
+            .Where(m => (showDisabled || m.Status != 0) && (showOffline || m.Status != 2))
+            .OrderBy(m => m.Status != 1).ThenBy(m => m.Status != 2)
+            .ThenBy(m => m.ReleaseDate > DateTime.Now ? m.ReleaseDate : DateTime.MaxValue)
+            .ThenByDescending(m => m.RateSum);
+    }
 }

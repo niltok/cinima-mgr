@@ -35,9 +35,18 @@
                     <span class="px-2">@m.Type</span>
                 </p>
                 @* <p>@m.Introduction</p> *@
-                <p style="display: inline-flex; justify-content: center; width: 100%"><button class="btn-primary btn" @onclick="() => ToShowInfo(m.Id)">
-                    @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
-                </button></p>
+                <p style="display: inline-flex; justify-content: center; width: 100%">
+                    @if (m.Status == 1)
+                    {
+                        <button class="btn-primary btn" @onclick="() => ToShowInfo(m.Id)">
+                                                @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
+                                            </button>
+                    }
+                    else
+                    {
+                        <span style="height: 38px"></span>
+                    }
+                </p>
             </div>
         </div>
     }
@@ -69,7 +78,7 @@
     {
         await base.OnInitializedAsync();
         await using var db = new MgrContext();
-        _movies = await db.Movies.ToListAsync();
+        _movies = await db.Movies.DisplayMovie().ToListAsync();
     }
 
     async Task ToShowInfo(string st)

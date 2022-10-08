@@ -3,24 +3,32 @@
 @using cinima_mgr.Data
 @using Microsoft.EntityFrameworkCore
 @using System.Windows
-
-@convertedMarkdown
+@using cinima_mgr.Pages
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsRuntime
 
 @code {
-    private MarkupString convertedMarkdown;
     [Parameter]
     public bool Enable { get; set; } = false;
     [Parameter]
-    string out_trade_no { get; set; }
-    string price { get; set; }
+    public string out_trade_no { get; set; }
+    public string price { get; set; }
+    public string res;
+    
     protected override void OnParametersSet()
     {
         if (!Enable) return;
         Query();
         AlipayConfig m = new AlipayConfig();
-        string res=m.Pay(m.creatModel(out_trade_no,price));
-        convertedMarkdown = (MarkupString)res; 
+        res=m.Pay(m.creatModel(out_trade_no,price));
+        
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var TValue = await jsRuntime.InvokeAsync<string>("sub", "" + res);
+    }
+
     async Task Query()
     {
         await using var db = new MgrContext();

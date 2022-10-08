@@ -75,7 +75,7 @@
         @if (_poserror)
         {
             string _src = $"/ShowInfo/{show.Movie.Id}";
-            <MsgBox Msg="test" OnClosed="() => { NavigationManager.NavigateTo(_src); }"></MsgBox>
+            <MsgBox Msg="座位已经被其他人抢先了(；′⌒`)" OnClosed="() => { NavigationManager.NavigateTo(_src); }"></MsgBox>
         }
         else
         {
@@ -192,6 +192,8 @@
         }
 
     }
+    
+    public static async Task ii (){}
 
     async Task Payment()
     {
@@ -210,6 +212,10 @@
         }
         db.Orders.Add(_order);
         await db.SaveChangesAsync();
+        // todo: cansel ticket 
+        // string i = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
+        //     DateTime.Now + TimeSpan.FromMinutes(15),
+        //         () => { OrderConfirm.ii() } );
         ToPay = true;
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");
     }

@@ -9,7 +9,6 @@
 <PageTitle> 场次信息 </PageTitle>
 
 <h3> 场次信息 </h3>
-@* todo: 选择电影  *@
 <main>
     <p>
         <MoviePicker Movies="_allmovies" Movie="_selectedmovie" MovieChanged="(Movie mv) => ChangeMovie(mv)" />
@@ -81,6 +80,8 @@
     public DateTime _selectedday;
 
     public string _selectedshowId;
+
+    public string _selectedshowOP;
     
     public Show _selectedshow;
     
@@ -155,6 +156,7 @@
             .Where(t => t.Id == _selectedshowId)
             .Include(t => t.Room)
             .ToListAsync()).First();
+        _selectedshowOP = _selectedshow.PosState;
     }
 
     async Task ChangeMovie(Movie mv)
@@ -164,7 +166,10 @@
 
     async Task MakeOrder()
     {
-        NavigationManager.NavigateTo($"/OrderConfirm/{0}/{_selectedshowId}/{_selectedshow.PosState}");
+        if (_selectedshow.PosState != _selectedshowOP)
+        {
+            NavigationManager.NavigateTo($"/OrderConfirm/{0}/{_selectedshowId}/{_selectedshow.PosState}");
+        }
         // NavigationManager.NavigateTo($"/OrderConfirm/{1}/{30}");
     }
 

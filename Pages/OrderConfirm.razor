@@ -61,8 +61,17 @@
 }
 
 <div>
-    <button @onclick="Payment" > 立即付款 </button>
-    @if ( ToPay )
+    <button @onclick="Payment"> 立即付款 </button>
+    <Popout Enable="true">
+        <p> test </p>
+        @{ bool change = false; }
+        <button @onclick="() => change = true" > 返回 </button>
+        @if ( change )
+        {
+            NavigationManager.NavigateTo($"/ShowInfo/{_movieid}");
+        }
+    </Popout>
+    @if (ToPay)
     {
         <Alipay Enable="ToPay" out_trade_no="@_order.Id"/>
     }
@@ -79,6 +88,8 @@
     public string ShowId { get; set; }
     [Parameter]
     public string PosSelecition { get; set; }
+
+    public string _movieid;
 
     Order _order = new()
     {
@@ -118,6 +129,7 @@
         {
             show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
                                     Include(t => t.Movie).SingleAsync();
+            _movieid = show.Movie.Id;
             int cnt = 0;
             char[] _posstate = PosSelecition.ToCharArray();
             foreach (var i in _posstate)

@@ -59,3 +59,27 @@
 .comment {
     margin-bottom: 1.5rem;
 }
+
+@media (max-width: 500px) {
+    .comment-add {
+        display: flex;
+        flex-direction: column;
+        align-items: normal;
+    }
+    
+    .movie-info-container {
+        grid-template: none;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 800px) {
+    .comment-add {
+        display: flex;
+        flex-direction: column;
+        align-items: normal;
+    }
+
+    .movie-info-container {
+        grid-template: none;
+    }
+}

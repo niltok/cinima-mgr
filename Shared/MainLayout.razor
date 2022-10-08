@@ -8,6 +8,14 @@
 
 <PageTitle>喵票票</PageTitle>
 
+@if (_loading)
+{
+    <h1 style="position: fixed; width: fit-content; top:  50%; left: 50%; transform: translate(-50%, -50%)">
+        🛫 加载中...
+    </h1>
+}
+else
+{
 <div class="page">
     <div class="sidebar">
         <NavMenu Logined="_user is not null" IsMgr="_user is not null && _user.IsMgr"/>
@@ -17,12 +25,12 @@
         <div class="top-row px-4">
             @if (_user is null)
             {
-                <NavLink class="nav" href="/Login">Login</NavLink>
-                <NavLink class="nav" href="/Register">Register</NavLink>
+                <NavLink class="nav" href="/Login">登录</NavLink>
+                <NavLink class="nav" href="/Register">注册</NavLink>
             }
             else
             {
-                <span class="px-3">
+                <span class="px-2">
                     <NavLink>
                         @if (StateCache.User.VIPExpireTime < DateTime.Now)
                         {
@@ -34,20 +42,20 @@
                         }
                     </NavLink>
                 </span>
-                <span class="px-3">@_user.Name</span>
-                <span class="px-3"><a class="link-secondary" @onclick="LogoutEvent" href="javascript:">Logout</a></span>
+                <span class="px-2"><b>@_user.Name</b></span>
+                <span class="px-2">
+                    <a class="link-secondary" style="margin: 0" @onclick="LogoutEvent" href="javascript:">登出</a>
+                </span>
                 
             }
         </div>
 
-        <article class="content px-4">
-            @if (!_loading)
-            {
-                @Body
-            }
+        <article class="">
+            @Body
         </article>
     </main>
 </div>
+}
 
 @code
 {

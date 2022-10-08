@@ -9,7 +9,6 @@
 <PageTitle> 场次信息 </PageTitle>
 
 <h3> 场次信息 </h3>
-@* todo: 选择电影  *@
 <main>
     <p>
         <MoviePicker Movies="_allmovies" Movie="_selectedmovie" MovieChanged="(Movie mv) => ChangeMovie(mv)" />
@@ -81,6 +80,8 @@
     public DateTime _selectedday;
 
     public string _selectedshowId;
+
+    public string _selectedshowOP;
     
     public Show _selectedshow;
     
@@ -102,36 +103,29 @@
             NavigationManager.NavigateTo("/Login");
             return;
         }
-        await using var db = new MgrContext();
-        _allmovies = await db.Movies.ToListAsync();
-        LoadInfo();
-    // await using var db = new MgrContext();
-    // _showsinfo = (await db.Shows
-    //     .Where(t => t.Movie.Id == MovieId && t.Status == 1).Include(t => t.Movie).ToListAsync())
-    //     .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
-    // _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
-    //
-    // if (_daysinfo.Count > 0)
-    // {
-    //     _selectedday = _daysinfo.First();
-    // }
-    // if (_showsinfo.Count > 0)
-    // {
-    //     _showsinfo = _showsinfo.Where(t => t.Time.Day == _selectedday.Day).ToList();
-    // }
 
+        LoadInfo();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        LoadInfo();
     }
 
     async void LoadInfo()
     {
         await using var db = new MgrContext();
+        
+        _allmovies = await db.Movies.ToListAsync();
         _selectedmovie = await db.Movies.SingleAsync(t => t.Id == MovieId);
         _selectedshowId = null;
+        
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId && t.Status == 1).Include(t => t.Movie).ToListAsync())
             .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
         _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
-
+    
         if (_daysinfo.Count > 0)
         {
             _selectedday = _daysinfo.First();
@@ -162,19 +156,20 @@
             .Where(t => t.Id == _selectedshowId)
             .Include(t => t.Room)
             .ToListAsync()).First();
+        _selectedshowOP = _selectedshow.PosState;
     }
 
     async Task ChangeMovie(Movie mv)
     {
-        MovieId = mv.Id;
-        // _showsinfo = null;
-        // _daysinfo = null;
-        LoadInfo();
+        NavigationManager.NavigateTo($"/ShowInfo/{mv.Id}");
     }
 
     async Task MakeOrder()
     {
-        NavigationManager.NavigateTo($"/OrderConfirm/{0}/{_selectedshowId}/{_selectedshow.PosState}");
+        if (_selectedshow.PosState != _selectedshowOP)
+        {
+            NavigationManager.NavigateTo($"/OrderConfirm/{0}/{_selectedshowId}/{_selectedshow.PosState}");
+        }
         // NavigationManager.NavigateTo($"/OrderConfirm/{1}/{30}");
     }
 

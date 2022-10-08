@@ -57,7 +57,6 @@ public class AlipayConfig
         //request.SetNotifyUrl("");
         request.SetBizModel(model);
         AlipayTradePagePayResponse response = null;
-
         try
         {
             response = client.pageExecute(request);

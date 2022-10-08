@@ -6,6 +6,8 @@
 @inject StateCache StateCache
 @implements IAsyncDisposable
 
+<AuthUser RequireMgr="true"/>
+
 <PageTitle>管理房间</PageTitle>
 
 <div class="container-form">
@@ -122,11 +124,6 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        if (StateCache.User is null || !StateCache.User.IsMgr)
-        {
-            NavigationManager.NavigateTo("");
-            return;
-        }
         await Load();
     }
 

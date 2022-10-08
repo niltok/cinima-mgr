@@ -1,6 +1,7 @@
-﻿@page "/Login"
+﻿@page "/Login/{CallBack?}"
 @using cinima_mgr.Data
 @using Microsoft.EntityFrameworkCore
+@using System.Text
 @layout EmptyLayout
 @inject NavigationManager NavigationManager
 @inject Blazored.LocalStorage.ILocalStorageService Storage
@@ -8,19 +9,22 @@
 <PageTitle>登录</PageTitle>
 
 <h1 style="margin-bottom: 20px; margin-top: 20px">登录</h1>
-<div style="display: grid; grid-gap: 10px; grid-template-rows: 1fr 1fr; grid-template-columns: 1fr 4fr; max-width: 300px; width: 80%">
-    <label>用户名:</label><input @bind="_user"/>
-    <label>密码:</label><input @bind="_pwd" type="password"/>
-</div>
-<p>@_msg</p>
+<p style="display: grid; grid-gap: 10px; grid-template-rows: 1fr 1fr; grid-template-columns: 1fr 4fr; max-width: 300px; width: 80%">
+    <label>用户名:</label><input class="form-control" @bind="_user"/>
+    <label>密码:</label><input class="form-control" @bind="_pwd" type="password"/>
+</p>
+<MsgBox Msg="@_msg"/>
 <p>
     <button class="btn btn-primary" @onclick="LoginEvent">登录</button>
-    <NavLink href="/Register" class="btn btn-secondary">注册</NavLink>
+    <NavLink href=@($"/Register/{CallBack}") class="btn btn-secondary">注册</NavLink>
 </p>
 
 @code {
     private string _user = "", _pwd = "";
     private string _msg = "";
+    
+    [Parameter]
+    public string? CallBack { get; set; }
 
     async void LoginEvent()
     {
@@ -39,6 +43,8 @@
         });
         await Storage.SetItemAsStringAsync("id", id);
         await db.SaveChangesAsync();
-        NavigationManager.NavigateTo("/");
+        var callback = CallBack is null ? "/" : 
+            Encoding.Default.GetString(Convert.FromBase64String(CallBack));
+        NavigationManager.NavigateTo(callback);
     }
 }

@@ -50,9 +50,14 @@
                         </p>
                         <div>@(new MarkupString(Markdown.ToHtml(_movie.Introduction, _pipeline)))</div>
                     </div>
-                    <button class="btn-primary btn" style="align-self: start">
-                        @(_movie.ReleaseDate > DateTime.Now ? "预定" : "购票")
-                    </button>
+                    @if (_movie.Status == 1)
+                    {
+                        <NavLink href=@($"/ShowInfo/{_movie.Id}")>
+                            <button class="btn-primary btn">
+                                @(_movie.ReleaseDate > DateTime.Now ? "预定" : "购票")
+                            </button>
+                        </NavLink>
+                    }
                 </div>
             </div>
             @if (_movie.Preview != "")

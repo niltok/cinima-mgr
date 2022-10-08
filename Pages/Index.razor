@@ -39,8 +39,8 @@
                     @if (m.Status == 1)
                     {
                         <button class="btn-primary btn" @onclick="() => ToShowInfo(m.Id)">
-                                                @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
-                                            </button>
+                            @(m.ReleaseDate > DateTime.Now ? "预定" : "购票")
+                        </button>
                     }
                     else
                     {

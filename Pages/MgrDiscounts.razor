@@ -5,6 +5,8 @@
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
 
+<AuthUser RequireMgr="true"/>
+
 <PageTitle>管理优惠券</PageTitle>
 
 <p>
@@ -36,11 +38,6 @@
     {
         await base.OnInitializedAsync();
         
-        if (StateCache.User is null || !StateCache.User.IsMgr)
-        {
-            NavigationManager.NavigateTo("");
-            return;
-        }
         await using var db = new MgrContext();
         _users = await db.Users.ToListAsync();
         foreach (var u in _users)

@@ -102,36 +102,29 @@
             NavigationManager.NavigateTo("/Login");
             return;
         }
-        await using var db = new MgrContext();
-        _allmovies = await db.Movies.ToListAsync();
-        LoadInfo();
-    // await using var db = new MgrContext();
-    // _showsinfo = (await db.Shows
-    //     .Where(t => t.Movie.Id == MovieId && t.Status == 1).Include(t => t.Movie).ToListAsync())
-    //     .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
-    // _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
-    //
-    // if (_daysinfo.Count > 0)
-    // {
-    //     _selectedday = _daysinfo.First();
-    // }
-    // if (_showsinfo.Count > 0)
-    // {
-    //     _showsinfo = _showsinfo.Where(t => t.Time.Day == _selectedday.Day).ToList();
-    // }
 
+        LoadInfo();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        LoadInfo();
     }
 
     async void LoadInfo()
     {
         await using var db = new MgrContext();
+        
+        _allmovies = await db.Movies.ToListAsync();
         _selectedmovie = await db.Movies.SingleAsync(t => t.Id == MovieId);
         _selectedshowId = null;
+        
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId && t.Status == 1).Include(t => t.Movie).ToListAsync())
             .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
         _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
-
+    
         if (_daysinfo.Count > 0)
         {
             _selectedday = _daysinfo.First();
@@ -166,10 +159,7 @@
 
     async Task ChangeMovie(Movie mv)
     {
-        MovieId = mv.Id;
-        // _showsinfo = null;
-        // _daysinfo = null;
-        LoadInfo();
+        NavigationManager.NavigateTo($"/ShowInfo/{mv.Id}");
     }
 
     async Task MakeOrder()

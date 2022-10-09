@@ -5,14 +5,16 @@
 @inject Blazored.LocalStorage.ILocalStorageService Storage
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
+@using Blazorise
 
 <PageTitle>喵票票</PageTitle>
 
 @if (_loading)
 {
-    <h1 style="position: fixed; width: fit-content; top:  50%; left: 50%; transform: translate(-50%, -50%)">
-        🛫 加载中...
-    </h1>
+    <div style="position: fixed; top:  50%; left: 50%; transform: translate(-50%, -50%)" class="container-center">
+        <h1>加载中...</h1>
+        <div style="width: 100%"><Progress Animated Striped Value="100"></Progress></div>
+    </div>
 }
 else
 {
@@ -25,8 +27,12 @@ else
         <div class="top-row px-4">
             @if (_user is null)
             {
-                <NavLink class="nav" href="/Login">登录</NavLink>
-                <NavLink class="nav" href="/Register">注册</NavLink>
+                <NavLink class="nav" href="/Login">
+                    <button class="btn btn-primary">登录</button>
+                </NavLink>
+                <NavLink class="nav" href="/Register">
+                    <button class="btn">注册</button>
+                </NavLink>
             }
             else
             {
@@ -44,7 +50,7 @@ else
                 </span>
                 <span class="px-2"><b>@_user.Name</b></span>
                 <span class="px-2">
-                    <a class="link-secondary" style="margin: 0" @onclick="LogoutEvent" href="javascript:">登出</a>
+                    <button class="btn" style="margin: 0" @onclick="LogoutEvent">登出</button>
                 </span>
                 
             }

@@ -1,4 +1,4 @@
-﻿@page "/MyTickets"
+﻿@page "/MyTickets/{Id:guid?}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Microsoft.EntityFrameworkCore
@@ -6,39 +6,78 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 @using Blazorise
+@using System.Text
+@inject IJSRuntime JS
 
 <AuthUser/>
 
 <PageTitle>票夹</PageTitle>
 
 <div class="container-form">
-    @foreach (var t in _tickets)
+    @foreach (var s in _shows)
     {
-        <div class="ticket-item">
-            <div style="display: flex">
-                <div>
-                    <img class="movie-cover" src=@($"/Movie/Cover/{t.Show.Movie.Id}")/>
-                </div>
-                <div style="display: flex; flex-direction: column; margin-left: 2rem">
-                    <h4>
-                        <b>@t.Show.Movie.Name</b>
-                        <small class="text-secondary">
-                            (@t.Show.Movie.ReleaseDate.ToString("yyyy-MM"))
-                        </small>
-                    </h4>
-                    <h5>@t.Show.Room.Name @(t.Row + 1) 排 @(t.Column + 1) 座</h5>
-                    <h6>
-                        @t.Show.Time.ToString("yyyy-MM-dd HH:mm") ~ 
-                        @((t.Show.Time + t.Show.Movie.Duration).ToString("HH:mm"))
-                    </h6>
-                </div>
+        <div class="show-container">
+            <div class="show-item">
+                <p>
+                    <img class="movie-cover" src=@($"/Movie/Cover/{s.Item1.Movie.Id}")/>
+                </p>
+                <h4>
+                    <b>@s.Item1.Movie.Name</b>
+                    <small class="text-secondary">
+                        (@s.Item1.Movie.ReleaseDate.ToString("yyyy-MM"))
+                    </small>
+                </h4>
+                <h5>@s.Item1.Room.Name</h5>
+                <h6>
+                    @s.Item1.Time.ToString("yyyy-MM-dd HH:mm") ~ 
+                    @((s.Item1.Time + s.Item1.Movie.Duration).ToString("HH:mm"))
+                </h6>
             </div>
-            <div style="display: flex; align-items: center;">
-                <button class="btn btn-primary" style="height: fit-content"
-                        @onclick=@(() => NavigationManager.NavigateTo($"/PrintTicket/{t.Id}"))>
-                    <div><Icon Name="IconName.Fingerprint"/></div>
-                    <div>验票码</div>
-                </button>
+            <div class="ticket-container">
+                @foreach (var t in s.Item2)
+                {
+                    <div class="ticket-item">
+                        <div>
+                            <div style="margin: 0" class="h5">@(t.Row + 1) 排 @(t.Column + 1) 座</div>
+                            <div style="margin: 0" class="text-secondary h6 px-1 ticket-id">
+                                <small>@t.Id</small>
+                            </div>
+                        </div>
+                    
+                        @if (t.Status == 1)
+                        {
+                            <button class="btn btn-primary px-3" id=@t.Id
+                                    @onclick=@(() => NavigationManager.NavigateTo($"/PrintTicket/{t.Id}"))>
+                                <span><Icon Name="IconName.Fingerprint"/></span>
+                                <span class="px-1">验票码</span>
+                            </button>
+                        }
+                        @if (t.Status == 0)
+                        {
+                            @if (t.Order.State == 0)
+                            {
+                                <button class="btn btn-info px-3" id=@t.Id>
+                                    <span><Icon Name="IconName.MoneyBillAlt"/></span>
+                                    <span class="px-1">待付款</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary px-3" id=@t.Id>
+                                    <span><Icon Name="IconName.Ban"/></span>
+                                    <span class="px-1">无效票</span>
+                                </button>
+                            }
+                        }
+                        @if (t.Status == 2)
+                        {
+                            <button class="btn btn-success px-3" id=@t.Id>
+                                <span><Icon Name="IconName.Check"/></span>
+                                <span class="px-1">已使用</span>
+                            </button>
+                        }
+                    </div>
+                }
             </div>
         </div>
     }
@@ -49,21 +88,19 @@
 </div>
 
 @code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
     MgrContext _db = new();
     List<Ticket> _tickets = new();
+    List<(Show, List<Ticket>)> _shows = new();
 
     async Task Load()
     {
-        _tickets = (await _db.Tickets
+        _tickets = await _db.Tickets
             .Include(t => t.Order)
             .Include(t => t.Show)
-            .Where(t => t.Order.UserName == StateCache.User.Name && t.Order.State != 4).ToArrayAsync())
-            .OrderBy(t => t.Status != 1)
-            .ThenBy(t => t.Show.Time > DateTime.Now ? t.Show.Time - DateTime.Now : DateTime.Now - t.Show.Time)
-            .ThenBy(t => t.Show.Id)
-            .ThenBy(t => t.Row)
-            .ThenBy(t => t.Column)
-            .ToList();
+            .Where(t => t.Order.UserName == StateCache.User.Name && t.Order.State != 4).ToListAsync();
         await Task.WhenAll(_tickets.Select(t => _db
             .Entry(t.Show)
             .Reference(s => s.Movie)
@@ -72,12 +109,40 @@
             .Entry(t.Show)
             .Reference(s => s.Room)
             .LoadAsync()));
+        _shows = _tickets
+            .GroupBy(t => (t.Show, t.Status != 1))
+            .OrderBy(g => g.Key.Item2)
+            .ThenBy(g => 
+                g.Key.Show.Time > DateTime.Now 
+                ? g.Key.Show.Time - DateTime.Now 
+                : DateTime.Now - g.Key.Show.Time)
+            .ThenBy(g => g.Key.Show.Id)
+            .Select(g => (g.Key.Show, g
+                .OrderBy(t => t.Row)
+                .ThenBy(t => t.Column)
+                .ToList()))
+            .ToList();
     }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        if (StateCache.User is null)
+        {
+            NavigationManager.NavigateTo(
+                $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
+            return;
+        }
         await Load();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("focusTo", Id);
+        }
     }
 
     public async ValueTask DisposeAsync()

@@ -1,15 +1,65 @@
-﻿.ticket-item {
+﻿.show-container {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    grid-gap: 3rem;
+    padding: 2rem 0;
+    border-top: lightgray solid;
+}
+
+.show-container:first-child {
+    border-top: 0;
+}
+
+.show-item {
     display: flex;
-    height: 150px;
-    margin-bottom: 20px;
+    flex-direction: column;
+}
+
+.ticket-item {
+    display: flex;
+    padding: 1rem 0;
+    border-top: lightgray solid;
     justify-content: space-between;
+    align-items: center;
+}
+
+.ticket-item:first-child {
+    border-top: 0;
 }
 
 .movie-cover {
-    width: auto;
-    height: 100%;
+    width: 100%;
+    height: auto;
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
     border-radius: 12px;
     transition: box-shadow .15s ease-in-out;
+}
+
+@media (max-width: 550px) {
+    .show-container {
+        display: flex;
+        flex-direction: column;
+        grid-gap: 1rem;
+    }
+    .ticket-item:first-child {
+        border-top: lightgray solid;
+    }
+    .ticket-id {
+        display: none;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 800px) {
+    .show-container {
+        display: flex;
+        flex-direction: column;
+        grid-gap: 1rem;
+    }
+    .ticket-item:first-child {
+        border-top: lightgray solid;
+    }
+    .ticket-id {
+        display: none;
+    }
 }

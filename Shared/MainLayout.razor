@@ -31,7 +31,7 @@ else
             else
             {
                 <span class="px-2">
-                    <NavLink>
+                            <NavLink class="nav" href="/VIP">
                         @if (StateCache.User.VIPExpireTime < DateTime.Now)
                         {
                             @("充值 VIP")
@@ -93,7 +93,7 @@ else
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        NavigationManager.LocationChanged += async (sender, args) => await LoadUser();
+        NavigationManager.LocationChanged += (sender, args) => InvokeAsync(LoadUser);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

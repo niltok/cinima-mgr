@@ -79,7 +79,9 @@
         }
         else
         {
-            <button @onclick="Payment"> 立即付款 </button>
+            <div style="display: flex; flex-direction: column; align-items: center">
+                <button class="btn btn-primary" @onclick="Payment"> 立即付款 </button>
+            </div>
             @if (ToPay)
             {
                 <Alipay Enable="ToPay" out_trade_no="@_order.Id" TaskId="@_taskid"/>
@@ -155,14 +157,14 @@
                         CreatTime = DateTime.Now,
                         // todo: 更改票状态
                         Status = 0,
-                        Row = cnt / show.Room.Width + 1,
-                        Column = cnt % show.Room.Width + 1
+                        Row = cnt / show.Room.Width,
+                        Column = cnt % show.Room.Width
                     };
                     // db.Tickets.Add(ticket) ;
                     // await db.SaveChangesAsync();
                     _order.Tickets.Add(ticket);
                     await db.SaveChangesAsync();
-                    _pos.Add($"{ticket.Row}排{ticket.Column}座");
+                    _pos.Add($"{ticket.Row+1}排{ticket.Column+1}座");
                 }
                 cnt++;
             }
@@ -171,7 +173,7 @@
             
             foreach (var i in _order.Tickets)
             {
-                if (show.PosState[(i.Row - 1) * show.Room.Width + (i.Column - 1)] != '0')
+                if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
                     _poserror = true;
             }
             if (!_poserror)
@@ -209,7 +211,7 @@
             char[] _possta = _show.PosState.ToCharArray();
             foreach (var i in _order.Tickets)
             {
-                _possta[(i.Row - 1) * _show.Room.Width + (i.Column - 1)] = '0';
+                _possta[i.Row * _show.Room.Width + i.Column] = '0';
             }
             _show.PosState = new string(_possta);
             _order.Type = 3;

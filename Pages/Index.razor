@@ -2,8 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject EventMgr EventMgr
 
-<PageTitle>主页</PageTitle>
-
+<PageTitle>喵票票</PageTitle>
 
 <h1 style="margin: 3rem;">欢迎来到喵票票</h1>
 
@@ -13,7 +12,7 @@
         <div class="item">
             <p>
                 <NavLink href=@($"/Movie/Info/{m.Id}")>
-                    <img class="movie_cover"
+                    <img class="movie_cover" tabindex="0"
                          src=@($"/Movie/Cover/{m.Id}")
                          alt=@($"Cover of {m.Name}")/>
                 </NavLink>
@@ -52,26 +51,10 @@
     }
 </div>
 
-<Popout @bind-Enable="_showPopout">
-    <p><button class="btn btn-close px-3" @onclick="() => _showPopout = false"/></p>
-    <MovieInfo Id="_popId"/>
-</Popout>
-
 @code
 {
-    bool _showPopout;
-    Guid _popId;
-
-    void Pop(string id)
-    {
-        _popId = Guid.Parse(id);
-        _showPopout = true;
-    }
     static async Task PE()
     {
-        Console.WriteLine("test");
-        await Global.App.Services.GetService<EventMgr>()!
-            .Subscribe(DateTime.Now + TimeSpan.FromSeconds(5), () => PE());
     }
     List<Movie> _movies = new();
     protected override async Task OnInitializedAsync()

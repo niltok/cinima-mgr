@@ -48,7 +48,6 @@ public class AlipayConfig
         model.TotalAmount = price;
         model.OutTradeNo = out_trade_no;
         model.ProductCode = "FAST_INSTANT_TRADE_PAY";
-        model.TimeExpire = DateTime.Now.AddMinutes(12).ToString("yyyy-MM-dd HH:mm:ss"); 
         return model;
     }
 

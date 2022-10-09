@@ -5,6 +5,12 @@ html, body {
     word-wrap: break-word;
     word-break: break-word;
     color: #18191c;
+    scroll-behavior: smooth;
+}
+
+canvas {
+    width: 100%;
+    height: auto;
 }
 
 h1:focus {
@@ -28,17 +34,27 @@ a, .btn-link {
 .container-form {
     max-width: 800px;
     width: 90%;
-    margin: auto;
+    margin: 3rem auto;
+}
+
+.btn {
+    word-break: keep-all;
+}
+
+.container-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .form-select {
     /*min-width: 200px;*/
-    display: inline;
+    /*display: inline;*/
     /*width: auto;*/
 }
 
 .form-control {
-    display: inline;
+    /*display: inline;*/
     /*width: auto;*/
 }
 

@@ -7,17 +7,18 @@
 @inject Blazored.LocalStorage.ILocalStorageService Storage
 
 <PageTitle>登录</PageTitle>
-
-<h1 style="margin-bottom: 20px; margin-top: 20px">登录</h1>
-<p style="display: grid; grid-gap: 10px; grid-template-rows: 1fr 1fr; grid-template-columns: 1fr 4fr; max-width: 300px; width: 80%">
-    <label>用户名:</label><input class="form-control" @bind="_user"/>
-    <label>密码:</label><input class="form-control" @bind="_pwd" type="password"/>
-</p>
+<div class="container-center">
+    <h1 style="margin-bottom: 20px; margin-top: 20px">登录</h1>
+    <p style="display: grid; grid-gap: 10px; grid-template-rows: 1fr 1fr; grid-template-columns: 1fr 4fr">
+        <label>用户名:</label><input class="form-control" @bind="_user"/>
+        <label>密码:</label><input class="form-control" @bind="_pwd" type="password"/>
+    </p>
+    <p>
+        <button class="btn btn-primary" @onclick="LoginEvent">登录</button>
+        <NavLink href=@($"/Register/{CallBack}") class="btn btn-secondary">注册</NavLink>
+    </p>
+</div>
 <MsgBox Msg="@_msg"/>
-<p>
-    <button class="btn btn-primary" @onclick="LoginEvent">登录</button>
-    <NavLink href=@($"/Register/{CallBack}") class="btn btn-secondary">注册</NavLink>
-</p>
 
 @code {
     private string _user = "", _pwd = "";

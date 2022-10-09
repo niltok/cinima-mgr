@@ -62,7 +62,7 @@
                 </p>
                 <br/>
                 <div style="display: flex; flex-direction: column; align-items: center">
-                    <button class="btn btn-primary" @onclick="MakeOrder"> 确认订单 </button>
+                    <button class="btn btn-primary" @onclick="MakeOrder"> 确认选座 </button>
                 </div>
                 @if (_poserror) { <MsgBox Msg="不要妨碍叔叔赚钱！" OnClosed="() => _poserror = false"></MsgBox> }
                 <p></p>

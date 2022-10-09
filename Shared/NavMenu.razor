@@ -1,6 +1,7 @@
 ﻿@using cinima_mgr.Data
 @using cinima_mgr.Service
 @inject StateCache StateCache
+@using Blazorise
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -15,7 +16,7 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> 主页
+                <span class="oi"><Icon Name="IconName.Home"/></span> 主页
             </NavLink>
         </div>
         <!-- 登录用户功能 -->
@@ -23,17 +24,22 @@
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="/MyTickets" Match="NavLinkMatch.All">
-                    <span class="oi oi-scriot" aria-hidden="true"></span> 我的电影票
+                    <span class="oi"><Icon Name="IconName.Wallet"/></span> 票夹
                 </NavLink>
             </div>
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="/MyDiscounts" Match="NavLinkMatch.All">
-                    <span class="oi oi-scriot" aria-hidden="true"></span> 我的优惠券
+                    <span class="oi"><Icon Name="IconName.TicketAlt"/></span> 我的优惠券
                 </NavLink>
             </div>
             <!-- 管理员功能 -->
             @if (IsMgr)
             {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/CheckTicket" Match="NavLinkMatch.All">
+                        验票
+                    </NavLink>
+                </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/MovieMgr" Match="NavLinkMatch.All">
                         管理电影
@@ -70,7 +76,7 @@
     
     private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : "show";
 
     private void ToggleNavMenu()
     {

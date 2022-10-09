@@ -84,7 +84,6 @@
                             class="btn btn-primary">
                         @_btnName
                     </button>
-                    <div style="grid-area: e;">@_msg</div>
                 </div>
             }
             <div class="comments">
@@ -107,6 +106,7 @@
     }
 </div>
 
+<MsgBox Msg="@_msg"/>
 
 @code {
     [Parameter]
@@ -199,12 +199,12 @@
                 cc.EditTime = DateTime.Now;
             }
             await db.SaveChangesAsync();
-            _msg = "操作成功!";
+            _msg = $"[{DateTime.Now}] 操作成功!";
             await Init(db);
         }
         catch (Exception e)
         {
-            _msg = e.Message;
+            _msg = $"[{DateTime.Now}] 错误: {e.Message}";
         }
         _processing = false;
     }

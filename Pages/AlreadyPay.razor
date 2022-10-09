@@ -1,0 +1,29 @@
+﻿@page "/AlreadyPay/{OrderId}/{TaskId}"
+@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter]
+    public string OrderId { get; set; }
+    [Parameter]
+    public string TaskId { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        takeEffect();
+        NavigationManager.NavigateTo("/");
+    }
+
+    async Task takeEffect()
+    {
+        await Global.App.Services.GetService<EventMgr>()!.Cancel(TaskId);
+        await using var db = new MgrContext();
+        Order _order = await db.Orders.Include(t => t.Tickets)
+            .SingleAsync(t => t.Id == OrderId);
+        _order.State = 1;
+        foreach (var i in _order.Tickets)
+        {
+            i.Status = 1;
+        }
+        await db.SaveChangesAsync();
+    }
+}

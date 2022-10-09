@@ -10,6 +10,7 @@ public class Order
     public string Id { get; set; }
     [Required]
     public User User { get; set; }
+    public string UserName { get; set; }
     /// <summary>
     /// 订单类型： '0' 表示票务订单，'1' 表示会员订单
     /// </summary>

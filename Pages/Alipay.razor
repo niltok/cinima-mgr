@@ -12,6 +12,8 @@
     public bool Enable { get; set; } = false;
     [Parameter]
     public string out_trade_no { get; set; }
+    [Parameter]
+    public string TaskId { get; set; }
     public string price { get; set; }
     public string res;
     protected override void OnParametersSet()
@@ -19,7 +21,7 @@
         if (!Enable) return;
         Query();
         AlipayConfig m = new AlipayConfig();
-        res=m.Pay(m.creatModel(out_trade_no,price));
+        res=m.Pay(m.creatModel(out_trade_no,price), TaskId);
         
     }
 

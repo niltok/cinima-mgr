@@ -28,8 +28,8 @@ public class EventMgr : IDisposable
             await using var db = new MgrContext();
             var run = true;
             while (run) {
-                var recent = await db.Events.OrderBy(r => r.TriggerTime).FirstAsync();
-                if (recent.TriggerTime > DateTime.Now) run = false;
+                var recent = await db.Events.OrderBy(r => r.TriggerTime).FirstOrDefaultAsync();
+                if (recent is null || recent.TriggerTime > DateTime.Now) run = false;
                 else
                 {
                     db.Events.Remove(recent);

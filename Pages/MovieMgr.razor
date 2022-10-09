@@ -9,7 +9,7 @@
 <div class="container-form">
     <p>
         <label>电影:</label>
-        <select class="form-select" @onchange="e => SelectMovie((string) e.Value)">
+        <select class="form-control" @onchange="e => SelectMovie((string) e.Value)">
             <option value="" selected=@(_selected == "")>[新建]</option>
             @foreach (var m in _label)
             {
@@ -23,7 +23,7 @@
     </p>
     <p>
         <label>状态:</label>
-        <select class="form-select" @bind="_movie.Status">
+        <select class="form-control" @bind="_movie.Status">
             <option value=0>已隐藏</option>
             <option value=1>在映</option>
             <option value=2>不在映</option>

@@ -1,0 +1,41 @@
+﻿@page "/PrintTicket/{Id:guid}"
+@layout EmptyLayout
+@using Blazorise.QRCode
+
+<div style="position: fixed; width: fit-content; top:  50%; left: 50%; transform: translate(-50%, -50%)">
+    @if (_ticket is null)
+    {
+        <h1 style="width: fit-content">
+            @_msg
+        </h1>
+    }
+    else
+    {
+        <div style="width: fit-content; display: flex; flex-direction: column; align-items: center">
+            <h1>@(_ticket.Row + 1) 排 @(_ticket.Column + 1) 座</h1>
+            <QRCode Value="@_ticket.Id"/>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    string _msg = "🛫 加载中...";
+    Ticket? _ticket;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await using var _db = new MgrContext();
+        var ticket = await _db.Tickets.SingleOrDefaultAsync(t => t.Id == Id.ToString());
+        if (ticket.Status != 1)
+        {
+            _msg = "无效票";
+            return;
+        }
+        _ticket = ticket;
+    }
+
+}

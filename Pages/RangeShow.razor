@@ -13,7 +13,7 @@
 <div class="container-form">
     <p>
         <label>房间:</label>
-        <select class="form-select selector" @onchange="e => SelectRoom(e.Value?.ToString())">
+        <select class="form-control selector" @onchange="e => SelectRoom(e.Value?.ToString())">
             @foreach (var r in _rooms)
             {
                 <option value=@r.Key>@r.Key</option>
@@ -24,7 +24,7 @@
     {
         <p>
             <label>场次:</label>
-            <select class="form-select" @onchange="e => SelectShow(e.Value.ToString())">
+            <select class="form-control" @onchange="e => SelectShow(e.Value.ToString())">
                 <option value="" selected=@(_selectedShow == "")>[新建]</option>
                 @foreach (var s in _showLabel)
                 {
@@ -34,7 +34,7 @@
         </p>
         <p>
             <label>状态:</label>
-            <select class="form-select" @bind="_show.Status">
+            <select class="form-control" @bind="_show.Status">
                 <option value=0>隐藏</option>
                 <option value=1>启用</option>
                 <option value=2>取消</option>

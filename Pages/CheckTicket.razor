@@ -17,8 +17,8 @@
         }
         @if (_dialogType == 2)
         {
-            <h2 class="green">✓ 核验通过</h2>
-            <h1>@($"{_ticket.Row} 排 {_ticket.Column} 座")</h1>
+            <h2 class="text-success">✓ 核验通过</h2>
+            <h1>@($"{_ticket.Row + 1} 排 {_ticket.Column + 1} 座")</h1>
             <p><small class="text-secondary">@_ticket.Id</small></p>
             <div>
                 <button class="btn btn-danger" @onclick="UseTicket">使用该票</button>

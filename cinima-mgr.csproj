@@ -12,6 +12,9 @@
       <PackageReference Include="AlipaySDKNet.Standard" Version="4.6.442" />
       <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
       <PackageReference Include="Blazored.SessionStorage" Version="2.2.0" />
+      <PackageReference Include="Blazorise.Bootstrap" Version="1.1.1" />
+      <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.1.1" />
+      <PackageReference Include="Blazorise.QRCode" Version="1.1.1" />
       <PackageReference Include="Markdig" Version="0.30.4" />
       <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.9">

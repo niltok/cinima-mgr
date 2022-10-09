@@ -51,26 +51,10 @@
     }
 </div>
 
-<Popout @bind-Enable="_showPopout">
-    <p><button class="btn btn-close px-3" @onclick="() => _showPopout = false"/></p>
-    <MovieInfo Id="_popId"/>
-</Popout>
-
 @code
 {
-    bool _showPopout;
-    Guid _popId;
-
-    void Pop(string id)
-    {
-        _popId = Guid.Parse(id);
-        _showPopout = true;
-    }
     static async Task PE()
     {
-        Console.WriteLine("test");
-        await Global.App.Services.GetService<EventMgr>()!
-            .Subscribe(DateTime.Now + TimeSpan.FromSeconds(5), () => PE());
     }
     List<Movie> _movies = new();
     protected override async Task OnInitializedAsync()

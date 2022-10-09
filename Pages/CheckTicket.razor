@@ -8,7 +8,7 @@
 </div>
 
 <Popout @bind-Enable="_dialog">
-    <div style="display: flex; flex-direction: column; align-items: center">
+    <div class="container-center">
         @if (_dialogType == 1)
         {
             <p><b>@_msg</b></p>
@@ -18,7 +18,17 @@
         @if (_dialogType == 2)
         {
             <h2 class="text-success">✓ 核验通过</h2>
-            <h1>@($"{_ticket.Row + 1} 排 {_ticket.Column + 1} 座")</h1>
+            <h3>
+                <b>@_ticket.Show.Movie.Name</b>
+                <small class="text-secondary">
+                    (@_ticket.Show.Movie.ReleaseDate.ToString("yyyy-MM"))
+                </small>
+            </h3>
+            <h5 class=@(_ticket.Show.Time - DateTime.Now > TimeSpan.FromMinutes(10) ? "text-danger" : "")>
+                @_ticket.Show.Time.ToString("yyyy-MM-dd HH:mm") ~ 
+                @((_ticket.Show.Time + _ticket.Show.Movie.Duration).ToString("HH:mm"))
+            </h5>
+            <h1>@($"{_ticket.Show.Room.Name} {_ticket.Row + 1} 排 {_ticket.Column + 1} 座")</h1>
             <p><small class="text-secondary">@_ticket.Id</small></p>
             <div>
                 <button class="btn btn-danger" @onclick="UseTicket">使用该票</button>
@@ -66,6 +76,7 @@
             .Include(t => t.Order)
             .SingleOrDefaultAsync(t => t.Id == code);
         await _db.Entry(_ticket.Show).Reference(s => s.Room).LoadAsync();
+        await _db.Entry(_ticket.Show).Reference(s => s.Movie).LoadAsync();
         if (_ticket is null)
         {
             _msg = "票不存在";

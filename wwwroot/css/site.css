@@ -36,6 +36,12 @@ a, .btn-link {
     margin: 3rem auto auto;
 }
 
+.container-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .form-select {
     /*min-width: 200px;*/
     /*display: inline;*/

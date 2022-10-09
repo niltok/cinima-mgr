@@ -4,26 +4,85 @@
 @using Microsoft.EntityFrameworkCore
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+@using Blazorise
 
 <AuthUser/>
 
-<PageTitle>我的电影票</PageTitle>
+<PageTitle>票夹</PageTitle>
 
-
+<div class="container-form">
+    @foreach (var t in _tickets)
+    {
+        <div class="ticket-item">
+            <div style="display: flex">
+                <div>
+                    <img class="movie-cover" src=@($"/Movie/Cover/{t.Show.Movie.Id}")/>
+                </div>
+                <div style="display: flex; flex-direction: column; margin-left: 2rem">
+                    <h4>
+                        <b>@t.Show.Movie.Name</b>
+                        <small class="text-secondary">
+                            (@t.Show.Movie.ReleaseDate.ToString("yyyy-MM"))
+                        </small>
+                    </h4>
+                    <h5>@t.Show.Room.Name @(t.Row + 1) 排 @(t.Column + 1) 座</h5>
+                    <h6>
+                        @t.Show.Time.ToString("yyyy-MM-dd HH:mm") ~ 
+                        @((t.Show.Time + t.Show.Movie.Duration).ToString("HH:mm"))
+                    </h6>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <button class="btn btn-primary" style="height: fit-content"
+                        @onclick=@(() => NavigationManager.NavigateTo($"/PrintTicket/{t.Id}"))>
+                    <div><Icon Name="IconName.Fingerprint"/></div>
+                    <div>验票码</div>
+                </button>
+            </div>
+        </div>
+    }
+    @if (_tickets.Count == 0)
+    {
+        <h1>没有找到电影票...</h1>
+    }
+</div>
 
 @code {
+    MgrContext _db = new();
     List<Ticket> _tickets = new();
+
+    async Task Load()
+    {
+        _tickets = (await _db.Tickets
+            .Include(t => t.Order)
+            .Include(t => t.Show)
+            .Where(t => t.Order.UserName == StateCache.User.Name && t.Order.State != 4).ToArrayAsync())
+            .OrderBy(t => t.Status != 1)
+            .ThenBy(t => t.Show.Time > DateTime.Now ? t.Show.Time - DateTime.Now : DateTime.Now - t.Show.Time)
+            .ThenBy(t => t.Show.Id)
+            .ThenBy(t => t.Row)
+            .ThenBy(t => t.Column)
+            .ToList();
+        await Task.WhenAll(_tickets.Select(t => _db
+            .Entry(t.Show)
+            .Reference(s => s.Movie)
+            .LoadAsync()));
+        await Task.WhenAll(_tickets.Select(t => _db
+            .Entry(t.Show)
+            .Reference(s => s.Room)
+            .LoadAsync()));
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        if (StateCache.User is null)
-        {
-            NavigationManager.NavigateTo("");
-            return;
-        }
-        var db = new MgrContext();
-        //_tickets = await db.Tickets.ToListAsync();
+        await Load();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _db.DisposeAsync();
     }
 
 }

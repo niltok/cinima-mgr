@@ -1,0 +1,15 @@
+﻿.ticket-item {
+    display: flex;
+    height: 150px;
+    margin-bottom: 20px;
+    justify-content: space-between;
+}
+
+.movie-cover {
+    width: auto;
+    height: 100%;
+    box-shadow: 0 0 0 1px #ced4da;
+    outline: 0;
+    border-radius: 12px;
+    transition: box-shadow .15s ease-in-out;
+}

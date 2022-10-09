@@ -1,0 +1,26 @@
+﻿@page "/VIP"
+
+<PageTitle> 充值VIP </PageTitle>
+
+<div class="container-form">
+<div class="top-row px-4">
+    <EditForm Model="@_day">
+        <InputRadioGroup @bind-Value="@_day">
+            <div class="toggle">
+                <InputRadio Value="30" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d30", ["style"]="display:none"})"/>
+                <label for="d30" > 30 天 </label>
+                <InputRadio Value="90" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d90", ["style"]="display:none"})"/>
+                <label for="d90" > 90 天 </label>
+                <InputRadio Value="180" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d180", ["style"]="display:none"})"/>
+                <label for="d180" > 180 天 </label>
+                <InputRadio Value="360" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d360", ["style"]="display:none"})"/>
+                <label for="d360" > 360 天 </label>
+            </div>
+        </InputRadioGroup>
+    </EditForm>
+</div>
+</div>
+
+@code {
+    int _day;
+}

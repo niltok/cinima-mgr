@@ -3,6 +3,8 @@ using Aop.Api.Domain;
 using Aop.Api.Request;
 using Aop.Api.Response;
 using Newtonsoft.Json;
+using cinima_mgr.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace cinima_mgr.Ali;
 
@@ -46,6 +48,7 @@ public class AlipayConfig
         model.TotalAmount = price;
         model.OutTradeNo = out_trade_no;
         model.ProductCode = "FAST_INSTANT_TRADE_PAY";
+        model.TimeExpire = DateTime.Now.AddMinutes(12).ToString("yyyy-MM-dd HH:mm:ss"); 
         return model;
     }
 
@@ -54,13 +57,11 @@ public class AlipayConfig
         IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false); 
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
         request.SetReturnUrl("https://localhost:7220/");
-        //request.SetNotifyUrl("");
         request.SetBizModel(model);
         AlipayTradePagePayResponse response = null;
         try
         {
             response = client.pageExecute(request);
-            Console.Write(response.Body);
             return response.Body;
         }
         catch (Exception exp)
@@ -70,20 +71,31 @@ public class AlipayConfig
 
     }
 
-
+    public string Query(string out_trade_no)
+    {
+        IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
+        AlipayTradeQueryRequest  request= new AlipayTradeQueryRequest() ;
+        Dictionary<string, object> bizContent = new Dictionary<string, object>();
+        bizContent.Add("out_trade_no", out_trade_no);
+        string Contentjson = JsonConvert.SerializeObject(bizContent);
+        request.BizContent = Contentjson;
+        AlipayTradeQueryResponse response= null;
+        try
+        {
+            response = client.Execute(request);
+            Console.WriteLine(response.Body);
+            return response.Body;
+        }
+        catch (Exception exp)
+        {
+            throw exp;
+        }
+    }
     public string Refund(string out_trade_no,string price)
     {
         IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
-        // 商户订单号，和交易号不能同时为空
-        //string out_trade_no = WIDout_trade_no.Text.Trim();
-
-        // 支付宝交易号，和商户订单号不能同时为空
-        
-
-        // 退款金额，不能大于订单总金额
         string refund_amount = price;
         string refund_reason = "正常退款";
-
         // 退款单号，同一笔多次退款需要保证唯一，部分退款该参数必填。
         //string out_request_no = WIDout_request_no.Text.Trim();
         AlipayTradeRefundModel model = new AlipayTradeRefundModel();
@@ -109,24 +121,35 @@ public class AlipayConfig
     public string RefundQuery(string out_trade_no)
     {
         DefaultAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
-
-        // 商户订单号，和交易号不能同时为空
-        //string out_trade_no = WIDout_trade_no.Text.Trim();
-
-        // 支付宝交易号，和商户订单号不能同时为空
-        //string trade_no = WIDtrade_no.Text.Trim();
-
         // 请求退款接口时，传入的退款号，如果在退款时未传入该值，则该值为创建交易时的商户订单号，必填。
         string out_request_no = out_trade_no;
-
         AlipayTradeFastpayRefundQueryModel model = new AlipayTradeFastpayRefundQueryModel();
         model.OutTradeNo = out_trade_no;
         //model.TradeNo = trade_no;
         model.OutRequestNo = out_request_no;
-
         AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
         request.SetBizModel(model);
         AlipayTradeFastpayRefundQueryResponse response = null;
+        try
+        {
+            response = client.Execute(request);
+            return response.Body;
+        }
+        catch (Exception exp)
+        {
+            throw exp;
+        }
+    }
+
+    public string Close(string out_trade_no)
+    {
+        IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false);
+        AlipayTradeCloseRequest  request= new AlipayTradeCloseRequest() ;
+        Dictionary<string, object> bizContent = new Dictionary<string, object>();
+        bizContent.Add("trade_no", out_trade_no);
+        string Contentjson = JsonConvert.SerializeObject(bizContent);
+        request.BizContent = Contentjson;
+        AlipayTradeCloseResponse response = null;
         try
         {
             response = client.Execute(request);

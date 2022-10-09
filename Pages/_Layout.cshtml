@@ -34,9 +34,8 @@ function sub(data){
     }
     console.log("success")
     let div = document.createElement("divform");
-    div.innerHTML = data; // data就是接口返回的form 表单字符串
+    div.innerHTML = data;
     document.body.appendChild(div);
-    document.forms["alipaysubmit"].setAttribute('target', '_blank') // 新开窗口跳转
     document.forms["alipaysubmit"].submit();
 }
 </script>

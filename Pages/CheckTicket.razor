@@ -65,6 +65,7 @@
             .Include(t => t.Show)
             .Include(t => t.Order)
             .SingleOrDefaultAsync(t => t.Id == code);
+        await _db.Entry(_ticket.Show).Reference(s => s.Room).LoadAsync();
         if (_ticket is null)
         {
             _msg = "票不存在";
@@ -115,6 +116,9 @@
         {
             _ticket.UsedTime = DateTime.Now;
             _ticket.Status = 2;
+            var sits = PosStateHelper.Unpack(_ticket.Show.PosState, _ticket.Show.Room.Height, _ticket.Show.Room.Width);
+            sits[_ticket.Row, _ticket.Column] = '2';
+            _ticket.Show.PosState = PosStateHelper.Pack(sits);
             await _db.SaveChangesAsync();
         }
         catch (Exception e)

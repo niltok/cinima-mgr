@@ -4,30 +4,29 @@ namespace cinima_mgr.Data;
 
 public static class PosStateHelper
 {
-    public static List<List<char>> Unpack(string pos, int h, int w)
+    public static char[,] Unpack(string pos, int h, int w)
     {
-        var res = new List<List<char>>(h);
+        var res = new char[h, w];
         for (int i = 0; i < h; i++)
         {
-            var tmp = new List<char>(w);
             for (int j = 0; j < w; j++)
             {
-                tmp.Add(i * w + j < pos.Length ? pos[i * w + j] : ' ');
+                res[i, j] = i * w + j < pos.Length ? pos[i * w + j] : ' ';
             }
-            res.Add(tmp);
         }
-
         return res;
     }
 
-    public static string Pack(List<List<char>> pos)
+    public static string Pack(char[,] pos)
     {
         var sb = new StringBuilder();
-        foreach (var c in pos.SelectMany(cs => cs))
+        for (int i = 0; i < pos.GetLength(0); i++)
         {
-            sb.Append(c);
+            for (int j = 0; j < pos.GetLength(1); j++)
+            {
+                sb.Append(pos[i, j]);
+            }
         }
-
         return sb.ToString();
     }
 

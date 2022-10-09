@@ -82,7 +82,7 @@
             <button @onclick="Payment"> 立即付款 </button>
             @if (ToPay)
             {
-                <Alipay Enable="ToPay" out_trade_no="@_order.Id" TaskId="_taskid"/>
+                <Alipay Enable="ToPay" out_trade_no="@_order.Id" TaskId="@_taskid"/>
             }
         }
     </div>

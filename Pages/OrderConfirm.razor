@@ -192,8 +192,30 @@
         }
 
     }
-    
-    public static async Task ii (){}
+
+    public static async Task CancelOrder(string _orderid)
+    {
+        await using var _db = new MgrContext();
+        var _order = await _db.Orders.Where(t => t.Id == _orderid)
+            .Include(t => t.Tickets).SingleOrDefaultAsync();
+        if (_order != null && _order.Type == 0)
+        {
+            Ticket _ticket = await _db.Tickets.Where(t => t.Id == _order.Tickets.First().Id)
+                .Include(t => t.Show).SingleAsync();
+            Show _show = await _db.Shows.Where(t => t.Id == _ticket.Show.Id)
+                .Include(t => t.Room).SingleAsync();
+            
+            char[] _possta = _show.PosState.ToCharArray();
+            foreach (var i in _order.Tickets)
+            {
+                _possta[(i.Row - 1) * _show.Room.Width + (i.Column - 1)] = '0';
+            }
+            _show.PosState = new string(_possta);
+            _order.Type = 3;
+            _order.CancelTime = DateTime.Now;
+            await _db.SaveChangesAsync();
+        }
+    }
 
     async Task Payment()
     {
@@ -213,9 +235,9 @@
         db.Orders.Add(_order);
         await db.SaveChangesAsync();
         // todo: cansel ticket 
-        // string i = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
-        //     DateTime.Now + TimeSpan.FromMinutes(15),
-        //         () => { OrderConfirm.ii() } );
+        string i = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
+            DateTime.Now + TimeSpan.FromSeconds(10),
+                () => OrderConfirm.CancelOrder(_order.Id));
         ToPay = true;
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");
     }

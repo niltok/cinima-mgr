@@ -32,6 +32,13 @@
                     @s.Item1.Time.ToString("yyyy-MM-dd HH:mm") ~ 
                     @((s.Item1.Time + s.Item1.Movie.Duration).ToString("HH:mm"))
                 </h6>
+                @if (s.Item1.Status == 2)
+                {
+                    <Badge Color="Color.Warning">
+                        <Icon Name="IconName.ExclamationTriangle"/>
+                        <span class="px-1">已取消</span>
+                    </Badge>
+                }
             </div>
             <div class="ticket-container">
                 @foreach (var t in s.Item2)
@@ -59,6 +66,19 @@
                                 <button class="btn btn-info px-3" id=@t.Id>
                                     <span><Icon Name="IconName.MoneyBillAlt"/></span>
                                     <span class="px-1">待付款</span>
+                                </button>
+                            }
+                            else if (t.Order.State == 2)
+                            {
+                                <button class="btn btn-secondary px-3" id=@t.Id>
+                                    <span><Icon Name="IconName.Reply"/></span>
+                                    <span class="px-1">已退款</span>
+                                </button>
+                            } else if (t.Order.State == 3)
+                            {
+                                <button class="btn btn-secondary px-3" id=@t.Id>
+                                    <span><Icon Name="IconName.Times"/></span>
+                                    <span class="px-1">订单取消</span>
                                 </button>
                             }
                             else
@@ -110,15 +130,17 @@
             .Reference(s => s.Room)
             .LoadAsync()));
         _shows = _tickets
-            .GroupBy(t => (t.Show, t.Status != 1))
-            .OrderBy(g => g.Key.Item2)
+            .GroupBy(t => t.Show)
+            .OrderBy(g => g.All(t => t.Status != 1))
             .ThenBy(g => 
-                g.Key.Show.Time > DateTime.Now 
-                ? g.Key.Show.Time - DateTime.Now 
-                : DateTime.Now - g.Key.Show.Time)
-            .ThenBy(g => g.Key.Show.Id)
-            .Select(g => (g.Key.Show, g
-                .OrderBy(t => t.Row)
+                g.Key.Time > DateTime.Now 
+                ? g.Key.Time - DateTime.Now 
+                : DateTime.Now - g.Key.Time)
+            .ThenBy(g => g.Key.Id)
+            .Select(g => (g.Key, g
+                .OrderBy(t => t.Status != 1)
+                .ThenBy(t => t.Status != 2)
+                .ThenBy(t => t.Row)
                 .ThenBy(t => t.Column)
                 .ToList()))
             .ToList();

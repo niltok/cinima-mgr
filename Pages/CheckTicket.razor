@@ -2,6 +2,7 @@
 @inject IJSRuntime JS
 @using ReactorBlazorQRCodeScanner
 @implements IAsyncDisposable
+@using Blazorise
 
 <div class="container-form">
     <QRCodeScanner LoadingMessage="加载中，请允许使用摄像头"/>
@@ -17,7 +18,10 @@
         }
         @if (_dialogType == 2)
         {
-            <h2 class="text-success">✓ 核验通过</h2>
+            <h2 class="text-success">
+                <Icon Name="IconName.Check"/>
+                <span class="px-1">核验通过</span>
+            </h2>
             <h3>
                 <b>@_ticket.Show.Movie.Name</b>
                 <small class="text-secondary">

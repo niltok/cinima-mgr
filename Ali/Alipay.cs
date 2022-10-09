@@ -49,11 +49,11 @@ public class AlipayConfig
         return model;
     }
 
-    public string Pay(AlipayTradePagePayModel model)
+    public string Pay(AlipayTradePagePayModel model, string taskID)
     {
         IAopClient client = new DefaultAopClient(AlipayConfig.gateway, AlipayConfig.appId, AlipayConfig.privateKey, "json", "1.0", AlipayConfig.sign_type, AlipayConfig.alipayPublicKey, AlipayConfig.charset, false); 
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-        request.SetReturnUrl("https://localhost:7220/");
+        request.SetReturnUrl($"https://localhost:7220/AlreadyPay/{model.OutTradeNo}/{taskID}");
         //request.SetNotifyUrl("");
         request.SetBizModel(model);
         AlipayTradePagePayResponse response = null;

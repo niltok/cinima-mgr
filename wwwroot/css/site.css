@@ -7,6 +7,11 @@ html, body {
     color: #18191c;
 }
 
+canvas {
+    width: 100%;
+    height: auto;
+}
+
 h1:focus {
     outline: none;
 }
@@ -28,17 +33,17 @@ a, .btn-link {
 .container-form {
     max-width: 800px;
     width: 90%;
-    margin: auto;
+    margin: 3rem auto auto;
 }
 
 .form-select {
     /*min-width: 200px;*/
-    display: inline;
+    /*display: inline;*/
     /*width: auto;*/
 }
 
 .form-control {
-    display: inline;
+    /*display: inline;*/
     /*width: auto;*/
 }
 

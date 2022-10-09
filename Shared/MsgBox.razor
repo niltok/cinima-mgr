@@ -1,13 +1,19 @@
-﻿
-<Popout Enable="_msgbox" EnableChanged="OnClosed">
+﻿@using Markdig
+
+<Popout Enable="_msgbox" EnableChanged="EnableChanged">
     <div style="display: flex; flex-direction: column; align-items: center">
-        <span style="margin: 3rem">@Msg</span>
-        <button class="btn btn-primary" @onclick="() => {_msgbox = false; OnClosed.InvokeAsync();}">关闭</button>
+        <span style="margin: 1rem 3rem">@Msg</span>
+        <button class="btn btn-primary" @onclick="() => EnableChanged(false)">关闭</button>
     </div>
 </Popout>
 
 @code {
     bool _msgbox;
+    MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
+        .UseSoftlineBreakAsHardlineBreak()
+        .UseAutoLinks()
+        .UseEmojiAndSmiley()
+        .Build();
     [Parameter]
     public string Msg { get; set; } = "";
     [Parameter]

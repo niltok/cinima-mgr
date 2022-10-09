@@ -1,0 +1,129 @@
+﻿@page "/CheckTicket"
+@inject IJSRuntime JS
+@using ReactorBlazorQRCodeScanner
+@implements IAsyncDisposable
+
+<div class="container-form">
+    <QRCodeScanner LoadingMessage="加载中，请允许使用摄像头"/>
+</div>
+
+<Popout @bind-Enable="_dialog">
+    <div style="display: flex; flex-direction: column; align-items: center">
+        @if (_dialogType == 1)
+        {
+            <p><b>@_msg</b></p>
+            <p><small class="text-secondary">@_subtitle</small></p>
+            <div><button class="btn btn-primary" @onclick="() => _dialog = false">关闭</button></div>
+        }
+        @if (_dialogType == 2)
+        {
+            <h2 class="text-success">✓ 核验通过</h2>
+            <h1>@($"{_ticket.Row + 1} 排 {_ticket.Column + 1} 座")</h1>
+            <p><small class="text-secondary">@_ticket.Id</small></p>
+            <div>
+                <button class="btn btn-danger" @onclick="UseTicket">使用该票</button>
+                <button class="btn btn-secondary" @onclick="() => _dialog = false">关闭</button>
+            </div>
+        }
+    </div>
+</Popout>
+
+@code {
+    bool _dialog, _lock;
+    string _msg = "", _subtitle = "";
+    int _dialogType;
+    
+    private QRCodeScannerJsInterop? _qr;
+    MgrContext _db = new();
+    Ticket? _ticket;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _qr = new QRCodeScannerJsInterop(JS);
+        await _qr.Init(s => InvokeAsync(() => OnQrCodeScan(s)));
+    }
+
+    private async Task OnQrCodeScan(string code)
+    {
+        if (_dialog || _lock) return;
+        _lock = true;
+        try
+        {
+            Guid.Parse(code);
+        }
+        catch (Exception e)
+        {
+            _msg = "不是票二维码";
+            _subtitle = code;
+            _dialogType = 1;
+            _dialog = true;
+            _lock = false;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+        _ticket = await _db.Tickets
+            .Include(t => t.Show)
+            .Include(t => t.Order)
+            .SingleOrDefaultAsync(t => t.Id == code);
+        if (_ticket is null)
+        {
+            _msg = "票不存在";
+            _subtitle = code;
+            _dialogType = 1;
+            _dialog = true;
+            _lock = false;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+        if (_ticket.Status != 1)
+        {
+            _msg = "无效票";
+            _subtitle = code;
+            _dialogType = 1;
+            _dialog = true;
+            _lock = false;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+        _dialogType = 2;
+        _dialog = true;
+        _lock = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_qr is not null)
+        {
+            try
+            {
+                await _qr.StopRecording();
+                await _qr.DisposeAsync();
+            }
+            catch (Exception e)
+            {
+                // ignored
+            }
+        }
+        await _db.DisposeAsync();
+    }
+
+    private async Task UseTicket()
+    {
+        _dialog = false;
+        try
+        {
+            _ticket.UsedTime = DateTime.Now;
+            _ticket.Status = 2;
+            await _db.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            _msg = $"错误: {e.Message}";
+            _subtitle = _ticket.Id;
+            _dialogType = 1;
+            _dialog = true;
+        }
+    }
+
+}

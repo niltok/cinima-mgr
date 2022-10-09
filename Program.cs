@@ -1,4 +1,7 @@
 using Blazored.LocalStorage;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using cinima_mgr;
 using cinima_mgr.Data;
 using cinima_mgr.Service;
@@ -14,6 +17,10 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<StateCache>();
 builder.Services.AddSingleton<EventMgr>();
 builder.Services.AddSession();
+builder.Services
+    .AddBlazorise()
+    .AddBootstrapProviders()
+    .AddFontAwesomeIcons();
 
 Global.App = builder.Build();
 

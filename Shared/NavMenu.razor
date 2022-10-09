@@ -35,6 +35,11 @@
             @if (IsMgr)
             {
                 <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/CheckTicket" Match="NavLinkMatch.All">
+                        验票
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/MovieMgr" Match="NavLinkMatch.All">
                         管理电影
                     </NavLink>
@@ -70,7 +75,7 @@
     
     private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse show" : null;
 
     private void ToggleNavMenu()
     {

@@ -3,7 +3,7 @@
     height: auto;
     box-shadow: 0 0 0 1px #ced4da;
     outline: 0;
-    border-radius: 5%;
+    border-radius: 7px;
     transition: box-shadow .15s ease-in-out;
 }
 

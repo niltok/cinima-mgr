@@ -34,7 +34,20 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
-
+<script>
+function sub(data){    
+    let divForm = document.getElementsByTagName('divform')
+    if (divForm.length) {
+        document.body.removeChild(divForm[0])
+    }
+    console.log("success")
+    let div = document.createElement("divform");
+    div.innerHTML = data; // data就是接口返回的form 表单字符串
+    document.body.appendChild(div);
+    document.forms["alipaysubmit"].setAttribute('target', '_blank') // 新开窗口跳转
+    document.forms["alipaysubmit"].submit();
+}
+</script>
 <script src="_framework/blazor.server.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" 
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" 

@@ -1,15 +1,18 @@
 ﻿@page "/ShowInfo/{MovieId}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
+@using Markdig.Helpers
+@using Markdig.Syntax
+@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.AspNetCore.Html
 @using Microsoft.AspNetCore.Mvc
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
 
-<PageTitle> 场次信息 </PageTitle>
+<PageTitle> 选座购票 </PageTitle>
 
-<h3> 场次信息 </h3>
-<main>
+<main class="container-form">
     <p>
         <MoviePicker Movies="_allmovies" Movie="_selectedmovie" MovieChanged="(Movie mv) => ChangeMovie(mv)" />
     </p>
@@ -20,22 +23,26 @@
                 <InputRadioGroup ValueChanged="(DateTime dt) => FlashShowsInfoEvent(dt)"
                                  ValueExpression="() => _selectedday"
                                  Value="_selectedday">
-                    @foreach (var i in _daysinfo)
-                    {
-                        <InputRadio Value="@i"/>
-                        <label> @i.ToString("MM月dd日") </label>
-                    }
+                    <div class="toggle">
+                        @foreach (var i in _daysinfo)
+                        {
+                            <InputRadio Value="@i" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="radio"+i, ["style"]="display:none"})"/>
+                            <label for=@("radio"+i) > @i.ToString("MM月dd日") </label>
+                        }
+                    </div>
                 </InputRadioGroup>
                 <br/>
                 <InputRadioGroup ValueChanged="(string st) => FindSelectedShow(st)"
-                             ValueExpression="() => _selectedshowId"
-                             Value="_selectedshowId">
-                @foreach (var i in _showsinfo)
-                {
-                    var _printime = i.Time.ToString("HH:mm") + " ~ " + (i.Time + i.Movie.Duration).ToString("HH:mm");
-                    <InputRadio Value="@i.Id"/>
-                    <label> @_printime </label>
-                }
+                                 ValueExpression="() => _selectedshowId"
+                                 Value="_selectedshowId">
+                    <div class="toggle">
+                        @foreach (var i in _showsinfo)
+                        {
+                            var _printime = i.Time.ToString("HH:mm") + " ~ " + (i.Time + i.Movie.Duration).ToString("HH:mm");
+                            <InputRadio Value="@i.Id" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="radio"+i.Id, ["style"]="display:none"})"/>
+                            <label for=@("radio"+i.Id)> @_printime </label>
+                        }
+                    </div>
                 </InputRadioGroup><br/>
             }else { <p> 当前电影没有日期正在上映！ </p> }
         </div><br>
@@ -43,38 +50,41 @@
     <div>
         @if (_selectedshowId != null)
         {
-            if ( _selectedshow.CanBuyAfter < DateTime.Now )
+            if (_selectedshow.CanBuyAfter < DateTime.Now)
             {
-                <div style="max-width: 500px; width: 80%">
-                    <SitPicker @bind-PosState="_selectedshow.PosState"
-                               Height="_selectedshow.Room.Height"
-                               Width="_selectedshow.Room.Width"
-                               State1="'0'" State2="'3'"/>
+                <p>
+                    <span style="display: flex; justify-content: center;">
+                        <SitPicker @bind-PosState="_selectedshow.PosState"
+                                   Height="_selectedshow.Room.Height"
+                                   Width="_selectedshow.Room.Width"
+                                   State1="'0'" State2="'3'"/>
+                    </span>
+                </p>
+                <br/>
+                <div style="display: flex; flex-direction: column; align-items: center">
+                    <button class="btn btn-primary" @onclick="MakeOrder"> 确认选座 </button>
                 </div>
-                <div>
-                    <button @onclick="MakeOrder"> 确认订单 </button>
-                </div>
+                @if (_poserror) { <MsgBox Msg="不要妨碍叔叔赚钱！" OnClosed="() => _poserror = false"></MsgBox> }
+                <p></p>
+                <p></p>
             }
             else
             {
                 <p> @_selectedshow.CanBuyAfter.ToString("MM月dd日hh:mm") 开售，敬请期待！ </p>
             }
         }
-        else
-        {
-            <p> 无场次信息！ </p>
-        }
     </div>
 </main>
 
 @code{
+
     [Parameter]
     public string MovieId { get; set; }
 
     List<Movie> _allmovies = new List<Movie>();
 
     public List<Show> _showsinfo = new List<Show>();
-    
+
     public List<DateTime> _daysinfo = new List<DateTime>();
 
     public DateTime _selectedday;
@@ -82,22 +92,24 @@
     public string _selectedshowId;
 
     public string _selectedshowOP;
-    
+
     public Show _selectedshow;
-    
+
     public Movie _selectedmovie;
 
+    bool _poserror = false;
+
     public inputmodel model = new inputmodel();
-    
+
     public class inputmodel
     {
-        
+
     }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        
+
         if (StateCache.User is null)
         {
             NavigationManager.NavigateTo("/Login");
@@ -116,16 +128,16 @@
     async void LoadInfo()
     {
         await using var db = new MgrContext();
-        
-        _allmovies = await db.Movies.ToListAsync();
+
+        _allmovies = await db.Movies.DisplayMovie(false, false).ToListAsync();
         _selectedmovie = await db.Movies.SingleAsync(t => t.Id == MovieId);
         _selectedshowId = null;
-        
+
         _showsinfo = (await db.Shows
             .Where(t => t.Movie.Id == MovieId && t.Status == 1).Include(t => t.Movie).ToListAsync())
             .Where(t => t.Time + t.Movie.Duration > DateTime.Now).OrderBy(t => t.Time).ToList();
         _daysinfo = _showsinfo.DistinctBy(t => t.Time.Day).Select(t => t.Time).ToList();
-    
+
         if (_daysinfo.Count > 0)
         {
             _selectedday = _daysinfo.First();
@@ -168,9 +180,13 @@
     {
         if (_selectedshow.PosState != _selectedshowOP)
         {
+            _poserror = false;
             NavigationManager.NavigateTo($"/OrderConfirm/{0}/{_selectedshowId}/{_selectedshow.PosState}");
+        }
+        else
+        {
+            _poserror = true;
         }
         // NavigationManager.NavigateTo($"/OrderConfirm/{1}/{30}");
     }
-
 }

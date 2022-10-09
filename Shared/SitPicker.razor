@@ -13,7 +13,7 @@
         @foreach (var j in Enumerable.Range(0, Width))
         {
             <div @onclick="() => SetPos(i, j)" 
-                 class=@("sit " + (_mtx[i][j] == ' ' ? Dev ? "sit-d" : "" : "sit-" + _mtx[i][j]))>
+                 class=@("sit " + (_mtx[i, j] == ' ' ? Dev ? "sit-d" : "" : "sit-" + _mtx[i, j]))>
             </div>
         }
     }
@@ -36,7 +36,7 @@
     [Parameter]
     public char State2 { get; set; } = '0';
 
-    List<List<char>> _mtx;
+    char[,] _mtx;
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,8 +52,8 @@
 
     async Task SetPos(int x, int y)
     {
-        if (_mtx[x][y] == State2) _mtx[x][y] = State1;
-        else if (_mtx[x][y] == State1) _mtx[x][y] = State2;
+        if (_mtx[x, y] == State2) _mtx[x, y] = State1;
+        else if (_mtx[x, y] == State1) _mtx[x, y] = State2;
         else return;
         await PosStateChanged.InvokeAsync(PosStateHelper.Pack(_mtx));
     }

@@ -3,8 +3,6 @@
 @using cinima_mgr.Ali
 @using cinima_mgr.Data
 
-@if (_poserror) { <MsgBox Msg="@resu" OnClosed="() => _poserror = false"></MsgBox> }
-
 @code {
     private MarkupString convertedMarkdown;
     [Parameter]
@@ -12,8 +10,7 @@
     [Parameter]
     public string out_trade_no { get; set; }
     public string price { get; set; }
-    public string resu;
-    public bool _poserror = false;
+    public bool _poserror = false; //当值为true时，成功
     protected override void OnParametersSet()
     {
         if (!Enable) return;
@@ -43,21 +40,11 @@
                         Console.WriteLine("退款失败!");
                     }
                 }
-                else
-                {
-                    continue;
-                }
 
             }
             if(n == 1 && v == 1)
             {
-                resu = "退款成功!";
                 changedb();
-                _poserror = true;
-            }
-            else
-            {
-                resu = "退款失败!";
                 _poserror = true;
             }
         }

@@ -3,17 +3,13 @@
 @using cinima_mgr.Ali
 @using cinima_mgr.Data
 
-@if (_poserror) { <MsgBox Msg="啊啊啊" OnClosed="() => _poserror = false"></MsgBox> }
-
 @code {
     private MarkupString convertedMarkdown;
     [Parameter]
     public bool Enable { get; set; } = false;
     [Parameter]
     public string out_trade_no { get; set; }
-    public string price { get; set; }
     public int res;
-    public bool _poserror = false;
     protected override void OnParametersSet()
     {
         if (!Enable) return;

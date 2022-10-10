@@ -40,14 +40,15 @@ public class AlipayConfig
     public static string sign_type = "RSA2";
     public static string charset = "UTF-8";
 
-    public  AlipayTradePagePayModel creatModel(string out_trade_no,string price)
+    public  AlipayTradePagePayModel creatModel(string out_trade_no,string price,string subject )
     {
         AlipayTradePagePayModel model = new AlipayTradePagePayModel();
         model.Body = "电影";
-        model.Subject = "电影票";
+        model.Subject = subject;
         model.TotalAmount = price;
         model.OutTradeNo = out_trade_no;
         model.ProductCode = "FAST_INSTANT_TRADE_PAY";
+        model.TimeExpire = DateTime.Now.AddMinutes(17).ToString("yyyy-MM-dd HH:mm:ss");
         return model;
     }
 

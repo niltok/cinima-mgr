@@ -14,15 +14,15 @@
     public string out_trade_no { get; set; }
     [Parameter]
     public string TaskId { get; set; }
-    public string price { get; set; }
+    public string price;
     public string res;
+    public string subject;
     protected override void OnParametersSet()
     {
         if (!Enable) return;
         Query();
         AlipayConfig m = new AlipayConfig();
-        res=m.Pay(m.creatModel(out_trade_no,price), TaskId);
-        
+        res = m.Pay(m.creatModel(out_trade_no, price,"电影票"), TaskId);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -35,6 +35,14 @@
         await using var db = new MgrContext();
         var data = await db.Orders
             .Where(t => t.Id == out_trade_no).SingleOrDefaultAsync();
+        if (data.Type == 1)
+        {
+            subject = "VIP";
+        }
+        else
+        {
+            subject = "电影票";
+        }
         if(data.State == null)
         {
             Console.WriteLine("订单不存在");

@@ -1,0 +1,43 @@
+﻿
+.container-form {
+    max-width: 500px;
+}
+
+.item {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item h1 {
+    font-size: min(10vw, 2.5rem);
+}
+
+.item h4 {
+    font-size: min(6vw, 1.5rem);
+}
+
+.item h6 {
+    font-size: min(4vw, 1rem);
+}
+
+.title {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item + .item {
+    border-top: lightgray 1px solid;
+}
+
+@media (max-width: 850px) {
+    .title {
+    }    
+}

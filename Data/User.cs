@@ -8,7 +8,7 @@ public class User
     public string Name { get; set; }
     [Required]
     public string Password { get; set; }
-    public byte[]? HeadPic { get; set; } = null;
+    public Binary? HeadPic { get; set; } = null;
     [ConcurrencyCheck]
     public DateTime VIPExpireTime { get; set; } = DateTime.MinValue;
     public bool IsMgr { get; set; } = false;

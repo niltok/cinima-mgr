@@ -2,21 +2,69 @@
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Microsoft.EntityFrameworkCore
+@using System.Text
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
-
-<AuthUser/>
+@using Blazorise
 
 <PageTitle>我的优惠券</PageTitle>
 
-<ul>
+<div class="container-form">
     @foreach (var t in _tickets)
     {
-        <li>
-            @($"{t.Rate} 折券 - {t.Name}")
-        </li>
+        var status = t.Type == 0 ? 0 : t.UsedIn is not null ? 2 : t.ExpireTime < DateTime.Now ? 3 : 1;
+        <div class="item">
+            <div class="info">
+                <h4><b>@t.Name</b></h4>
+                <h6 class="text-secondary" style="margin-bottom: .25em">
+                    <small>
+                        有效期至 @t.ExpireTime.ToString("yyyy-MM-dd")
+                    </small>
+                </h6>
+                <span style="width: fit-content">
+                @switch (status)
+                {
+                    case 1:
+                        <Badge Color="Color.Primary">
+                            <span class="px-1"><Icon Name="IconName.TicketAlt"/></span>
+                            <span>可使用</span>
+                        </Badge>
+                        break;
+                    case 2:
+                        <Badge Color="Color.Success">
+                            <span class="px-1"><Icon Name="IconName.Check"/></span>
+                            <span>已使用</span>
+                        </Badge>
+                        break;
+                    case 3:
+                        <Badge Color="Color.Secondary">
+                            <span class="px-1"><Icon Name="IconName.History"/></span>
+                            <span>已过期</span>
+                        </Badge>
+                        break;
+                }
+                </span>
+            </div>
+            <div class=@("title " + (status == 1 ? "text-primary" : "text-secondary"))>
+                <h1 style="margin-bottom: 0">
+                    <b>@(t.Type == 1 ? $"减 {t.Rate}" : $"{(t.Rate * 10):N1} 折")</b>
+                </h1>
+                <h4>
+                    @if (t.Satisfy == 0)
+                    {
+                        <small>(无条件)</small>
+                    }
+                    else
+                    {
+                        <small class="text-secondary">
+                            (满 @t.Satisfy)
+                        </small>
+                    }
+                </h4>
+            </div>
+        </div>
     }
-</ul>
+</div>
 
 @code {
     List<DiscountTicket> _tickets = new();
@@ -27,11 +75,17 @@
         
         if (StateCache.User is null)
         {
-            NavigationManager.NavigateTo("");
+            NavigationManager.NavigateTo(
+                $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
             return;
         }
-        var db = new MgrContext();
-        _tickets = await db.DiscountTickets.Include(t => t.User)
-            .Where(t => t.User.Name == StateCache.User.Name).ToListAsync();
+        
+        await using var db = new MgrContext();
+
+        _tickets = await db.DiscountTickets
+            .Where(t => t.UserName == StateCache.User.Name)
+            .Include(t => t.UsedIn)
+            .DisplayDiscount()
+            .ToListAsync();
     }
 }

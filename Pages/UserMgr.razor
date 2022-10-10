@@ -147,7 +147,12 @@
                 <div>
                     @if (discounts.Count != 0)
                     {
-                        <span>@discounts.Count</span>
+                        <Tooltip Text=@(string.Join("\n", discounts.Select(d => d.Type == 1 ? 
+                                          $"[{d.ExpireTime:yyyy-MM-dd}] {d.Satisfy} - {d.Rate}" : 
+                                          $"[{d.ExpireTime:yyyy-MM-dd}] {d.Satisfy} | {(d.Rate * 10):N2} %"))) 
+                                 Placement="TooltipPlacement.Bottom" Multiline>
+                            @discounts.Count
+                        </Tooltip>
                     }
                 </div>
                 <div>

@@ -1,5 +1,5 @@
-﻿@* @page "/OrderConfirm/{OrderType:int}/{Days:int}/{Price:double}/{VIP:string}" *@
-@page "/OrderConfirm/{OrderType:int}/{ShowId:guid}/{PosSelecition:string}"
+﻿@page "/OrderConfirm/{OrderType:int}/{Days:int}/{Price:double}"
+@page "/OrderConfirm/{OrderType:int}/{ShowId}/{PosSelecition}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Markdig.Helpers
@@ -102,8 +102,6 @@
     public string PosSelecition { get; set; }
     [Parameter]
     public double Price { get; set; }
-    [Parameter]
-    public double VIP { get; set; }
 
     Order _order = new()
     {

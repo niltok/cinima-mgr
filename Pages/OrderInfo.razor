@@ -48,10 +48,10 @@
 
                 <LayoutContent>
                     <div class="info-item">
-                        <p> 创建时间: @i.CreateTime </p>
+                        <label>  </label>
                     </div>
                     <div class="info-item">
-                        <p>  </p>
+                        <lable>  </lable>
                     </div>
                     <div style="height: auto; width: auto; margin-left:auto; 
                             margin-right: 10px;
@@ -74,24 +74,30 @@
         }
         else
         {
-            <Layout Style="height: 200px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+            <Layout Style="height: 300px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
                 <div style="padding: 1px">
                     <div class="info-item">
-                        <p> 创建时间: @i.CreateTime </p>
+                        <lable> 创建时间: @i.CreateTime </lable>
                     </div>
                     <div class="info-item">
-                        <p> 用户名: @i.UserName </p>
+                        <lable> 用户名: @i.UserName </lable>
                     </div>
                     <div class="info-item">
-                        <p> 充值天数: @i.Days </p>
+                        <lable> 充值天数: @i.Days </lable>
                     </div>
                     <div class="info-item">
-                        <p> 应付金额: @i.Price 元 </p>
+                        <lable> 应付金额: @i.Price 元 </lable>
                     </div>
                     @if (i.State == 0)
                     {
                         <div class="info-item">
-                            <p> 状态: 待支付！ </p>
+                            <lable> 状态: 待支付！ </lable>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="info-item">
+                            <lable> 状态: 已支付！ </lable>
                         </div>
                     }
                 </div>
@@ -113,21 +119,25 @@
                 $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
             return;
         }
-        _orders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.State != 4)
+        List<Order> _ticketorders = new List<Order>();
+        List<Order> _viporders = new List<Order>();
+        _ticketorders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.Type == 0 && t.State != 4)
             .Include(t => t.Tickets).ToListAsync();
-        await Task.WhenAll(_orders.Select(t => db
+        _viporders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.Type == 1 && t.State != 4)
+            .Include(t => t.Tickets).ToListAsync();
+        await Task.WhenAll(_ticketorders.Select(t => db
             .Entry(t.Tickets.First())
             .Reference(s => s.Show)
             .LoadAsync()));
-        await Task.WhenAll(_orders.Select(t => db
+        await Task.WhenAll(_ticketorders.Select(t => db
             .Entry(t.Tickets.First().Show)
             .Reference(s => s.Movie)
             .LoadAsync()));
-        await Task.WhenAll(_orders.Select(t => db
+        await Task.WhenAll(_ticketorders.Select(t => db
             .Entry(t.Tickets.First().Show)
             .Reference(s => s.Room)
             .LoadAsync()));
-        _orders = _orders.OrderByDescending(t => t.State == 0)
+        _orders = _ticketorders.Union(_viporders).OrderByDescending(t => t.State == 0)
             .ThenByDescending(t => t.CreateTime).ToList();
     }
 

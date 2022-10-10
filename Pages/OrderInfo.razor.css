@@ -17,6 +17,7 @@
     justify-content: space-between; 
     align-items: center;
     margin-left: 19px;
+    margin-right: 19px;
 }
 
 .info-item:first-child {

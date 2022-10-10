@@ -255,7 +255,7 @@
         await db.SaveChangesAsync();
         // todo: cansel ticket 
         _taskid = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
-            DateTime.Now + TimeSpan.FromMinutes(15),
+            DateTime.Now + TimeSpan.FromSeconds(30),
                 () => OrderConfirm.CancelOrder(_order.Id));
         ToPay = true;
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");

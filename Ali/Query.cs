@@ -44,11 +44,11 @@ public static class Query
                 res = 4;
             }
         }
-        await changedb(out_trade_no, res);
+        await Changedb(out_trade_no, res);
         return res;
     }
 
-    private static async Task changedb(string out_trade_no, int res)
+    private static async Task Changedb(string out_trade_no, int res)
     {
         await using var db = new MgrContext();
         var data = await db.Orders.SingleOrDefaultAsync(t => t.Id == out_trade_no);

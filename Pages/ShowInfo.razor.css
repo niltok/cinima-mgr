@@ -11,6 +11,8 @@
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: stretch;
+    z-index: 0;
+    overflow: auto;
 }
 .toggle input {
     width: 0;

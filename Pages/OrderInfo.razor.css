@@ -24,7 +24,7 @@
 }
 
 .info-item:first-child {
-    order-top: 0;
+    border-top: 0;
 }
 
 .movie-cover {

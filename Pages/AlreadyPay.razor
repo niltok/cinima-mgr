@@ -17,14 +17,44 @@
     {
         await Global.App.Services.GetService<EventMgr>()!.Cancel(TaskId);
         await using var db = new MgrContext();
-        Order _order = await db.Orders.Include(t => t.Tickets)
-            .SingleAsync(t => t.Id == OrderId);
-        _order.State = 1;
-        _order.PayTime = DateTime.Now;
-        foreach (var i in _order.Tickets)
+        
+        bool _savefailed = false;
+        do
         {
-            i.Status = 1;
-        }
-        await db.SaveChangesAsync();
+            var _order = await db.Orders.Where(t => t.Id == OrderId).Include(t => t.Tickets).ToListAsync();
+            User _user = await db.Users.SingleAsync(t => t.Name == _order.First().UserName);
+            _order.First().State = 1;
+            _order.First().PayTime = DateTime.Now;
+            if ( _order.First().Type == 0 )
+            {
+                await Task.WhenAll(_order.Select(t => db
+                    .Entry(t.Tickets.First())
+                    .Reference(s => s.Show)
+                    .LoadAsync()));
+                await Task.WhenAll(_order.Select(t => db
+                    .Entry(t.Tickets.First().Show)
+                    .Reference(s => s.Movie)
+                    .LoadAsync()));
+                _order.First().Tickets.First().Show.Movie.BoxOffice += (long)(_order.First().Price * 100);
+                foreach (var i in _order.First().Tickets)
+                {
+                    i.Status = 1;
+                }
+            }
+            else
+            {
+                if (_user.VIPExpireTime > DateTime.Now)
+                    _user.VIPExpireTime += TimeSpan.FromDays((double)_order.First().Days);
+                else _user.VIPExpireTime = DateTime.Now + TimeSpan.FromDays((double)_order.First().Days);
+            }
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                _savefailed = true;
+            }
+        } while (_savefailed);
     }
 }

@@ -23,6 +23,10 @@
         Query();
         AlipayConfig m = new AlipayConfig();
         res = m.Pay(m.creatModel(out_trade_no, price,subject), TaskId);
+        
+        // sb Ali 晚上关服务器！！！ 测试使用！勿删！
+        // NavigationManager.NavigateTo($"/AlreadyPay/{out_trade_no}/{TaskId}");
+        
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

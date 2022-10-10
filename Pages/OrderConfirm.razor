@@ -84,7 +84,7 @@
             </div>
             @if (ToPay)
             {
-                <Alipay Enable="ToPay" out_trade_no="@_order.Id" TaskId="@_taskid"/>
+                <Alipay Enable="ToPay" out_trade_no="@_order.Id" TaskId="@_order.TaskId"/>
             }
         }
     </div>
@@ -116,7 +116,6 @@
     string _selectedDT;
     Show show;
     string _info = "";
-    string _taskid;
     bool ToPay = false;
     bool _poserror = false;
     
@@ -230,7 +229,7 @@
                 _possta[i.Row * _show.Room.Width + i.Column] = '0';
             }
             _show.PosState = new string(_possta);
-            _order.Type = 3;
+            _order.State = 3;
             _order.CancelTime = DateTime.Now;
             await _db.SaveChangesAsync();
         }
@@ -251,12 +250,14 @@
         {
             _order.Price = _order.OriginalPrice;
         }
+        
+        // todo: !!!TaskTime!!! : cansel ticket 
+        _order.TaskId = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
+            DateTime.Now + TimeSpan.FromMinutes(15),
+                () => OrderConfirm.CancelOrder(_order.Id));
+        
         db.Orders.Add(_order);
         await db.SaveChangesAsync();
-        // todo: cansel ticket 
-        _taskid = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
-            DateTime.Now + TimeSpan.FromSeconds(30),
-                () => OrderConfirm.CancelOrder(_order.Id));
         ToPay = true;
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");
     }

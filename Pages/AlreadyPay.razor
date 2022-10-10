@@ -20,6 +20,7 @@
         Order _order = await db.Orders.Include(t => t.Tickets)
             .SingleAsync(t => t.Id == OrderId);
         _order.State = 1;
+        _order.PayTime = DateTime.Now;
         foreach (var i in _order.Tickets)
         {
             i.Status = 1;

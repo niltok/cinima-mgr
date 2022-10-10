@@ -154,7 +154,6 @@
                         Order = _order,
                         Show = show,
                         CreatTime = DateTime.Now,
-                        // todo: 更改票状态
                         Status = 0,
                         Row = cnt / show.Room.Width,
                         Column = cnt % show.Room.Width
@@ -167,20 +166,32 @@
                 }
                 cnt++;
             }
-            show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
-                Include(t => t.Movie).SingleAsync();
             
-            foreach (var i in _order.Tickets)
+            bool _savefailed;
+            do
             {
-                if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
-                    _poserror = true;
-            }
-            if (!_poserror)
-            {
-                show.PosState = new string(_posstate);
-                await db.SaveChangesAsync();
-            }
-            
+                _savefailed = false;
+                show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
+                             Include(t => t.Movie).SingleAsync();
+                foreach (var i in _order.Tickets)
+                {
+                    if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
+                        _poserror = true;
+                }
+                if (!_poserror)
+                {
+                    try
+                    {
+                        show.PosState = new string(_posstate);
+                        await db.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException e)
+                    {
+                        _savefailed = true;
+                    }
+                }
+            } while (_savefailed);
+
             _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
             _discounttickets = await db.DiscountTickets.Where(t => t.User == StateCache.User && t.Type != 0 && _order.OriginalPrice > t.Satisfy).ToListAsync();
             

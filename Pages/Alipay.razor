@@ -22,7 +22,7 @@
         if (!Enable) return;
         Query();
         AlipayConfig m = new AlipayConfig();
-        res = m.Pay(m.creatModel(out_trade_no, price,"电影票"), TaskId);
+        res = m.Pay(m.creatModel(out_trade_no, price,subject), TaskId);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

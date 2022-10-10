@@ -20,6 +20,8 @@ public class Order
     /// 订单状态： '0' 表示未付款， '1' 表示已付款， '2' 表示已退款，'3' 表示已取消, '4' 表示已删除
     /// </summary>
     public int State { get; set; } = 0;
+
+    public string TaskId { get; set; } = "";
     public DateTime CreateTime { get; set; }
     public DateTime? PayTime { get; set; }
     public DateTime? CancelTime { get; set; }

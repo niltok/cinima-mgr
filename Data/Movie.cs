@@ -22,7 +22,7 @@ public class Movie
     public double RateSum { get; set; }
     public int RateCount { get; set; }
     /// <summary>
-    /// 票房
+    /// 票房 (实际金额 * 100)
     /// </summary>
     [Required]
     public long BoxOffice { get; set; }

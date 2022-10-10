@@ -57,7 +57,13 @@
                                     </Tooltip>
                                 </Badge>
                                 <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
-                                <button class="btn btn-primary" > 立即付款 </button>
+                                <button class="btn btn-primary" @onclick="() => ToPay = true">
+                                    立即付款
+                                </button>
+                                if (ToPay)
+                                {
+                                    <Alipay Enable="ToPay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                }
                                 break;
                             case 1:
                                 <Badge Color="Color.Success">
@@ -66,7 +72,9 @@
                                     </Tooltip>
                                 </Badge>
                                 <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
-                                <button class="btn btn-primary" > 查看详情 </button>
+                                <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
+                                    查看详情
+                                </button>
                                 break;
                             case 2:
                                 <Badge Color="Color.Dark">
@@ -140,6 +148,7 @@
 @code {
     MgrContext db = new();
     List<Order> _orders = new List<Order>();
+    bool ToPay = false;
 
     protected override async Task OnInitializedAsync()
     {

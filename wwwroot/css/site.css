@@ -48,6 +48,18 @@ blockquote {
     border-left: 5px solid var(--primary);
 }
 
+.scroll-container {
+    height: calc(100vh - 3.5rem - 1px);
+    overflow: auto;
+}
+
+@media (max-width: 640.98px) {
+    .scroll-container {
+        height: calc(100vh - 7rem - 1px);
+    }
+}
+
+
 .container-center {
     display: flex;
     flex-direction: column;

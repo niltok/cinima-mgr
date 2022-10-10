@@ -1,0 +1,284 @@
+﻿@page "/UserMgr"
+@using cinima_mgr.Data
+@using cinima_mgr.Service
+@using Microsoft.EntityFrameworkCore
+@inject StateCache StateCache
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+@using Blazorise
+
+<AuthUser RequireMgr="true"/>
+
+<PageTitle>管理用户</PageTitle>
+
+<div class="container-form">
+    <div class="user-header">
+        <p style="display: grid; gap: 1rem; grid-template-columns: 1fr 1fr" class="expander">
+            <span class="input-g">
+                <span>类型: </span>
+                <select @bind="_discountType" class="form-control">
+                    <option value="1">满减券</option>
+                    <option value="2">折扣券</option>
+                </select>
+            </span>
+            <span class="input-g">
+                <span>名称:</span>
+                <input type="text" class="form-control" @bind="_name"/>
+            </span>
+        </p>
+        <p style="display: grid; gap: 1rem; grid-template-columns: 1fr 1fr" class="expander">
+            <span class="input-g">
+                <span>满</span>
+                <input type="number" @bind="_satify" step="0.01" class="form-control"/>
+            </span>
+            @switch (_discountType)
+            {
+                case 1:
+                    <span class="input-g">
+                        <span>减</span>
+                        <input type="number" @bind="_rate" step="0.01" class="form-control"/>
+                    </span>
+                    break;
+                case 2:
+                    <span class="input-g" style="grid-template-columns: 1fr max-content">
+                        <input type="number" @bind="_rate" step="0.01" max="1" class="form-control"/>
+                        <span>折</span>
+                    </span>
+                    break;
+            }
+        </p>
+        <p style="display: grid; gap: 1rem; grid-template-columns: 1fr max-content" class="expander">
+            <span class="input-g">
+                <span>过期时间: </span>
+                <input type="date" class="form-control" @bind="_extime"/>
+            </span>
+            <button class="btn btn-outline-danger" @onclick="@AddDiscounts">添加!</button>
+        </p>
+        <div style="border-bottom: lightgray 1px solid; margin: 1rem 0"></div>
+        <p style="display: grid; gap: 1rem; grid-template-columns: 1fr max-content;">
+            <input type="number" @bind="_vip" class="form-control"/>
+            <button class="btn btn-outline-danger" @onclick="@AddVIP">会员续期(天)</button>
+        </p>
+        <div style="border-bottom: lightgray 1px solid;"></div>
+    </div>
+    <div class="sticky">
+        <p>
+            <input type="text" class="form-control" placeholder="搜索用户"
+                   value=@_filter @oninput="e => _filter = (string) e.Value!"/>
+        </p>
+        <p style="line-height: 2.5rem">
+            <button class="btn-outline-dark btn"
+                    @onclick=@(() => { foreach (var u in _users) _checked[u.Name] = true; })>
+                全选
+            </button>
+            <button class="btn-outline-dark btn"
+                    @onclick=@(() => { foreach (var u in _users) _checked[u.Name] = !_checked[u.Name]; })>
+                反选
+            </button>
+            <button class="btn-outline-dark btn"
+                    @onclick=@(() => { foreach (var u in _users) 
+                                 if (u.VIPExpireTime > DateTime.Now) _checked[u.Name] = true; })>
+                选择会员
+            </button>
+            <button class="btn-outline-dark btn"
+                    @onclick=@(() => { foreach (var u in _users) if (u.IsMgr) _checked[u.Name] = true; })>
+                选择管理
+            </button>
+            <button class="btn-outline-danger btn"
+                    @onclick="@(SetMgr)">
+                设为管理
+            </button>
+            <button class="btn-outline-danger btn" @onclick="@ResetMgr">
+                取消管理
+            </button>
+        </p>
+        <div class="user-table">
+            <div></div>
+            <div><b><Icon Name="IconName.User"/></b></div>
+            <div><b><Icon Name="IconName.UserTie"/></b></div>
+            <div><b><Icon Name="IconName.CreditCard"/></b></div>
+            <div><b><Icon Name="IconName.TicketAlt"/></b></div>
+            <div><b><Icon Name="IconName.Wallet"/></b></div>
+            <div><b><Icon Name="IconName.Film"/></b></div>
+        </div>
+    </div>
+    <div class="user-table">
+        @foreach (var u in _users)
+        {
+            @if (u.Name.Contains(_filter))
+            {
+                var discounts = u.Discounts.Where(d =>
+                    d.Type != 0 && d.UsedIn is null && d.ExpireTime > DateTime.Now).ToList();
+                var tickets = u.Orders
+                    .Select(o => o.Tickets)
+                    .Aggregate(Enumerable.Empty<Ticket>(),
+                        (a, b) => b is not null ? a.Concat(b) : a)
+                    .Where(t => t.Status == 2)
+                    .OrderBy(t => t.CreatTime)
+                    .ToList();
+                var movie = tickets
+                    .Select(t => t.Show.Movie)
+                    .DistinctBy(m => m.Id)
+                    .OrderBy(m => m.ReleaseDate)
+                    .ToList();
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="height: 16px; width: 16px">
+                        <Check @bind-Checked="_checked[u.Name]"/>
+                    </div>
+                </div>
+                <div>
+                    @u.Name
+                </div>
+                <div>
+                    @if (u.IsMgr)
+                    {
+                        <Icon Name="IconName.Check"/>
+                    }
+                </div>
+                <div>
+                    @if (u.VIPExpireTime > DateTime.Now)
+                    {
+                        <span>
+                            @((u.VIPExpireTime - DateTime.Now).TotalDays.ToString("N0"))
+                        </span>
+
+                    }
+                </div>
+                <div>
+                    @if (discounts.Count != 0)
+                    {
+                        <span>@discounts.Count</span>
+                    }
+                </div>
+                <div>
+                    @if (tickets.Count != 0)
+                    {
+                        <span>@tickets.Count</span>
+                    }
+                </div>
+                <div>
+                    @if (movie.Count != 0)
+                    {
+                        <span>@movie.Count</span>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<MsgBox Msg="@Msg"/>
+
+@code {
+    MgrContext _db = new();
+    List<User> _users = new();
+    Dictionary<string, bool> _checked = new();
+    int _vip = 0, _discountType = 1;
+    double _satify = 0, _rate = 0;
+    string _filter = "";
+    string _name = "", _msg = "";
+    DateTime _extime = DateTime.Today + TimeSpan.FromDays(7);
+    string Msg
+    {
+        get => _msg;
+        set => _msg = $"[{DateTime.Now}] {value}";
+    }
+
+    async Task Load()
+    {
+        _users = await _db.Users
+            .Include(u => u.Orders)
+            .Include(u => u.Comments)
+            .Include(u => u.Discounts)
+            .ToListAsync();
+        await Task.WhenAll(_users.Select(u => 
+            Task.WhenAll(u.Orders.Select(async o =>
+            {
+                await _db.Entry(o).Collection(o => o.Tickets).LoadAsync();
+                if (o.Tickets is null) return;
+                await Task.WhenAll(o.Tickets.Select(async t =>
+                {
+                    await _db.Entry(t).Reference(t => t.Show).LoadAsync();
+                    await _db.Entry(t.Show).Reference(s => s.Movie).LoadAsync();
+                }));
+            }))));
+        _checked = _users.ToDictionary(u => u.Name, 
+            u => _checked.GetValueOrDefault(u.Name, false));
+    }
+
+    List<User> GetActive()
+    {
+        return _users.Where(u => u.Name.Contains(_filter) && _checked[u.Name]).ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Load();
+    }
+
+    async Task AddDiscounts()
+    {
+        foreach (var u in GetActive())
+        {
+            _db.DiscountTickets.Add(new DiscountTicket
+            {
+                Id = Guid.NewGuid().ToString(),
+                Type = _discountType,
+                Rate = _rate,
+                Satisfy = _satify,
+                Name = _name,
+                ExpireTime = _extime,
+                User = u
+            });
+        }
+        await _db.SaveChangesAsync();
+        Msg = "添加完成";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _db.DisposeAsync();
+    }
+
+    private async Task SetMgr()
+    {
+        foreach (var u in GetActive()) u.IsMgr = true;
+        await _db.SaveChangesAsync();
+        await Load();
+        Msg = "操作成功";
+    }
+
+    private async Task ResetMgr()
+    {
+        foreach (var u in GetActive()) u.IsMgr = false;
+        await _db.SaveChangesAsync();
+        await Load();
+        Msg = "操作成功";
+    }
+
+    private async Task AddVIP()
+    {
+        bool success = false;
+        do
+        {
+            foreach (var user in GetActive())
+            {
+                if (user.VIPExpireTime > DateTime.Now)
+                    user.VIPExpireTime += TimeSpan.FromDays(_vip);
+                else user.VIPExpireTime = DateTime.Now + TimeSpan.FromDays(_vip);
+            }
+            try
+            {
+                await _db.SaveChangesAsync();
+                success = true;
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                await Task.WhenAll(e.Entries.Select(u => u.ReloadAsync()));
+            }
+        } while (!success);
+        await Load();
+        Msg = $"操作成功\n续期 {_vip} 天";
+    }
+}

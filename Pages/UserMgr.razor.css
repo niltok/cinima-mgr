@@ -1,0 +1,63 @@
+﻿.overflow-container {
+    overflow: hidden;
+    margin-top: 3rem;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+    width: 90%;
+}
+
+.input-g {
+    display: grid; 
+    gap: 1rem;
+    grid-template-columns: max-content 1fr;
+}
+
+.input-g > span {
+    align-self: center;
+}
+
+.container-form {
+    margin-top: 0;
+}
+
+.sticky {
+    position: sticky;
+    top: 3.5rem;
+    padding-top: 1rem;
+    background-color: white;
+    z-index: 2;
+}
+
+.user-header {
+    /*box-shadow: 0 0 8px 6px rgb(13 110 253 / 25%);*/
+    padding-top: 3rem;
+}
+
+@media (max-width: 640.98px) {
+    .sticky {
+        top: 0;
+    }
+    .user-header {
+        padding-top: 1rem;
+    }
+    .expander {
+        display: block!important;
+    }
+    .input-g {
+        display: block;
+        margin-bottom: 1rem;
+    }
+}
+
+.user-table {
+    display: grid;
+    grid-template-columns: 24px 3fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.user-table > div {
+    overflow: hidden;
+    border-bottom: lightgray 1px solid;
+    line-height: 3rem;
+    text-align: center;
+}

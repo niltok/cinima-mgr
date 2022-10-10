@@ -60,6 +60,10 @@
     margin-bottom: 1.5rem;
 }
 
+.comment + .comment {
+    border-top: lightgray 2px solid;
+}
+
 @media (max-width: 550px) {
     .comment-add {
         display: flex;

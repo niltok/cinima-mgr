@@ -12,15 +12,18 @@
 <PageTitle> 订单 </PageTitle>
 
 <div class="container-form">
-    @foreach (var i in _ordersalrpay)
+    @foreach (var i in _orders)
     {
-        @* <div class="container-form" style="height: 600px; margin-bottom: 3px; border-bottom-width: 3px; border-color: #0d6efd"> *@
-            <LayoutHeader>
-                <h6><small> 订单号:@i.Id </small></h6>
-            </LayoutHeader>
+        <LayoutHeader>
+            <h6 style="margin-left: 10px"><small> 订单号:@i.Id </small></h6>
+        </LayoutHeader>
+        
+        if (i.Type == 0)
+        {
             <Layout Sider Style="height: 410px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+
                 <div class="item-container">
-                    <LayoutSider Style="height: 410px; background: transparent; margin-left: 20px; z-index: 0">
+                    <LayoutSider Style="height: 400px; background: transparent; margin-left: 20px; z-index: 0">
                         <LayoutSiderContent>
                             <p>
                                 <img class="movie-cover" src=@($"/Movie/Cover/{i.Tickets.First().Show.Movie.Id}")/>
@@ -41,22 +44,65 @@
                             </h6>
                         </LayoutSiderContent>
                     </LayoutSider>
-                    <LayoutContent>
+                </div>
+
+                <LayoutContent>
+                    <div class="info-item">
+                        <p> 创建时间: @i.CreateTime </p>
+                    </div>
+                    <div class="info-item">
+                        <p>  </p>
+                    </div>
+                    <div style="height: auto; width: auto; margin-left:auto; 
+                            margin-right: 10px;
+                            margin-top: auto;
+                            margin-bottom: 10px">
+                        <Badge Color="Color.Success">
+                            <Tooltip Text="Confirmed">
+                                <Icon Name="IconName.Check" aria-label="Confirmed"/>
+                            </Tooltip>
+                        </Badge>
+                        <Badge Color="Color.Danger">
+                            <Tooltip Text="Cancelled">
+                                <Icon Name="IconName.Times" aria-label="Cancelled"/>
+                            </Tooltip>
+                        </Badge>
+                    </div>
+                </LayoutContent>
+                <span class="px-1"></span>
+            </Layout>
+        }
+        else
+        {
+            <Layout Style="height: 200px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+                <div style="padding: 1px">
+                    <div class="info-item">
+                        <p> 创建时间: @i.CreateTime </p>
+                    </div>
+                    <div class="info-item">
+                        <p> 用户名: @i.UserName </p>
+                    </div>
+                    <div class="info-item">
+                        <p> 充值天数: @i.Days </p>
+                    </div>
+                    <div class="info-item">
+                        <p> 应付金额: @i.Price 元 </p>
+                    </div>
+                    @if (i.State == 0)
+                    {
                         <div class="info-item">
-                            <p> Content </p>
+                            <p> 状态: 待支付！ </p>
                         </div>
-                    </LayoutContent>
+                    }
                 </div>
             </Layout>
-            // </div>
-        <span class="px-1"></span>
+        }
     }
 </div>
 
 @code {
     MgrContext db = new();
-    List<Order> _ordersnotpay = new List<Order>();
-    List<Order> _ordersalrpay = new List<Order>();
+    List<Order> _orders = new List<Order>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,22 +113,22 @@
                 $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
             return;
         }
-        _ordersnotpay = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.State != '4')
+        _orders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.State != 4)
             .Include(t => t.Tickets).ToListAsync();
-        await Task.WhenAll(_ordersnotpay.Select(t => db
+        await Task.WhenAll(_orders.Select(t => db
             .Entry(t.Tickets.First())
             .Reference(s => s.Show)
             .LoadAsync()));
-        await Task.WhenAll(_ordersnotpay.Select(t => db
+        await Task.WhenAll(_orders.Select(t => db
             .Entry(t.Tickets.First().Show)
             .Reference(s => s.Movie)
             .LoadAsync()));
-        await Task.WhenAll(_ordersnotpay.Select(t => db
+        await Task.WhenAll(_orders.Select(t => db
             .Entry(t.Tickets.First().Show)
             .Reference(s => s.Room)
             .LoadAsync()));
-        _ordersalrpay = _ordersnotpay.Where(t => t.State != '0').OrderByDescending(t => t.CreateTime).ToList();
-        _ordersnotpay = _ordersnotpay.Where(t => t.State == '0').OrderByDescending(t => t.CreateTime).ToList();
+        _orders = _orders.OrderByDescending(t => t.State == 0)
+            .ThenByDescending(t => t.CreateTime).ToList();
     }
 
     public async ValueTask DisposeAsync()

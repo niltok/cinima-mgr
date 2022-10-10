@@ -1,5 +1,5 @@
-﻿@page "/OrderConfirm/{OrderType:int}/{Days:int}"
-@page "/OrderConfirm/{OrderType:int}/{ShowId}/{PosSelecition}"
+﻿@* @page "/OrderConfirm/{OrderType:int}/{Days:int}/{Price:double}/{VIP:string}" *@
+@page "/OrderConfirm/{OrderType:int}/{ShowId:guid}/{PosSelecition:string}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Markdig.Helpers
@@ -67,7 +67,7 @@
             <p> 用户名: @_order.User.Name </p>
             <p> 购买时长: @Days 天 </p>
             @* todo: 购买会员价格  *@
-            <p> 支付金额: ？元 </p>
+            <p> 支付金额: @Price 元 </p>
         </div>
     }
 
@@ -100,6 +100,10 @@
     public string ShowId { get; set; }
     [Parameter]
     public string PosSelecition { get; set; }
+    [Parameter]
+    public double Price { get; set; }
+    [Parameter]
+    public double VIP { get; set; }
 
     Order _order = new()
     {
@@ -193,14 +197,18 @@
             } while (_savefailed);
 
             _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
-            _discounttickets = await db.DiscountTickets.Where(t => t.User == StateCache.User && t.Type != 0 && _order.OriginalPrice > t.Satisfy).ToListAsync();
-            
+            _discounttickets = (await db.DiscountTickets.Include(t => t.UsedIn).Where(t => t.User == StateCache.User 
+                                                                   && t.Type != 0 
+                                                                   && t.UsedIn == null 
+                                                                   && _order.OriginalPrice  > t.Satisfy).ToListAsync())
+                                                                    .Where(t => t.ExpireTime > DateTime.Now).ToList();
+            // todo: order dist  
             // _discounttickets.OrderBy(t => t.Type == 1 ? t.Rate)
             
         }else if (OrderType == 1)
         {
             _order.Days = Days;
-            _order.Price = 30.0;
+            _order.Price = Price;
             _order.OriginalPrice = _order.Price;
         }
 

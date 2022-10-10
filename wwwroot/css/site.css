@@ -41,6 +41,13 @@ a, .btn-link {
     word-break: keep-all;
 }
 
+blockquote {
+    color: var(--secondary);
+    margin: 0;
+    padding: 1rem 0 1px 1rem;
+    border-left: 5px solid var(--primary);
+}
+
 .container-center {
     display: flex;
     flex-direction: column;

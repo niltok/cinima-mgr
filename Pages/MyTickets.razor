@@ -34,7 +34,7 @@
                 </h6>
                 @if (s.Item1.Status == 2)
                 {
-                    <Badge Color="Color.Warning">
+                    <Badge Color="Color.Warning" Style="width: fit-content">
                         <Icon Name="IconName.ExclamationTriangle"/>
                         <span class="px-1">已取消</span>
                     </Badge>
@@ -54,45 +54,45 @@
                         @if (t.Status == 1)
                         {
                             <button class="btn btn-primary px-3" id=@t.Id
-                                    @onclick=@(() => NavigationManager.NavigateTo($"/PrintTicket/{t.Id}"))>
-                                <span><Icon Name="IconName.Fingerprint"/></span>
+                                    @onclick=@(() => Pop(t.Id))>
+                                <span class="oi"><Icon Name="IconName.Fingerprint"/></span>
                                 <span class="px-1">验票码</span>
                             </button>
                         }
                         @if (t.Status == 0)
                         {
-                            @if (t.Order.State == 0)
+                            @switch (t.Order.State)
                             {
-                                <button class="btn btn-info px-3" id=@t.Id>
-                                    <span><Icon Name="IconName.MoneyBillAlt"/></span>
-                                    <span class="px-1">待付款</span>
-                                </button>
-                            }
-                            else if (t.Order.State == 2)
-                            {
-                                <button class="btn btn-secondary px-3" id=@t.Id>
-                                    <span><Icon Name="IconName.Reply"/></span>
-                                    <span class="px-1">已退款</span>
-                                </button>
-                            } else if (t.Order.State == 3)
-                            {
-                                <button class="btn btn-secondary px-3" id=@t.Id>
-                                    <span><Icon Name="IconName.Times"/></span>
-                                    <span class="px-1">订单取消</span>
-                                </button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-secondary px-3" id=@t.Id>
-                                    <span><Icon Name="IconName.Ban"/></span>
-                                    <span class="px-1">无效票</span>
-                                </button>
+                                case 0:
+                                    <button class="btn btn-info px-3" id=@t.Id>
+                                        <span class="oi"><Icon Name="@IconName.MoneyBillAlt"/></span>
+                                        <span class="px-1">待付款</span>
+                                    </button>
+                                    break;
+                                case 2:
+                                    <button class="btn btn-secondary px-3" id=@t.Id>
+                                        <span class="oi"><Icon Name="@IconName.Reply"/></span>
+                                        <span class="px-1">已退款</span>
+                                    </button>
+                                    break;
+                                case 3:
+                                    <button class="btn btn-secondary px-3" id=@t.Id>
+                                        <span class="oi"><Icon Name="@IconName.Times"/></span>
+                                        <span class="px-1">订单取消</span>
+                                    </button>
+                                    break;
+                                default:
+                                    <button class="btn btn-secondary px-3" id=@t.Id>
+                                        <span class="oi"><Icon Name="@IconName.Ban"/></span>
+                                        <span class="px-1">无效票</span>
+                                    </button>
+                                    break;
                             }
                         }
                         @if (t.Status == 2)
                         {
                             <button class="btn btn-success px-3" id=@t.Id>
-                                <span><Icon Name="IconName.Check"/></span>
+                                <span class="oi"><Icon Name="IconName.Check"/></span>
                                 <span class="px-1">已使用</span>
                             </button>
                         }
@@ -107,13 +107,39 @@
     }
 </div>
 
+<Popout Enable="_pop" EnableChanged="PopChanged">
+    <div style="margin: 2rem" class="container-center">
+        <PrintTicket Id="Guid.Parse(_popId)"/>
+        <div style="margin-top: 2rem">
+            <button class="btn btn-primary" @onclick=@(() => PopChanged(false))>关闭</button>
+            <button class="btn btn-outline-dark" 
+                    @onclick=@(() => NavigationManager.NavigateTo($"/PrintTicket/{_popId}"))>打印</button>
+        </div>
+    </div>
+</Popout>
+
 @code {
     [Parameter]
     public Guid? Id { get; set; }
 
+    bool _pop;
+    string _popId = "";
+
     MgrContext _db = new();
     List<Ticket> _tickets = new();
     List<(Show, List<Ticket>)> _shows = new();
+
+    void Pop(string s)
+    {
+        _popId = s;
+        _pop = true;
+    }
+
+    void PopChanged(bool e)
+    {
+        _pop = e;
+        if (!e) Load();
+    }
 
     async Task Load()
     {

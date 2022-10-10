@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cinima_mgr.Service;
 
-public class EventMgr : IDisposable
+public class EventMgr : IAsyncDisposable
 {
     [Serializable]
     private record TypedObject(string Type, string Object);
@@ -21,19 +21,20 @@ public class EventMgr : IDisposable
         return JsonSerializer.Deserialize(obj.Object, t);
     }
 
+    private MgrContext _db = new();
+
     private async Task EventCircle()
     {
         while (await _timer.WaitForNextTickAsync())
         {
-            await using var db = new MgrContext();
             var run = true;
             while (run) {
-                var recent = await db.Events.OrderBy(r => r.TriggerTime).FirstOrDefaultAsync();
+                var recent = await _db.Events.OrderBy(r => r.TriggerTime).FirstOrDefaultAsync();
                 if (recent is null || recent.TriggerTime > DateTime.Now) run = false;
                 else
                 {
-                    db.Events.Remove(recent);
-                    await db.SaveChangesAsync();
+                    _db.Events.Remove(recent);
+                    await _db.SaveChangesAsync();
                     var closure = JsonSerializer.Deserialize<ClosureCall>(recent.Closure)!;
                     var method = Type.GetType(closure.ClassName)!
                         .GetMethod(closure.MethodName, 
@@ -144,8 +145,9 @@ public class EventMgr : IDisposable
             call.Arguments.Select(SerializeExpression).ToList());
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
+        await _db.DisposeAsync();
         _timer.Dispose();
     }
 }

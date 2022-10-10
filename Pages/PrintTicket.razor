@@ -22,7 +22,7 @@
             @_ticket.Show.Time.ToString("yyyy-MM-dd HH:mm") ~ 
             @((_ticket.Show.Time + _ticket.Show.Movie.Duration).ToString("HH:mm"))
         </h5>
-        <h1>@_ticket.Show.Room.Name @(_ticket.Row + 1) 排 @(_ticket.Column + 1) 座</h1>
+        <h1><b>@_ticket.Show.Room.Name @(_ticket.Row + 1) 排 @(_ticket.Column + 1) 座</b></h1>
         <h6><small class="text-secondary">@_ticket.Id</small></h6>
         <div style="display: flex; align-items: center; justify-content: center; height: 300px; width: 300px; overflow: hidden">
             <QRCode Value="@_ticket.Id"/>

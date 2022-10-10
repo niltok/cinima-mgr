@@ -179,6 +179,11 @@
     {
         try
         {
+            if (_show.Time <= DateTime.Now)
+            {
+                _msg = $"[{DateTime.Now}] 放映时间不能比现在早";
+                return;
+            }
             var conflict = _room.Shows.FirstOrDefault(s => !(s == _show || 
                                                              s.Time + s.Movie.Duration < _show.Time || 
                                                              _show.Time + _show.Movie.Duration < s.Time));
@@ -186,7 +191,7 @@
             {
                 var st = conflict.Time.ToString("yyyy-MM-dd HH:mm");
                 var et = (conflict.Time + conflict.Movie.Duration).ToString("HH:mm");
-                _msg = $"[{DateTime.Now}] 时间冲突 {st} ~ {et}";
+                _msg = $"[{DateTime.Now}] 时间冲突 {st} ~ {et} ({conflict.Movie.Name})";
                 return;
             }
             if (_selectedShow == "")

@@ -18,21 +18,31 @@
         }
         @if (_dialogType == 2)
         {
-            <h2 class="text-success">
-                <Icon Name="IconName.Check"/>
-                <span class="px-1">核验通过</span>
-            </h2>
+            @if (_ticket.Show.Time - DateTime.Now > TimeSpan.FromMinutes(10))
+            {
+                <h1 class="text-warning">
+                    <Icon Name="IconName.ExclamationTriangle"/>
+                    <span class="px-1">距离放映过久</span>
+                </h1>
+            }
+            else
+            {
+                <h1 class="text-success">
+                    <Icon Name="IconName.Check"/>
+                    <span class="px-1">核验通过</span>
+                </h1>
+            }
             <h3>
                 <b>@_ticket.Show.Movie.Name</b>
                 <small class="text-secondary">
                     (@_ticket.Show.Movie.ReleaseDate.ToString("yyyy-MM"))
                 </small>
             </h3>
-            <h5 class=@(_ticket.Show.Time - DateTime.Now > TimeSpan.FromMinutes(10) ? "text-danger" : "")>
+            <h6>
                 @_ticket.Show.Time.ToString("yyyy-MM-dd HH:mm") ~ 
                 @((_ticket.Show.Time + _ticket.Show.Movie.Duration).ToString("HH:mm"))
-            </h5>
-            <h1>@($"{_ticket.Show.Room.Name} {_ticket.Row + 1} 排 {_ticket.Column + 1} 座")</h1>
+            </h6>
+            <h3><b>@_ticket.Show.Room.Name @(_ticket.Row + 1) 排 @(_ticket.Column + 1) 座</b></h3>
             <p><small class="text-secondary">@_ticket.Id</small></p>
             <div>
                 <button class="btn btn-danger" @onclick="UseTicket">使用该票</button>

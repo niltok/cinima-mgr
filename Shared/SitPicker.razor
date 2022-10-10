@@ -2,22 +2,61 @@
 @using System.Collections.Generic
 @using cinima_mgr.Data
 @using System.Collections
+@using Blazorise
 
-<div class="sitpicker-container" 
-     style="grid-template-rows: repeat(@Height, 1fr); 
-            grid-template-columns: repeat(@Width, 1fr); 
-            max-height: @(Height * 50)px; 
-            max-width: @(Width * 50)px;">
-    @foreach (var i in Enumerable.Range(0, Height))
-    {
-        @foreach (var j in Enumerable.Range(0, Width))
-        {
-            <div @onclick="() => SetPos(i, j)" 
-                 class=@("sit " + (_mtx[i, j] == ' ' ? Dev ? "sit-d" : "" : "sit-" + _mtx[i, j]))>
-            </div>
-        }
-    }
+<div style="position: relative; width: 0; height: 0; overflow: visible">
+    <div style="height: fit-content; width: fit-content;">
+        <Button Color="Color.Primary" Clicked="() => ShowAll = !ShowAll">
+            <Icon Name=@(ShowAll ? IconName.EyeSlash : IconName.Eye) />
+        </Button>
+    </div>
 </div>
+@if (ShowAll)
+{
+    <div style="display: grid;
+                grid-template-rows: 10fr @((double)(Height - 1) / Height)fr;
+                max-width: @(Width * 50 - 5)px;
+                height: 100%;
+                width: 100%;
+                margin-top: 45px;">
+        <div class="sitpicker-container"
+             style="grid-template-rows: repeat(@Height, 1fr); 
+                    grid-template-columns: repeat(@Width, 1fr); 
+                    grid-column-gap: calc(10% / @Width);
+                    grid-row-gap: calc(10% / @Height);">
+            @foreach (var i in Enumerable.Range(0, Height))
+            {
+                @foreach (var j in Enumerable.Range(0, Width))
+                {
+                    <div @onclick="() => SetPos(i, j)"
+                         class=@("sit " + (_mtx[i, j] == ' ' ? Dev ? "sit-d" : "" : "sit-" + _mtx[i, j]))>
+                    </div>
+                }
+            }
+        </div>
+        <div style="width: 0; height: 0"></div>
+    </div>
+}
+else
+{
+    <div style="overflow: auto; height: fit-content; width: fit-content; max-width: 100%; max-height: 100%">
+        <div class="sitpicker-container"
+             style="grid-template-rows: repeat(@Height, 40px); 
+                grid-template-columns: repeat(@Width, 40px);
+                margin-top: 45px;">
+            @foreach (var i in Enumerable.Range(0, Height))
+            {
+                @foreach (var j in Enumerable.Range(0, Width))
+                {
+                    <div @onclick="() => SetPos(i, j)"
+                         class=@("sit " + (_mtx[i, j] == ' ' ? Dev ? "sit-d" : "" : "sit-" + _mtx[i, j]))>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+
 
 @code {
     [Parameter] 
@@ -35,6 +74,9 @@
     public char State1 { get; set; } = ' ';
     [Parameter]
     public char State2 { get; set; } = '0';
+
+    [Parameter]
+    public bool ShowAll { get; set; } = false;
 
     char[,] _mtx;
 

@@ -27,12 +27,14 @@ else
         <div class="top-row px-4">
             @if (_user is null)
             {
-                <NavLink class="nav" href="/Login">
-                    <button class="btn btn-primary">登录</button>
-                </NavLink>
-                <NavLink class="nav" href="/Register">
-                    <button class="btn">注册</button>
-                </NavLink>
+                <span>
+                    <button class="btn btn-primary" 
+                            @onclick=@(() => NavigationManager.NavigateTo("/Login"))>登录</button>
+                </span>
+                <span class="px-2">
+                    <button class="btn btn-outline-dark" 
+                            @onclick=@(() => NavigationManager.NavigateTo("/Register"))>注册</button>
+                </span>
             }
             else
             {
@@ -50,7 +52,7 @@ else
                 </span>
                 <span class="px-2"><b>@_user.Name</b></span>
                 <span class="px-2">
-                    <button class="btn" style="margin: 0" @onclick="LogoutEvent">登出</button>
+                    <button class="btn btn-outline-dark" style="margin: 0" @onclick="LogoutEvent">登出</button>
                 </span>
                 
             }

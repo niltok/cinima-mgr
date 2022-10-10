@@ -1,12 +1,23 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
 @inject EventMgr EventMgr
+@implements IAsyncDisposable
 
 <PageTitle>喵票票</PageTitle>
 
-<h1 style="margin: 3rem;">欢迎来到喵票票</h1>
+@* <h1 style="margin: 3rem;">欢迎来到喵票票</h1> *@
+
+<div class="container-form">
+    <input type="text" placeholder="输入关键词搜索电影" value="@_filter" 
+           class="form-control"
+           @oninput="e => FilterChanged((string)e.Value!)"/>
+</div>
 
 <div class="container-index">
+    @if (_movies.Count == 0)
+    {
+        <h1 class="container-center">找不到电影...</h1>
+    }
     @foreach (var m in _movies)
     {
         <div class="item">
@@ -43,7 +54,7 @@
                     }
                     else
                     {
-                        <span style="height: 38px"></span>
+                        <button class="btn btn-outline-dark">不在映</button>
                     }
                 </p>
             </div>
@@ -53,19 +64,45 @@
 
 @code
 {
+    MgrContext _db = new();
     static async Task PE()
     {
     }
+
+    string _filter = "";
     List<Movie> _movies = new();
+
+    async Task Load()
+    {
+        _movies = await _db
+            .Movies
+            .Where(m => 
+                m.Name.Contains(_filter) || 
+                m.Type.Contains(_filter) || 
+                m.ReleaseDate.Year.ToString() == _filter)
+            .DisplayMovie()
+            .ToListAsync();
+    }
+
+    void FilterChanged(string s)
+    {
+        _filter = s;
+        Load();
+    }
+    
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await using var db = new MgrContext();
-        _movies = await db.Movies.DisplayMovie().ToListAsync();
+        await Load();
     }
 
     async Task ToShowInfo(string st)
     {
         NavigationManager.NavigateTo($"/ShowInfo/{st}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _db.DisposeAsync();
     }
 }

@@ -1,55 +1,41 @@
 ﻿using cinima_mgr.Data;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+
 namespace cinima_mgr.Ali;
 
-public class Refund
+public static class Refund
 {
-    public bool Enable { get; set; } = false;
-    public string out_trade_no { get; set; }
-    public string price { get; set; }
-    public bool yn = false; //当值为true时，成功
-
-    public void refund()
+    public static async Task<bool> refund(string out_trade_no, string price)
     {
-        if (!Enable) return;
-        AlipayConfig m = new AlipayConfig();
-        string res = m.Refund(out_trade_no, price);
-        string jsonString = m.RefundQuery(out_trade_no);
+        var m = new AlipayConfig();
+        var res = m.Refund(out_trade_no, price);
+        var jsonString = m.RefundQuery(out_trade_no);
 
-        int n = 0, v = 0;
-        using(JsonDocument document = JsonDocument.Parse(jsonString))
-        {
-            JsonElement root = document.RootElement;
-            JsonElement Element = root.GetProperty("alipay_trade_fastpay_refund_query_response");
+        using var document = JsonDocument.Parse(jsonString);
+        var root = document.RootElement;
+        var jsonElement = root.GetProperty("alipay_trade_fastpay_refund_query_response");
 
-            foreach(JsonProperty element in Element.EnumerateObject())
-            {
-                if (element.Name == "refund_status")
-                {
-                    if(element.Value.GetString() == "REFUND_SUCCESS")
-                    {
-                        changedb();
-                        yn = true;
-                        break;
-                    }
-                }
-            }
-        }
+        if (jsonElement
+            .EnumerateObject()
+            .Where(element => element.Name == "refund_status")
+            .All(element => element.Value.GetString() != "REFUND_SUCCESS")) 
+            return false;
+        await changedb(out_trade_no);
+        return true;
+
     }
 
-    private void changedb()
+    private static async Task changedb(string out_trade_no)
     {
-        using var db = new MgrContext();
-        var data = db.Orders
-            .Where(t => t.Id == out_trade_no).SingleOrDefault();
-        if(data.State == null)
+        await using var db = new MgrContext();
+        var data = await db.Orders.SingleOrDefaultAsync(t => t.Id == out_trade_no);
+        if(data is null)
         {
-            Console.WriteLine("订单不存在");
+            throw new Exception("订单不存在");
         }
-        else
-        {
-            //设置订单信息：已退款
-            data.State = 2;
-        }
+
+        //设置订单信息：已退款
+        data.State = 2;
     }
 }

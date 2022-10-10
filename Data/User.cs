@@ -9,9 +9,10 @@ public class User
     [Required]
     public string Password { get; set; }
     public byte[]? HeadPic { get; set; } = null;
+    [ConcurrencyCheck]
     public DateTime VIPExpireTime { get; set; } = DateTime.MinValue;
     public bool IsMgr { get; set; } = false;
-    public List<Ticket> Tickets { get; set; }
+    public List<Order> Orders { get; set; }
     public List<DiscountTicket> Discounts { get; set; }
     public List<Comment> Comments { get; set; }
 }

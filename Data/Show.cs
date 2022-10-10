@@ -24,6 +24,7 @@ public class Show
     /// 如果索引不存在或者值为空格则表示该位置不可选（不存在的位置）
     /// 如果值为 0 则表示未选，值为 1 则表示已选，值为 2 则表示已验票，值为 3 则表示当前已选
     /// </summary>
+    [ConcurrencyCheck]
     public string PosState { get; set; } = "";
     public RoomTemplate Room { get; set; }
     public List<Ticket> Tickets { get; set; }

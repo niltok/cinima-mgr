@@ -1,17 +1,15 @@
-﻿@page "/refund"
-@using System.Text.Json
-@using cinima_mgr.Ali
-@using cinima_mgr.Data
+﻿using cinima_mgr.Data;
+using System.Text.Json;
+namespace cinima_mgr.Ali;
 
-@code {
-    private MarkupString convertedMarkdown;
-    [Parameter]
+public class Refund
+{
     public bool Enable { get; set; } = false;
-    [Parameter]
     public string out_trade_no { get; set; }
     public string price { get; set; }
-    public bool _poserror = false; //当值为true时，成功
-    protected override void OnParametersSet()
+    public bool yn = false; //当值为true时，成功
+
+    public void refund()
     {
         if (!Enable) return;
         AlipayConfig m = new AlipayConfig();
@@ -28,33 +26,22 @@
             {
                 if (element.Name == "refund_status")
                 {
-                    n = 1;
                     if(element.Value.GetString() == "REFUND_SUCCESS")
                     {
-                        v = 1;
-                        Console.WriteLine("退款成功!"); 
-                    }
-                    else
-                    {
-                        v = -1;
-                        Console.WriteLine("退款失败!");
+                        changedb();
+                        yn = true;
+                        break;
                     }
                 }
-
-            }
-            if(n == 1 && v == 1)
-            {
-                changedb();
-                _poserror = true;
             }
         }
     }
-    
-    async Task changedb()
+
+    private void changedb()
     {
-        await using var db = new MgrContext();
-        var data = await db.Orders
-            .Where(t => t.Id == out_trade_no).SingleOrDefaultAsync();
+        using var db = new MgrContext();
+        var data = db.Orders
+            .Where(t => t.Id == out_trade_no).SingleOrDefault();
         if(data.State == null)
         {
             Console.WriteLine("订单不存在");
@@ -66,6 +53,3 @@
         }
     }
 }
-    
-    
-

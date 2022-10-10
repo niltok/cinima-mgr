@@ -44,7 +44,7 @@
                         }
                     </div>
                 </InputRadioGroup><br/>
-            }else { <p> 当前电影没有日期正在上映！ </p> }
+            }else { <h3 style="margin-left: 20px"> 当前电影没有日期正在上映！ </h3> }
         </div><br>
     </EditForm>
     <div>
@@ -70,7 +70,7 @@
             }
             else
             {
-                <p> @_selectedshow.CanBuyAfter.ToString("MM月dd日hh:mm") 开售，敬请期待！ </p>
+                <h3 style="margin-left: 20px"> @_selectedshow.CanBuyAfter.ToString("MM月dd日hh:mm") 开售，敬请期待！ </h3>
             }
         }
     </div>
@@ -187,6 +187,6 @@
         {
             _poserror = true;
         }
-        // NavigationManager.NavigateTo($"/OrderConfirm/{1}/{30}");
+        // NavigationManager.NavigateTo($"/OrderConfirm/{1}/{30}/{30.0}");
     }
 }

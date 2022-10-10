@@ -1,11 +1,139 @@
 ﻿@page "/MyOrders"
+@using cinima_mgr.Data
+@using cinima_mgr.Service
+@using Microsoft.EntityFrameworkCore
+@inject StateCache StateCache
+@inject NavigationManager NavigationManager
+@using Blazorise
+@using System.Text
 
-<PageTitle> 我的订单 </PageTitle>
+<AuthUser/>
 
-<main class="container-form">
-    <h3>OrderInfo</h3>
-</main>
+<PageTitle> 订单 </PageTitle>
+
+<div class="container-form">
+    @foreach (var i in _orders)
+    {
+        <LayoutHeader>
+            <h6 style="margin-left: 10px"><small> 订单号:@i.Id </small></h6>
+        </LayoutHeader>
+        
+        if (i.Type == 0)
+        {
+            <Layout Sider Style="height: 410px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+
+                <div class="item-container">
+                    <LayoutSider Style="height: 400px; background: transparent; margin-left: 20px; z-index: 0">
+                        <LayoutSiderContent>
+                            <p>
+                                <img class="movie-cover" src=@($"/Movie/Cover/{i.Tickets.First().Show.Movie.Id}")/>
+                            </p>
+                            <h4>
+                                <b>@i.Tickets.First().Show.Movie.Name</b><br/>
+                                <small class="text-secondary">
+                                    (@i.Tickets.First().Show.Movie.ReleaseDate.ToString("yyyy-MM"))
+                                </small>
+                            </h4>
+                            <h5>@i.Tickets.First().Show.Room.Name</h5>
+                            <h6>
+                                <small class="text-secondary">
+                                    @i.Tickets.First().Show.Time.ToString("yyyy-MM-dd")<br/>
+                                    @i.Tickets.First().Show.Time.ToString("HH:mm") ~
+                                    @((i.Tickets.First().Show.Time + i.Tickets.First().Show.Movie.Duration).ToString("HH:mm"))
+                                </small>
+                            </h6>
+                        </LayoutSiderContent>
+                    </LayoutSider>
+                </div>
+
+                <LayoutContent>
+                    <div class="info-item">
+                        <p> 创建时间: @i.CreateTime </p>
+                    </div>
+                    <div class="info-item">
+                        <p>  </p>
+                    </div>
+                    <div style="height: auto; width: auto; margin-left:auto; 
+                            margin-right: 10px;
+                            margin-top: auto;
+                            margin-bottom: 10px">
+                        <Badge Color="Color.Success">
+                            <Tooltip Text="Confirmed">
+                                <Icon Name="IconName.Check" aria-label="Confirmed"/>
+                            </Tooltip>
+                        </Badge>
+                        <Badge Color="Color.Danger">
+                            <Tooltip Text="Cancelled">
+                                <Icon Name="IconName.Times" aria-label="Cancelled"/>
+                            </Tooltip>
+                        </Badge>
+                    </div>
+                </LayoutContent>
+                <span class="px-1"></span>
+            </Layout>
+        }
+        else
+        {
+            <Layout Style="height: 200px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+                <div style="padding: 1px">
+                    <div class="info-item">
+                        <p> 创建时间: @i.CreateTime </p>
+                    </div>
+                    <div class="info-item">
+                        <p> 用户名: @i.UserName </p>
+                    </div>
+                    <div class="info-item">
+                        <p> 充值天数: @i.Days </p>
+                    </div>
+                    <div class="info-item">
+                        <p> 应付金额: @i.Price 元 </p>
+                    </div>
+                    @if (i.State == 0)
+                    {
+                        <div class="info-item">
+                            <p> 状态: 待支付！ </p>
+                        </div>
+                    }
+                </div>
+            </Layout>
+        }
+    }
+</div>
 
 @code {
+    MgrContext db = new();
+    List<Order> _orders = new List<Order>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (StateCache.User is null)
+        {
+            NavigationManager.NavigateTo(
+                $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
+            return;
+        }
+        _orders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.State != 4)
+            .Include(t => t.Tickets).ToListAsync();
+        await Task.WhenAll(_orders.Select(t => db
+            .Entry(t.Tickets.First())
+            .Reference(s => s.Show)
+            .LoadAsync()));
+        await Task.WhenAll(_orders.Select(t => db
+            .Entry(t.Tickets.First().Show)
+            .Reference(s => s.Movie)
+            .LoadAsync()));
+        await Task.WhenAll(_orders.Select(t => db
+            .Entry(t.Tickets.First().Show)
+            .Reference(s => s.Room)
+            .LoadAsync()));
+        _orders = _orders.OrderByDescending(t => t.State == 0)
+            .ThenByDescending(t => t.CreateTime).ToList();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await db.DisposeAsync();
+    }
     
 }

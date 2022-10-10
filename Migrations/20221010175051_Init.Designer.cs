@@ -11,13 +11,27 @@ using cinima_mgr.Data;
 namespace cinima_mgr.Migrations
 {
     [DbContext(typeof(MgrContext))]
-    [Migration("20221003125132_UpdateDiscount_Use")]
-    partial class UpdateDiscount_Use
+    [Migration("20221010175051_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.9");
+
+            modelBuilder.Entity("cinima_mgr.Data.Binary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Binaries");
+                });
 
             modelBuilder.Entity("cinima_mgr.Data.Comment", b =>
                 {
@@ -56,9 +70,26 @@ namespace cinima_mgr.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("cinima_mgr.Data.Config", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("Configs");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.DiscountTicket", b =>
                 {
                     b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpireTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -90,6 +121,25 @@ namespace cinima_mgr.Migrations
                     b.ToTable("DiscountTickets");
                 });
 
+            modelBuilder.Entity("cinima_mgr.Data.Event", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Closure")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TriggerTime")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TriggerTime");
+
+                    b.ToTable("Events");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
                 {
                     b.Property<string>("Id")
@@ -98,9 +148,9 @@ namespace cinima_mgr.Migrations
                     b.Property<long>("BoxOffice")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("CoverImg")
+                    b.Property<string>("CoverId")
                         .IsRequired()
-                        .HasColumnType("BLOB");
+                        .HasColumnType("TEXT");
 
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("TEXT");
@@ -114,6 +164,7 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Preview")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("RateCount")
@@ -125,11 +176,16 @@ namespace cinima_mgr.Migrations
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoverId");
 
                     b.ToTable("Movies");
                 });
@@ -139,17 +195,35 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("CancelTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Days")
+                        .HasColumnType("INTEGER");
+
                     b.Property<double>("OriginalPrice")
                         .HasColumnType("REAL");
+
+                    b.Property<DateTime?>("PayTime")
+                        .HasColumnType("TEXT");
 
                     b.Property<double>("Price")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("ShowId")
-                        .IsRequired()
+                    b.Property<DateTime?>("RefundTime")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TaskId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserName")
@@ -158,11 +232,9 @@ namespace cinima_mgr.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ShowId");
-
                     b.HasIndex("UserName");
 
-                    b.ToTable("Order");
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Person", b =>
@@ -174,6 +246,10 @@ namespace cinima_mgr.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("People");
@@ -181,20 +257,30 @@ namespace cinima_mgr.Migrations
 
             modelBuilder.Entity("cinima_mgr.Data.RoomTemplate", b =>
                 {
-                    b.Property<string>("Name")
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreateTime")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PosState")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Width")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Name");
+                    b.HasKey("Id");
 
                     b.ToTable("RoomTemplates");
                 });
@@ -205,6 +291,9 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreateTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdateTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
@@ -226,30 +315,33 @@ namespace cinima_mgr.Migrations
                     b.Property<double>("BasePrice")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("Height")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("CanBuyAfter")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MovieId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PosState")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("RoomName")
+                    b.Property<string>("RoomId")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Width")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("MovieId");
+
+                    b.HasIndex("RoomId");
 
                     b.ToTable("Shows");
                 });
@@ -262,6 +354,9 @@ namespace cinima_mgr.Migrations
                     b.Property<int>("Column")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatTime")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("OrderId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -269,14 +364,21 @@ namespace cinima_mgr.Migrations
                     b.Property<int>("Row")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("ShowId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UsedTime")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("UserName");
+                    b.HasIndex("ShowId");
 
                     b.ToTable("Tickets");
                 });
@@ -286,8 +388,8 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("HeadPic")
-                        .HasColumnType("BLOB");
+                    b.Property<string>("HeadPicId")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsMgr")
                         .HasColumnType("INTEGER");
@@ -297,9 +399,12 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("VIPExpireTime")
+                        .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Name");
+
+                    b.HasIndex("HeadPicId");
 
                     b.ToTable("Users");
                 });
@@ -355,21 +460,24 @@ namespace cinima_mgr.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("cinima_mgr.Data.Order", b =>
+            modelBuilder.Entity("cinima_mgr.Data.Movie", b =>
                 {
-                    b.HasOne("cinima_mgr.Data.Show", "Show")
+                    b.HasOne("cinima_mgr.Data.Binary", "Cover")
                         .WithMany()
-                        .HasForeignKey("ShowId")
+                        .HasForeignKey("CoverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Cover");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Order", b =>
+                {
                     b.HasOne("cinima_mgr.Data.User", "User")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Show");
 
                     b.Navigation("User");
                 });
@@ -393,7 +501,15 @@ namespace cinima_mgr.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("cinima_mgr.Data.RoomTemplate", "Room")
+                        .WithMany("Shows")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Movie");
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("cinima_mgr.Data.Ticket", b =>
@@ -404,11 +520,24 @@ namespace cinima_mgr.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("cinima_mgr.Data.User", null)
+                    b.HasOne("cinima_mgr.Data.Show", "Show")
                         .WithMany("Tickets")
-                        .HasForeignKey("UserName");
+                        .HasForeignKey("ShowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Order");
+
+                    b.Navigation("Show");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.User", b =>
+                {
+                    b.HasOne("cinima_mgr.Data.Binary", "HeadPic")
+                        .WithMany()
+                        .HasForeignKey("HeadPicId");
+
+                    b.Navigation("HeadPic");
                 });
 
             modelBuilder.Entity("MoviePerson", b =>
@@ -440,13 +569,23 @@ namespace cinima_mgr.Migrations
                     b.Navigation("Tickets");
                 });
 
+            modelBuilder.Entity("cinima_mgr.Data.RoomTemplate", b =>
+                {
+                    b.Navigation("Shows");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.Show", b =>
+                {
+                    b.Navigation("Tickets");
+                });
+
             modelBuilder.Entity("cinima_mgr.Data.User", b =>
                 {
                     b.Navigation("Comments");
 
                     b.Navigation("Discounts");
 
-                    b.Navigation("Tickets");
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

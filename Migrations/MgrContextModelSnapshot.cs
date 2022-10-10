@@ -217,6 +217,10 @@ namespace cinima_mgr.Migrations
                     b.Property<int>("State")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("TaskId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
@@ -317,6 +321,7 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PosState")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -367,16 +372,11 @@ namespace cinima_mgr.Migrations
                     b.Property<DateTime?>("UsedTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("UserName")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ShowId");
-
-                    b.HasIndex("UserName");
 
                     b.ToTable("Tickets");
                 });
@@ -386,8 +386,8 @@ namespace cinima_mgr.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("HeadPic")
-                        .HasColumnType("BLOB");
+                    b.Property<string>("HeadPicId")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsMgr")
                         .HasColumnType("INTEGER");
@@ -397,9 +397,12 @@ namespace cinima_mgr.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("VIPExpireTime")
+                        .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Name");
+
+                    b.HasIndex("HeadPicId");
 
                     b.ToTable("Users");
                 });
@@ -469,7 +472,7 @@ namespace cinima_mgr.Migrations
             modelBuilder.Entity("cinima_mgr.Data.Order", b =>
                 {
                     b.HasOne("cinima_mgr.Data.User", "User")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -521,13 +524,18 @@ namespace cinima_mgr.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("cinima_mgr.Data.User", null)
-                        .WithMany("Tickets")
-                        .HasForeignKey("UserName");
-
                     b.Navigation("Order");
 
                     b.Navigation("Show");
+                });
+
+            modelBuilder.Entity("cinima_mgr.Data.User", b =>
+                {
+                    b.HasOne("cinima_mgr.Data.Binary", "HeadPic")
+                        .WithMany()
+                        .HasForeignKey("HeadPicId");
+
+                    b.Navigation("HeadPic");
                 });
 
             modelBuilder.Entity("MoviePerson", b =>
@@ -575,7 +583,7 @@ namespace cinima_mgr.Migrations
 
                     b.Navigation("Discounts");
 
-                    b.Navigation("Tickets");
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

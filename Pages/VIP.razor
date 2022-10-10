@@ -1,26 +1,59 @@
 ﻿@page "/VIP"
-
+@inject NavigationManager NavigationManager
 <PageTitle> 充值VIP </PageTitle>
 
 <div class="container-form">
-<div class="top-row px-4">
-    <EditForm Model="@_day">
-        <InputRadioGroup @bind-Value="@_day">
-            <div class="toggle">
-                <InputRadio Value="30" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d30", ["style"]="display:none"})"/>
-                <label for="d30" > 30 天 </label>
-                <InputRadio Value="90" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d90", ["style"]="display:none"})"/>
-                <label for="d90" > 90 天 </label>
-                <InputRadio Value="180" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d180", ["style"]="display:none"})"/>
-                <label for="d180" > 180 天 </label>
-                <InputRadio Value="360" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d360", ["style"]="display:none"})"/>
-                <label for="d360" > 360 天 </label>
-            </div>
-        </InputRadioGroup>
-    </EditForm>
-</div>
+    <div class="top-row px-4">
+        <EditForm Model="@_day">
+            <InputRadioGroup @bind-Value="@_day">
+                <div class="toggle" align-items="center">
+                    <InputRadio Value="30" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d30", ["style"]="display:none"})"/>
+                    <label for="d30" > 30 天 / 25 元 </label>
+                    <InputRadio Value="90" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d90", ["style"]="display:none"})"/>
+                    <label for="d90" > 90 天 / 68 元 </label>
+                    <InputRadio Value="180" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d180", ["style"]="display:none"})"/>
+                    <label for="d180" > 180 天 / 108 元 </label>
+                    <InputRadio Value="360" AdditionalAttributes="@(new Dictionary<string, object>{["id"]="d360", ["style"]="display:none"})"/>
+                    <label for="d360" > 360 天 / 168 元 </label>
+                </div>
+            </InputRadioGroup>
+        </EditForm>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center">
+        @if (_day == 0)
+        {
+            <button class="btn btn-primary" @onclick="pay" disabled="true"> 充值 </button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="pay"> 充值 </button>
+        }
+    </div>
 </div>
 
 @code {
     int _day;
+    string price;
+    bool enable = false;
+    async Task pay()
+    {
+        if (_day == 30)
+        {
+            price = "30.00";
+        }
+        else if (_day == 90)
+        {
+            price = "60.00";
+        }
+        else if (_day == 90)
+        {
+            price = "108.00";
+        }
+        else if (_day == 90)
+        {
+            price = "168.00";
+        }
+        NavigationManager.NavigateTo($"/OrderConfirm/{1}/{_day}");
+    }
+        
 }

@@ -2,7 +2,7 @@
 
 <Popout Enable="_msgbox" EnableChanged="EnableChanged">
     <div style="display: flex; flex-direction: column; align-items: center">
-        <span style="margin: 1rem 3rem">@Msg</span>
+        <div style="margin: 1rem 3rem">@(new MarkupString(Markdown.ToHtml(Msg, _pipeline)))</div>
         <button class="btn btn-primary" @onclick="() => EnableChanged(false)">关闭</button>
     </div>
 </Popout>

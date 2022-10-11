@@ -147,24 +147,31 @@
                 <div>
                     @if (discounts.Count != 0)
                     {
-                        <Tooltip Text=@(string.Join("\n", discounts.Select(d => d.Type == 1 ? 
-                                          $"[{d.ExpireTime:yyyy-MM-dd}] {d.Satisfy} - {d.Rate}" : 
-                                          $"[{d.ExpireTime:yyyy-MM-dd}] {d.Satisfy} | {(d.Rate * 10):N2} %"))) 
-                                 Placement="TooltipPlacement.Bottom" Multiline>
+                        <span @onclick=@(() => Msg = string.Join("\n\n", discounts.Select(d => d.Type == 1 ? 
+                                           $"- [有效期至 {d.ExpireTime:yyyy-MM-dd}] 满 {d.Satisfy} 减 {d.Rate}" : 
+                                           $"- [有效期至 {d.ExpireTime:yyyy-MM-dd}] 满 {d.Satisfy} 打 {(d.Rate * 10):N2} 折")))
+                              style="cursor: pointer">
                             @discounts.Count
-                        </Tooltip>
+                        </span>
                     }
                 </div>
                 <div>
                     @if (tickets.Count != 0)
                     {
-                        <span>@tickets.Count</span>
+                        <span @onclick=@(() => Msg = string.Join("\n\n", tickets.GroupBy(t => t.Show).Select(g => 
+                                           $"- [{g.Key.Time:yyyy-MM-dd HH:mm}] {g.Key.Movie.Name} ({g.Count()} 张)")))
+                              style="cursor: pointer">
+                            @tickets.Count
+                        </span>
                     }
                 </div>
                 <div>
                     @if (movie.Count != 0)
                     {
-                        <span>@movie.Count</span>
+                        <span @onclick=@(() => Msg = string.Join("\n\n", movie.Select(m => $"- {m.Name}")))
+                              style="cursor: pointer">
+                            @movie.Count
+                        </span>
                     }
                 </div>
             }
@@ -186,11 +193,12 @@
     string Msg
     {
         get => _msg;
-        set => _msg = $"[{DateTime.Now}] {value}";
+        set => _msg = $"<small>[{DateTime.Now}]</small>\n\n{value}";
     }
 
     async Task Load()
     {
+        _db.ChangeTracker.Clear();
         _users = await _db.Users
             .Include(u => u.Orders)
             .Include(u => u.Comments)

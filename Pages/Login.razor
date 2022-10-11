@@ -33,7 +33,7 @@
         var user = await db.Users.Where(u => u.Name == _user && u.Password == _pwd).FirstOrDefaultAsync();
         if (user is null )
         {
-            _msg = "phone number or password incorrect";
+            _msg = $"<small>[{DateTime.Now}]</small>\n\n账号或密码不正确";
             return;
         }                
         var id = Guid.NewGuid().ToString();

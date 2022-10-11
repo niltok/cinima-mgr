@@ -103,7 +103,7 @@
     }
     @if (_tickets.Count == 0)
     {
-        <h1>没有找到电影票...</h1>
+        <h2>没有找到电影票...</h2>
     }
 </div>
 
@@ -135,14 +135,16 @@
         _pop = true;
     }
 
-    void PopChanged(bool e)
+    async Task PopChanged(bool e)
     {
         _pop = e;
-        if (!e) Load();
+        if (!e) await Load();
+        await InvokeAsync(StateHasChanged);
     }
 
     async Task Load()
     {
+        _db.ChangeTracker.Clear();
         _tickets = await _db.Tickets
             .Include(t => t.Order)
             .Include(t => t.Show)

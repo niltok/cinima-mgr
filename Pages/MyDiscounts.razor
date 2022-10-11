@@ -10,6 +10,10 @@
 <PageTitle>我的优惠券</PageTitle>
 
 <div class="container-form">
+    @if (_tickets.Count == 0)
+    {
+        <h2>没有找到优惠券...</h2>
+    }
     @foreach (var t in _tickets)
     {
         var status = t.Type == 0 ? 0 : t.UsedIn is not null ? 2 : t.ExpireTime < DateTime.Now ? 3 : 1;

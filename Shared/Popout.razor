@@ -1,11 +1,7 @@
 ﻿
 @if (Enable)
 {
-    <div class="background" 
-         @onclick=@(() => EnableChanged.InvokeAsync(false))
-         @onclick:preventDefault="true"
-         @onscroll="() => { }"
-         @onscroll:preventDefault="true">
+    <div class="background">
         <div class="container">
             @ChildContent
         </div>

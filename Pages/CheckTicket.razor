@@ -85,6 +85,7 @@
             InvokeAsync(StateHasChanged);
             return;
         }
+        _db.ChangeTracker.Clear();
         _ticket = await _db.Tickets
             .Include(t => t.Show)
             .Include(t => t.Order)

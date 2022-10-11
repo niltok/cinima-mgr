@@ -1,4 +1,4 @@
-﻿@page "/MyOrders"
+﻿@page "/MyOrders/{{Id:guid?}}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Microsoft.EntityFrameworkCore
@@ -6,6 +6,8 @@
 @inject NavigationManager NavigationManager
 @using Blazorise
 @using System.Text
+@using cinima_mgr.Ali
+@inject IJSRuntime JS
 
 <AuthUser/>
 
@@ -18,7 +20,7 @@
     }
     @foreach (var i in _orders)
     {
-        <LayoutHeader Style="margin-top: 30px">
+        <LayoutHeader Style="margin-top: 30px" ElementId="@i.Id">
             <h6 style="margin-left: 10px"><small> 订单号:@i.Id </small></h6>
         </LayoutHeader>
 
@@ -61,12 +63,12 @@
                                     </Tooltip>
                                 </Badge>
                                 <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
-                                <button class="btn btn-primary" @onclick="() => ToPay = true">
+                                <button class="btn btn-primary" @onclick="() => _topay = true">
                                     立即付款
                                 </button>
-                                if (ToPay)
+                                if (_topay)
                                 {
-                                    <Alipay Enable="ToPay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                    <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
                                 }
                                 break;
                             case 1:
@@ -76,8 +78,17 @@
                                     </Tooltip>
                                 </Badge>
                                 <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
+                                @if (_popoutresult)
+                                {
+                                    <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
+                                }
+                                <button class="btn btn-secondary" style="margin-right: 10px"
+                                        @onclick="@( () => {   _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result;
+                                                               _popoutresult = true;} )">
+                                    我要退款
+                                </button>
                                 <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
-                                    查看详情
+                                    立即使用
                                 </button>
                                 break;
                             case 2:
@@ -99,17 +110,21 @@
                         }
                     </div>
                     <div class="info-item">
-                        <lable> </lable>
+                        <lable> 购票数量: @i.Tickets.Count() 张 </lable>
                     </div>
-                    <div style="height: auto; width: auto; margin-left:auto; 
-                            margin-right: 10px;
-                            margin-top: auto;
-                            margin-bottom: 10px">
-                        @* <Badge Color="Color.Success"> *@
-                        @*     <Tooltip Text="Confirmed"> *@
-                        @*         <Icon Name="IconName.Check" aria-label="Confirmed"/> *@
-                        @*     </Tooltip> *@
-                        @* </Badge> *@
+                    <div class="info-item">
+                        @{
+                            string _tempinfo = "";
+                            foreach (var t in i.Tickets) _tempinfo += $"{t.Row+1}排{t.Column+1}座" + "、";
+                            if (i.Tickets.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
+                        }
+                        <lable> 位置: @_tempinfo </lable>
+                    </div>
+                    <div class="info-item">
+                        <label> 应付金额: @i.OriginalPrice </label>
+                    </div>
+                    <div class="info-item">
+                        <label> 实付金额: @i.Price </label>
                     </div>
                 </LayoutContent>
                 <span class="px-1"></span>
@@ -120,6 +135,49 @@
             <Layout Style="height: 300px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
                 <div style="padding: 1px">
                     <div class="info-item">
+                        @switch (i.State)
+                        {
+                            case 0:
+                                <Badge Color="Color.Warning">
+                                    <Tooltip Text="待支付！">
+                                        <Icon Name="IconName.CreditCard" IconSize="IconSize.Large"/>
+                                    </Tooltip>
+                                </Badge>
+                                <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
+                                <button class="btn btn-primary" @onclick="() => _topay = true">
+                                    立即付款
+                                </button>
+                                if (_topay)
+                                {
+                                    <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                }
+                                break;
+                            case 1:
+                                <Badge Color="Color.Success">
+                                    <Tooltip Text="已付款">
+                                        <Icon Name="IconName.Check" IconSize="IconSize.Large"/>
+                                    </Tooltip>
+                                </Badge>
+                                <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
+                                @if (_popoutresult)
+                                {
+                                    <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
+                                }
+                                <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
+                                    立即使用
+                                </button>
+                                break;
+                            case 3:
+                                <Badge Color="Color.Danger">
+                                    <Tooltip Text="已取消">
+                                        <Icon Name="IconName.Times" IconSize="IconSize.Large"/>
+                                    </Tooltip>
+                                </Badge>
+                                <lable style="margin-left: 5px; margin-right: auto"> 取消时间: @i.CancelTime </lable>
+                                break;
+                        }
+                    </div>    
+                    <div class="info-item">
                         <lable> 创建时间: @i.CreateTime </lable>
                     </div>
                     <div class="info-item">
@@ -129,20 +187,8 @@
                         <lable> 充值天数: @i.Days </lable>
                     </div>
                     <div class="info-item">
-                        <lable> 应付金额: @i.Price 元 </lable>
+                        <lable> 实付金额: @i.Price 元 </lable>
                     </div>
-                    @if (i.State == 0)
-                    {
-                        <div class="info-item">
-                            <lable> 状态: 待支付！ </lable>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="info-item">
-                            <lable> 状态: 已支付！ </lable>
-                        </div>
-                    }
                 </div>
             </Layout>
         }
@@ -150,9 +196,13 @@
 </div>
 
 @code {
+    [Parameter]
+    public string Id { get; set; }
     MgrContext db = new();
     List<Order> _orders = new List<Order>();
-    bool ToPay = false;
+    bool _topay = false;
+    bool _refund = false;
+    bool _popoutresult = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -163,6 +213,21 @@
                 $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
             return;
         }
+        Load();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("focusTo", Id);
+        }
+    }
+
+    async Task Load()
+    {
+        db.ChangeTracker.Clear();
         List<Order> _ticketorders = new List<Order>();
         List<Order> _viporders = new List<Order>();
         _ticketorders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.Type == 0 && t.State != 4)

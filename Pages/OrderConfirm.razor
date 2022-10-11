@@ -117,6 +117,7 @@
     Show show;
     string _info = "";
     bool ToPay = false;
+    char[] _posstate;
     bool _poserror = false;
     
     public inputmodel model = new inputmodel();
@@ -143,7 +144,7 @@
                                     Include(t => t.Movie).SingleAsync();
             
             int cnt = 0;
-            char[] _posstate = PosSelecition.ToCharArray();
+            _posstate = PosSelecition.ToCharArray();
             foreach (var i in _posstate)
             {
                 if (i == '3')
@@ -167,32 +168,6 @@
                 }
                 cnt++;
             }
-            
-            bool _savefailed;
-            do
-            {
-                _savefailed = false;
-                show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
-                             Include(t => t.Movie).SingleAsync();
-                foreach (var i in _order.Tickets)
-                {
-                    if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
-                        _poserror = true;
-                }
-                if (!_poserror)
-                {
-                    try
-                    {
-                        show.PosState = new string(_posstate);
-                        await db.SaveChangesAsync();
-                    }
-                    catch (DbUpdateConcurrencyException e)
-                    {
-                        _savefailed = true;
-                    }
-                }
-            } while (_savefailed);
-
             _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
             _discounttickets = (await db.DiscountTickets.Include(t => t.UsedIn).Where(t => t.User == StateCache.User 
                                                                    && t.Type != 0 
@@ -238,27 +213,57 @@
     async Task Payment()
     {
         _order.CreateTime = DateTime.Now;
-        
-        if (_selectedDT != null)
+
+        if (_order.Type == 0)
         {
-            DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
-            _order.Discounts.Add(_sdt);
-            _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
-                : (_order.OriginalPrice * _sdt.Rate);
+            bool _savefailed;
+            do
+            {
+                _savefailed = false;
+                show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
+                    Include(t => t.Movie).SingleAsync();
+                foreach (var i in _order.Tickets)
+                {
+                    if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
+                        _poserror = true;
+                }
+                if (!_poserror)
+                {
+                    try
+                    {
+                        show.PosState = new string(_posstate);
+                        await db.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException e)
+                    {
+                        _savefailed = true;
+                    }
+                }
+            } while (_savefailed);
         }
-        else
+        if (!_poserror)
         {
-            _order.Price = _order.OriginalPrice;
-        }
-        
-        // todo: !!!TaskTime!!! : cansel ticket 
-        _order.TaskId = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
-            DateTime.Now + TimeSpan.FromMinutes(15),
+            if (_selectedDT != null)
+            {
+                DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
+                _order.Discounts.Add(_sdt);
+                _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
+                    : (_order.OriginalPrice * _sdt.Rate);
+            }
+            else
+            {
+                _order.Price = _order.OriginalPrice;
+            }
+
+            // todo: !!!TaskTime!!! : cansel ticket 
+            _order.TaskId = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
+                DateTime.Now + TimeSpan.FromMinutes(15),
                 () => OrderConfirm.CancelOrder(_order.Id));
-        
-        db.Orders.Add(_order);
-        await db.SaveChangesAsync();
-        ToPay = true;
+
+            db.Orders.Add(_order);
+            await db.SaveChangesAsync();
+            ToPay = true;
+        }
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");
     }
 

@@ -71,5 +71,6 @@ public static class Query
                 data.State = 1;
                 break;
         }
+        await db.SaveChangesAsync();
     }
 }

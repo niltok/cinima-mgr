@@ -6,6 +6,7 @@
 @inject NavigationManager NavigationManager
 @using Blazorise
 @using System.Text
+@using cinima_mgr.Ali
 
 <AuthUser/>
 
@@ -61,12 +62,12 @@
                                     </Tooltip>
                                 </Badge>
                                 <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
-                                <button class="btn btn-primary" @onclick="() => ToPay = true">
+                                <button class="btn btn-primary" @onclick="() => _topay = true">
                                     立即付款
                                 </button>
-                                if (ToPay)
+                                if (_topay)
                                 {
-                                    <Alipay Enable="ToPay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                    <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
                                 }
                                 break;
                             case 1:
@@ -76,8 +77,18 @@
                                     </Tooltip>
                                 </Badge>
                                 <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
+                                @if (_popoutresult)
+                                {
+                                    <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
+                                    
+                                }
+                                <button class="btn btn-secondary" 
+                                        @onclick="@( () => {   _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result;
+                                                               _popoutresult = true;} )">
+                                    我要退款
+                                </button>
                                 <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
-                                    查看详情
+                                    立即使用
                                 </button>
                                 break;
                             case 2:
@@ -152,7 +163,9 @@
 @code {
     MgrContext db = new();
     List<Order> _orders = new List<Order>();
-    bool ToPay = false;
+    bool _topay = false;
+    bool _refund = false;
+    bool _popoutresult = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -163,6 +176,12 @@
                 $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
             return;
         }
+        Load();
+    }
+
+    async Task Load()
+    {
+        db.ChangeTracker.Clear();
         List<Order> _ticketorders = new List<Order>();
         List<Order> _viporders = new List<Order>();
         _ticketorders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.Type == 0 && t.State != 4)

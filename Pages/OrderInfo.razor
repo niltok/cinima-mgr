@@ -102,9 +102,16 @@
                             }
                             <lable> 位置: @_tempinfo </lable>
                         </div>
-                        <div class="info-item">
-                            <label> 应付金额: @i.OriginalPrice </label>
-                        </div>
+                        @if (i.Discounts.Count != 0)
+                        {
+                            <div class="info-item">
+                                @{ string _dctinfo = (i.Discounts.First().Type == 1 ? 
+                                       $"满{i.Discounts.First().Satisfy}减{i.Discounts.First().Rate}" 
+                                       : $"{i.Discounts.First().Rate * 10}折") 
+                                               + i.Discounts.First().Name; }
+                                <label> 使用优惠卷: @_dctinfo </label>
+                            </div>
+                        }
                         <div class="info-item">
                             <label> 实付金额: @i.Price </label>
                         </div>
@@ -139,6 +146,7 @@
                                     break;
                             }
                         </div>
+                        <div></div>
                     </LayoutContent>
 
                     <span class="px-1"></span>
@@ -148,7 +156,7 @@
         }
         else
         {
-            <Layout Style="height: 300px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+            <Layout Style="height: fit-content; background: #e9ecef; border-radius: 10px; margin-left: 5px">
                 <div style="padding: 1px">
                     <div class="info-item">
                         @switch (i.State)
@@ -244,9 +252,9 @@
         List<Order> _ticketorders = new List<Order>();
         List<Order> _viporders = new List<Order>();
         _ticketorders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.Type == 0 && t.State != 4)
-            .Include(t => t.Tickets).ToListAsync();
+            .Include(t => t.Tickets).Include(t => t.Discounts).ToListAsync();
         _viporders = await db.Orders.Where(t => t.UserName == StateCache.User.Name && t.Type == 1 && t.State != 4)
-            .Include(t => t.Tickets).ToListAsync();
+            .Include(t => t.Tickets).Include(t => t.Discounts).ToListAsync();
         await Task.WhenAll(_ticketorders.Select(t => db
             .Entry(t.Tickets.First())
             .Reference(s => s.Show)

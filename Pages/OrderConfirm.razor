@@ -57,9 +57,14 @@
         </EditForm>
         <div>
             <p> 原始价格: @_order.OriginalPrice </p>
+            @if (_isVIP)
+            {
+                <h5 style="color: #ef233c"><b> 会员九折起优惠后: @(_order.OriginalPrice*0.9) </b></h5>
+                <h6><small class="text-secondary"> （您是尊贵的VIP用户！所有影票均享受超值九折起优惠！） </small></h6>
+            }
             @if (_selectedDT != null)
             {
-                <p> 优惠价格: @_order.Price </p>
+                <h4 style="color: #d90429"><b> 卷后最终价格: @_order.Price </b></h4>
             }
         </div>
     }
@@ -119,6 +124,7 @@
     string _selectedDT;
     Show show;
     string _info = "";
+    bool _isVIP = false;
     bool ToPay = false;
     char[] _posstate;
     bool _poserror = false;
@@ -135,6 +141,11 @@
         {
             NavigationManager.NavigateTo("/Login");
             return;
+        }
+
+        if (StateCache.User.VIPExpireTime >= DateTime.Now)
+        {
+            _isVIP = true;
         }
 
         _order.User = await db.Users.SingleAsync(t => t.Name == StateCache.User.Name);
@@ -172,6 +183,7 @@
                 cnt++;
             }
             _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
+            if (_isVIP) { _order.Price = _order.OriginalPrice * 0.9; }
             _discounttickets = (await db.DiscountTickets.Include(t => t.UsedIn).Where(t => t.User == StateCache.User 
                                                                    && t.Type != 0 
                                                                    && t.UsedIn == null 
@@ -221,8 +233,13 @@
     {
         _selectedDT = sdt;
         DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
-        _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
-            : (_order.OriginalPrice * _sdt.Rate);
+        
+        if (_isVIP) _order.Price = _order.OriginalPrice * 0.9;
+        else _order.Price = _order.OriginalPrice;
+        
+        _order.Price = _sdt.Type == 1 ? ((_order.Price - _sdt.Rate) > 0 ? (_order.Price - _sdt.Rate) : 0)
+            : (_order.Price * _sdt.Rate);
+        if (_order.Price < 0) _order.Price = 0;
     }
 
     async Task Payment()

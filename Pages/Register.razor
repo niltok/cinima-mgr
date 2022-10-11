@@ -2,6 +2,7 @@
 @using cinima_mgr.Data
 @using Microsoft.EntityFrameworkCore
 @using System.Text
+@using System.Text.RegularExpressions
 @layout EmptyLayout
 @inject NavigationManager NavigationManager
 @inject Blazored.LocalStorage.ILocalStorageService Storage
@@ -35,11 +36,17 @@
             _msg = $"<small>[{DateTime.Now}]</small>\n\n用户名已被占用";
             return;
         }
+        string pattern = @"^1\d{10}$";
         var newUser = new User
         {
             Name = _user,
             Password = _pwd
         };
+        if (!Regex.IsMatch(newUser.Name, pattern))
+        {
+            _msg = $"<small>[{DateTime.Now}]</small>\n\n用户名格式错误，请重新输入";
+            return;
+        }
         db.Add(newUser);
         var id = Guid.NewGuid().ToString();
         db.Sessions.Add(new SessionState

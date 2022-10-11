@@ -113,8 +113,20 @@
                             </div>
                         }
                         <div class="info-item">
-                            <label> 实付金额: @i.Price </label>
+                            <h6> 应付金额: </h6><br/>
+                            <h5 class="text-primary" style="color: #343a40!important;"> @i.OriginalPrice 元 </h5>
                         </div>
+                        <div class="info-item">
+                            <h6> 实付金额: </h6><br/>
+                            <h5 class="text-primary" style="color: #008000!important;"> @i.Price 元 </h5>
+                        </div>
+                        @if (i.State == 2)
+                        {
+                            <div class="info-item">
+                                <h6> 已退金额(含10%服务费): </h6><br/>
+                                <h5 class="text-primary"> @(i.Price*0.9) 元 </h5>
+                            </div>
+                        }
                         <div class="info-item">
                             @switch (i.State)
                             {
@@ -132,7 +144,7 @@
                                     {
                                         <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
                                     }
-                                    <button class="btn btn-secondary" style="margin-right: 10px"
+                                    <button class="btn btn-secondary" style="margin-right: 10px" disabled="@(!CanReFund(i.Tickets).Result)"
                                             @onclick="@(() => { _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result; _popoutresult = true;})">
                                         我要退款
                                     </button>
@@ -146,7 +158,6 @@
                                     break;
                             }
                         </div>
-                        <div class=""></div>
                     </LayoutContent>
 
                     <span class="px-1"></span>
@@ -269,6 +280,16 @@
             .LoadAsync()));
         _orders = _ticketorders.Union(_viporders).OrderByDescending(t => t.State == 0)
             .ThenByDescending(t => t.CreateTime).ToList();
+    }
+
+    async Task<bool> CanReFund(List<Ticket> _tickets)
+    {
+        bool res = true;
+        foreach (var i in _tickets)
+        {
+            if (i.Status != 1) res = false;
+        }
+        return res;
     }
 
     public async ValueTask DisposeAsync()

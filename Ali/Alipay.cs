@@ -97,13 +97,13 @@ public class AlipayConfig
         string refund_amount = price;
         string refund_reason = "正常退款";
         // 退款单号，同一笔多次退款需要保证唯一，部分退款该参数必填。
-        //string out_request_no = WIDout_request_no.Text.Trim();
+        string out_request_no = out_trade_no;
         AlipayTradeRefundModel model = new AlipayTradeRefundModel();
         model.OutTradeNo = out_trade_no;
         //model.TradeNo = trade_no;
         model.RefundAmount = refund_amount;
         model.RefundReason = refund_reason;
-        //model.OutRequestNo = out_request_no;
+        model.OutRequestNo = out_request_no;
         AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
         request.SetBizModel(model);
         AlipayTradeRefundResponse response = null;

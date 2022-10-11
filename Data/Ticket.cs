@@ -9,7 +9,7 @@ public class Ticket
     public Order Order { get; set; }
     public Show Show { get; set; }
     /// <summary>
-    /// 0 为无效票，1 为未使用，2 为已验票
+    /// 0 为无效票，1 为未使用，2 为已验票，3 为已过期
     /// </summary>
     public int Status { get; set; }
     public DateTime CreatTime { get; set; }

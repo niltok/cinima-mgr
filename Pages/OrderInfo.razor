@@ -197,7 +197,7 @@
 
 @code {
     [Parameter]
-    public string Id { get; set; }
+    public Guid Id { get; set; }
     MgrContext db = new();
     List<Order> _orders = new List<Order>();
     bool _topay = false;

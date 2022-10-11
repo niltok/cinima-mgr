@@ -183,7 +183,8 @@
                 cnt++;
             }
             _order.OriginalPrice = show.BasePrice * _order.Tickets.Count();
-            if (_isVIP) { _order.Price = _order.OriginalPrice * 0.9; }
+            if (_isVIP) _order.Price = _order.OriginalPrice * 0.9;
+            else _order.Price = _order.OriginalPrice;
             _discounttickets = (await db.DiscountTickets.Include(t => t.UsedIn).Where(t => t.User == StateCache.User 
                                                                    && t.Type != 0 
                                                                    && t.UsedIn == null 
@@ -289,7 +290,14 @@
 
             db.Orders.Add(_order);
             await db.SaveChangesAsync();
-            ToPay = true;
+            if (_order.Price > 0.0)
+            {
+                ToPay = true;
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/AlreadyPay/{_order.Id}/{_order.TaskId}");
+            }
         }
     // NavigationManager.NavigateTo($"//{}");NavigationManager.NavigateTo($"//{}");
     }

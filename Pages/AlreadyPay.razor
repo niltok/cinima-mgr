@@ -10,7 +10,7 @@
     protected override void OnParametersSet()
     {
         takeEffect();
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo($"/MyOrders/{OrderId}");
     }
 
     async Task takeEffect()

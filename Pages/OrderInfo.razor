@@ -21,114 +21,117 @@
     @foreach (var i in _orders)
     {
         <LayoutHeader Style="margin-top: 30px">
-            <h6 style="margin-left: 10px" tabindex="0" id="@i.Id"><small> 订单号:@i.Id </small></h6>
+            <h6 style="margin-left: 10px"><small> 订单号:@i.Id </small></h6>
         </LayoutHeader>
 
         if (i.Type == 0)
         {
-            <Layout Sider Style="height: 410px; background: #e9ecef; border-radius: 10px; padding: 1px">
+            <div tabindex="0" id="@i.Id">
+                <Layout Sider Style="height: 410px; background: #e9ecef; border-radius: 10px; padding: 1px">
+                
+                    <div class="item-container">
+                        <LayoutSider Style="height: 400px; background: transparent; margin-left: 20px; z-index: 0">
+                            <LayoutSiderContent>
+                                <p>
+                                    <img class="movie-cover" src=@($"/Movie/Cover/{i.Tickets.First().Show.Movie.Id}")/>
+                                </p>
+                                <h4>
+                                    <b>@i.Tickets.First().Show.Movie.Name</b><br/>
+                                    <small class="text-secondary">
+                                        (@i.Tickets.First().Show.Movie.ReleaseDate.ToString("yyyy-MM"))
+                                    </small>
+                                </h4>
+                                <h5>@i.Tickets.First().Show.Room.Name</h5>
+                                <h6>
+                                    <small class="text-secondary">
+                                        @i.Tickets.First().Show.Time.ToString("yyyy-MM-dd")<br/>
+                                        @i.Tickets.First().Show.Time.ToString("HH:mm") ~
+                                        @((i.Tickets.First().Show.Time + i.Tickets.First().Show.Movie.Duration).ToString("HH:mm"))
+                                    </small>
+                                </h6>
+                            </LayoutSiderContent>
+                        </LayoutSider>
+                    </div>
 
-                <div class="item-container">
-                    <LayoutSider Style="height: 400px; background: transparent; margin-left: 20px; z-index: 0">
-                        <LayoutSiderContent>
-                            <p>
-                                <img class="movie-cover" src=@($"/Movie/Cover/{i.Tickets.First().Show.Movie.Id}")/>
-                            </p>
-                            <h4>
-                                <b>@i.Tickets.First().Show.Movie.Name</b><br/>
-                                <small class="text-secondary">
-                                    (@i.Tickets.First().Show.Movie.ReleaseDate.ToString("yyyy-MM"))
-                                </small>
-                            </h4>
-                            <h5>@i.Tickets.First().Show.Room.Name</h5>
-                            <h6>
-                                <small class="text-secondary">
-                                    @i.Tickets.First().Show.Time.ToString("yyyy-MM-dd")<br/>
-                                    @i.Tickets.First().Show.Time.ToString("HH:mm") ~
-                                    @((i.Tickets.First().Show.Time + i.Tickets.First().Show.Movie.Duration).ToString("HH:mm"))
-                                </small>
-                            </h6>
-                        </LayoutSiderContent>
-                    </LayoutSider>
-                </div>
+                    <LayoutContent>
+                        <div class="info-item">
+                            @switch (i.State)
+                            {
+                                case 0:
+                                    <Badge Color="Color.Warning">
+                                        <Tooltip Text="待支付！">
+                                            <Icon Name="IconName.CreditCard" IconSize="IconSize.Large"/>
+                                        </Tooltip>
+                                    </Badge>
+                                    <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
+                                    <button class="btn btn-primary" @onclick="() => _topay = true">
+                                        立即付款
+                                    </button>
+                                    if (_topay)
+                                    {
+                                        <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                    }
+                                    break;
+                                case 1:
+                                    <Badge Color="Color.Success">
+                                        <Tooltip Text="已付款">
+                                            <Icon Name="IconName.Check" IconSize="IconSize.Large"/>
+                                        </Tooltip>
+                                    </Badge>
+                                    <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
+                                    @if (_popoutresult)
+                                    {
+                                        <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
+                                    }
+                                    <button class="btn btn-secondary" style="margin-right: 10px"
+                                            @onclick="@(() => { _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result; _popoutresult = true;})">
+                                        我要退款
+                                    </button>
+                                    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
+                                        立即使用
+                                    </button>
+                                    break;
+                                case 2:
+                                    <Badge Color="Color.Dark">
+                                        <Tooltip Text="已退款">
+                                            <Icon Name="IconName.CheckDouble" IconSize="IconSize.Large"/>
+                                        </Tooltip>
+                                    </Badge>
+                                    <lable style="margin-left: 5px; margin-right: auto"> 退款时间: @i.RefundTime </lable>
+                                    break;
+                                case 3:
+                                    <Badge Color="Color.Danger">
+                                        <Tooltip Text="已取消">
+                                            <Icon Name="IconName.Times" IconSize="IconSize.Large"/>
+                                        </Tooltip>
+                                    </Badge>
+                                    <lable style="margin-left: 5px; margin-right: auto"> 取消时间: @i.CancelTime </lable>
+                                    break;
+                            }
+                        </div>
+                        <div class="info-item">
+                            <lable> 购票数量: @i.Tickets.Count() 张 </lable>
+                        </div>
+                        <div class="info-item">
+                            @{
+                                string _tempinfo = "";
+                                foreach (var t in i.Tickets) _tempinfo += $"{t.Row + 1}排{t.Column + 1}座" + "、";
+                                if (i.Tickets.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
+                            }
+                            <lable> 位置: @_tempinfo </lable>
+                        </div>
+                        <div class="info-item">
+                            <label> 应付金额: @i.OriginalPrice </label>
+                        </div>
+                        <div class="info-item">
+                            <label> 实付金额: @i.Price </label>
+                        </div>
+                    </LayoutContent>
 
-                <LayoutContent>
-                    <div class="info-item">
-                        @switch (i.State)
-                        {
-                            case 0:
-                                <Badge Color="Color.Warning">
-                                    <Tooltip Text="待支付！">
-                                        <Icon Name="IconName.CreditCard" IconSize="IconSize.Large"/>
-                                    </Tooltip>
-                                </Badge>
-                                <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
-                                <button class="btn btn-primary" @onclick="() => _topay = true">
-                                    立即付款
-                                </button>
-                                if (_topay)
-                                {
-                                    <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
-                                }
-                                break;
-                            case 1:
-                                <Badge Color="Color.Success">
-                                    <Tooltip Text="已付款">
-                                        <Icon Name="IconName.Check" IconSize="IconSize.Large"/>
-                                    </Tooltip>
-                                </Badge>
-                                <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
-                                @if (_popoutresult)
-                                {
-                                    <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
-                                }
-                                <button class="btn btn-secondary" style="margin-right: 10px"
-                                        @onclick="@( () => {   _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result;
-                                                               _popoutresult = true;} )">
-                                    我要退款
-                                </button>
-                                <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
-                                    立即使用
-                                </button>
-                                break;
-                            case 2:
-                                <Badge Color="Color.Dark">
-                                    <Tooltip Text="已退款">
-                                        <Icon Name="IconName.CheckDouble" IconSize="IconSize.Large"/>
-                                    </Tooltip>
-                                </Badge>
-                                <lable style="margin-left: 5px; margin-right: auto"> 退款时间: @i.RefundTime </lable>
-                                break;
-                            case 3:
-                                <Badge Color="Color.Danger">
-                                    <Tooltip Text="已取消">
-                                        <Icon Name="IconName.Times" IconSize="IconSize.Large"/>
-                                    </Tooltip>
-                                </Badge>
-                                <lable style="margin-left: 5px; margin-right: auto"> 取消时间: @i.CancelTime </lable>
-                                break;
-                        }
-                    </div>
-                    <div class="info-item">
-                        <lable> 购票数量: @i.Tickets.Count() 张 </lable>
-                    </div>
-                    <div class="info-item">
-                        @{
-                            string _tempinfo = "";
-                            foreach (var t in i.Tickets) _tempinfo += $"{t.Row+1}排{t.Column+1}座" + "、";
-                            if (i.Tickets.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
-                        }
-                        <lable> 位置: @_tempinfo </lable>
-                    </div>
-                    <div class="info-item">
-                        <label> 应付金额: @i.OriginalPrice </label>
-                    </div>
-                    <div class="info-item">
-                        <label> 实付金额: @i.Price </label>
-                    </div>
-                </LayoutContent>
-                <span class="px-1"></span>
-            </Layout>
+                    <span class="px-1"></span>
+
+                </Layout>
+            </div>
         }
         else
         {

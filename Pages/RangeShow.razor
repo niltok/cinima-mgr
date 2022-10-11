@@ -69,7 +69,9 @@
             </span>
         </p>
         <p>
-            <button class="btn btn-primary" @onclick="Submit">@(_selectedShow == "" ? "添加!" : "保存!")</button>
+            <button class="btn btn-primary" @onclick="Submit" disabled="@_lock">
+                @(_selectedShow == "" ? "添加!" : "保存!")
+            </button>
         </p>
     }
 </div>
@@ -79,6 +81,8 @@
 @code {
     MgrContext _db = new();
     string _msg = "";
+
+    bool _lock;
 
     Dictionary<string, RoomTemplate> _rooms = new();
     RoomTemplate? _room;
@@ -160,8 +164,9 @@
         _show.PosState = _room.PosState;
     }
 
-    void SelectRoom(string? s)
+    async Task SelectRoom(string? s)
     {
+        if (_selectedShow != "") await _db.Entry(_show).ReloadAsync();
         _room = _rooms.ContainsKey(s) ? _rooms[s] : null;
         if (_room is null) return;
         _shows = _room.Shows.ToDictionary(s => s.Id);
@@ -216,14 +221,17 @@
                 _msg = $"[{DateTime.Now}] 时间冲突 {st} ~ {et} ({conflict.Movie.Name})";
                 return;
             }
+            if (_lock) return;
+            _lock = true;
+            _msg = $"[{DateTime.Now}] 保存中";
             if (_selectedShow == "")
             {
                 _show.Movie.Shows.Add(_show);
             }
             else if (_show.Status != 1)
             {
-                await _db.Entry(_show.Tickets).ReloadAsync();
-                await Task.WhenAll(_show.Tickets.Select(t => 
+                await _db.Entry(_show).Collection(s => s.Tickets).LoadAsync();
+                await Task.WhenAll(_show.Tickets.Select(t =>
                     _db.Entry(t).Reference(t => t.Order).LoadAsync()));
                 foreach (var o in _show.Tickets
                     .GroupBy(t => t.Order)
@@ -246,8 +254,21 @@
                     }
                 }
             }
-            await _db.SaveChangesAsync();
+            var fail = true;
+            do
+            {
+                try
+                {
+                    await _db.SaveChangesAsync();
+                    fail = true;
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await Task.WhenAll(ex.Entries.Select(e => e.ReloadAsync()));
+                }
+            } while (fail);
             await Load();
+            _lock = false;
             _msg = $"[{DateTime.Now}] " + (_selectedShow == "" ? "添加" : "保存") + "成功 " + DateTime.Now.ToString("HH:mm:ss");
             _selectedShow = _show.Id;
         }

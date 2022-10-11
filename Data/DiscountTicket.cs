@@ -40,7 +40,7 @@ public static class DiscountHelper
         return discounts.Where(d => d.Type != 0 &&
                                     (showUsed || d.UsedInId != null) &&
                                     (showExpired || d.ExpireTime < DateTime.Now))
-            .OrderBy(d => d.UsedInId == null)
+            .OrderBy(d => d.UsedInId != null)
             .ThenBy(d => d.ExpireTime > DateTime.Now ? d.ExpireTime : DateTime.MaxValue)
             .ThenByDescending(d => d.ExpireTime);
     }
@@ -50,7 +50,7 @@ public static class DiscountHelper
         return discounts.Where(d => d.Type != 0 &&
                                     (showUsed || d.UsedInId != null) &&
                                     (showExpired || d.ExpireTime < DateTime.Now))
-            .OrderBy(d => d.UsedInId == null)
+            .OrderBy(d => d.UsedInId != null)
             .ThenBy(d => d.ExpireTime > DateTime.Now ? d.ExpireTime : DateTime.MaxValue)
             .ThenByDescending(d => d.ExpireTime);
     }

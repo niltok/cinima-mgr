@@ -1,6 +1,7 @@
 ﻿using cinima_mgr.Data;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using  cinima_mgr.Data;
 
 namespace cinima_mgr.Ali;
 
@@ -29,19 +30,48 @@ public static class Refund
     private static async Task Changedb(string out_trade_no)
     {
         await using var db = new MgrContext();
-        var data = await db.Orders.SingleOrDefaultAsync(t => t.Id == out_trade_no);
-        if(data is null)
+        bool _savefailed;
+        do
         {
-            throw new Exception("订单不存在");
-        }
-        foreach (var t in data.Tickets)
-        {
-            t.Status = 0;
-            t.Show.PosState = "0";
-        }
-        data.RefundTime = DateTime.Now;
-        //设置订单信息：已退款
-        data.State = 2;
-        await db.SaveChangesAsync();
+            _savefailed = false;
+            var data = await db.Orders.Where(t => t.Id == out_trade_no)
+                .Include(t => t.Tickets).ToListAsync();
+            if (data.Count == 0)
+            {
+                throw new Exception("订单不存在");
+            }
+
+            await Task.WhenAll(data.Select(t => db
+                .Entry(t.Tickets.First())
+                .Reference(s => s.Show)
+                .LoadAsync()));
+            await Task.WhenAll(data.Select(t => db
+                .Entry(t.Tickets.First().Show)
+                .Reference(s => s.Room)
+                .LoadAsync()));
+
+            char[,] _pos = PosStateHelper.Unpack(data.First().Tickets.First().Show.PosState,
+                data.First().Tickets.First().Show.Room.Height,
+                data.First().Tickets.First().Show.Room.Width);
+
+            foreach (var t in data.First().Tickets)
+            {
+                t.Status = 0;
+                _pos[t.Row, t.Column] = '0';
+            }
+            
+            data.First().Tickets.First().Show.PosState = (PosStateHelper.Pack(_pos));
+            data.First().RefundTime = DateTime.Now;
+            //设置订单信息：已退款
+            data.First().State = 2;
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                _savefailed = true;
+            }
+        } while (_savefailed);
     }
 }

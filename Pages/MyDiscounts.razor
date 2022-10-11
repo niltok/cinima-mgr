@@ -35,7 +35,8 @@
                         </Badge>
                         break;
                     case 2:
-                        <span @onclick=@(() => NavigationManager.NavigateTo($"/MyOrders/{t.UsedIn!.Id}"))>
+                        <span @onclick=@(() => NavigationManager.NavigateTo($"/MyOrders/{t.UsedIn!.Id}"))
+                              style="cursor: pointer">
                             <Badge Color="Color.Success">
                                 <span class="px-1"><Icon Name="IconName.Check"/></span>
                                 <span>已使用</span>

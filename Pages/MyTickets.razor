@@ -165,7 +165,7 @@
             .Include(t => t.Order)
             .Include(t => t.Show)
             .Where(t => t.Order.UserName == StateCache.User.Name && 
-                        t.Order.State != 4 && t.Order.State != 2 &&
+                        t.Order.State != 4 &&
                         t.Order.State != 3)
             .ToListAsync();
         await Task.WhenAll(_tickets.Select(t => _db

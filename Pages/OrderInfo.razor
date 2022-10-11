@@ -166,9 +166,6 @@
                                 {
                                     <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
                                 }
-                                <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
-                                    立即使用
-                                </button>
                                 break;
                             case 3:
                                 <Badge Color="Color.Danger">

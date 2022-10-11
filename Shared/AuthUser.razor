@@ -9,10 +9,14 @@
     
     protected override void OnInitialized()
     {
-        if (StateCache.User is null || RequireMgr && !StateCache.User.IsMgr)
+        if (StateCache.User is null)
         {
             NavigationManager.NavigateTo(
                 $"/Login/{Convert.ToBase64String(Encoding.Default.GetBytes(NavigationManager.Uri))}");
+        } 
+        else if (RequireMgr && !StateCache.User.IsMgr)
+        {
+            NavigationManager.NavigateTo("/");
         }
         
         base.OnInitialized();

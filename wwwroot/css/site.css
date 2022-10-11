@@ -6,6 +6,7 @@ html, body {
     word-break: break-word;
     color: #18191c;
     scroll-behavior: smooth;
+    height: 100%;
 }
 
 canvas {

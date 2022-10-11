@@ -41,7 +41,11 @@
                     break;
                 case 2:
                     <span class="input-g" style="grid-template-columns: 1fr max-content">
-                        <input type="number" @bind="_rate" step="0.01" max="1" class="form-control"/>
+                        <input type="number" @bind="@_rate" 
+                               @oninput="@(e => {
+                                                    var s = (string) e.Value!; 
+                                                    _rate = Math.Clamp(double.Parse(s == "" ? "0" : s), 0, 1); })" 
+                               step="0.01" max="1" class="form-control"/>
                         <span>折</span>
                     </span>
                     break;

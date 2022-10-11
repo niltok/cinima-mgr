@@ -2,6 +2,7 @@
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Microsoft.EntityFrameworkCore
+@using cinima_mgr.Ali
 @inject StateCache StateCache
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
@@ -34,10 +35,11 @@
         </p>
         <p>
             <label>状态:</label>
-            <select class="form-control" @bind="_show.Status">
-                <option value=0>隐藏</option>
-                <option value=1>启用</option>
-                <option value=2>取消</option>
+            <select class="form-control" 
+                    @onchange=@(e => ShowStatusChanged(int.Parse((string) e.Value!)))>
+                <option value=0 selected="@(_show.Status == 0)">隐藏</option>
+                <option value=1 selected="@(_show.Status == 1)">启用</option>
+                <option value=2 selected="@(_show.Status == 2)">取消</option>
             </select>
         </p>
         <p>
@@ -89,9 +91,17 @@
     List<Movie> _movies = new();
     readonly string[] _statusLabel = {"[已隐藏]", "", "[已取消]"};
 
+    void ShowStatusChanged(int s)
+    {
+        if (s != 1 && _show.Status == 1)
+        {
+            _msg = $"[{DateTime.Now}]\n\n ## 警告 \n\n 隐藏或取消场次会在保存时 \n\n 为所有未使用票**退款** \n\n **取消**所有未付款订单";
+        }
+        _show.Status = s;
+    }
+
     void LoadLabel()
     {
-        _db.ChangeTracker.Clear();
         _showLabel = _room.Shows.Where(s => s.Time > DateTime.Now)
             .OrderByDescending(s => s.Time).Select(s =>
         {
@@ -100,11 +110,11 @@
             return (s.Id, $"{st} ~ {et} ({s.Movie.Name}) {_statusLabel[s.Status]}");
         }).ToList();
     }
-    
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
 
+    async Task Load()
+    {
+        _db.ChangeTracker.Clear();
+        
         _movies = await _db.Movies
             .Include(m => m.Shows)
             .DisplayMovie(true)
@@ -117,10 +127,20 @@
         {
             _room = _rooms.First().Value;
             _show.PosState = _room.PosState;
-            await Task.WhenAll(_room.Shows.Select(s => 
-                _db.Entry(s).Reference(s => s.Movie).LoadAsync()));
+            await Task.WhenAll(_room.Shows.Select(s => Task.WhenAll(
+                _db.Entry(s).Reference(s => s.Movie).LoadAsync(), 
+                _db.Entry(s).Collection(s => s.Tickets).LoadAsync())));
             _shows = _room.Shows.ToDictionary(s => s.Id);
             LoadLabel();
+        }
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Load();
+        if (_room is not null)
+        {
             _show = new Show
             {
                 Id = Guid.NewGuid().ToString(),
@@ -143,6 +163,7 @@
     void SelectRoom(string? s)
     {
         _room = _rooms.ContainsKey(s) ? _rooms[s] : null;
+        if (_room is null) return;
         _shows = _room.Shows.ToDictionary(s => s.Id);
         LoadLabel();
         _selectedShow = "";
@@ -199,12 +220,34 @@
             {
                 _show.Movie.Shows.Add(_show);
             }
+            else if (_show.Status != 1)
+            {
+                await _db.Entry(_show.Tickets).ReloadAsync();
+                await Task.WhenAll(_show.Tickets.Select(t => 
+                    _db.Entry(t).Reference(t => t.Order).LoadAsync()));
+                foreach (var o in _show.Tickets
+                    .GroupBy(t => t.Order)
+                    .Select(g => g.Key))
+                {
+                    switch (o.State)
+                    {
+                        case 0:
+                            {
+                                await using var db = new MgrContext();
+                                var e = await db.Events.SingleAsync(e => e.Id == o.TaskId);
+                                db.Events.Remove(e);
+                                await db.SaveChangesAsync();
+                                await OrderConfirm.CancelOrder(o.Id);
+                            }
+                            break;
+                        case 1:
+                            await Refund.refund(o.Id, (Math.Floor(o.Price * 100) / 100).ToString("N2"));
+                            break;
+                    }
+                }
+            }
             await _db.SaveChangesAsync();
-            await _db.Entry(_room).ReloadAsync();
-            await Task.WhenAll(_room.Shows.Select(s => 
-                _db.Entry(s).Reference(s => s.Movie).LoadAsync()));
-            _shows = _room.Shows.ToDictionary(s => s.Id);
-            LoadLabel();
+            await Load();
             _msg = $"[{DateTime.Now}] " + (_selectedShow == "" ? "添加" : "保存") + "成功 " + DateTime.Now.ToString("HH:mm:ss");
             _selectedShow = _show.Id;
         }

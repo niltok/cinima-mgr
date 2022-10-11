@@ -74,7 +74,10 @@
                 <div class="comment-add">
                     <label style="grid-area: a;">评分: </label>
                     <input class="form-control" 
-                           type="number" @bind="_comment.Rate" 
+                           type="number" @bind="@_comment.Rate" 
+                           @oninput="@(e => {
+                                                var s = (string) e.Value!; 
+                                                _comment.Rate = Math.Clamp(double.Parse(s == "" ? "0" : s), 0, 10); })"
                            max="10" step="0.01" min="0" style="grid-area: b;"/>
                     <textarea class="form-control" @bind="_comment.Content" style="grid-area: c; height: 150px;">
                     </textarea>

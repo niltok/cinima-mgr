@@ -100,6 +100,7 @@
 
     async Task Load()
     {
+        _db.ChangeTracker.Clear();
         _rooms = await _db.RoomTemplates
             .Include(r => r.Shows)
             .ToDictionaryAsync(r => r.Id);

@@ -91,6 +91,7 @@
 
     void LoadLabel()
     {
+        _db.ChangeTracker.Clear();
         _showLabel = _room.Shows.Where(s => s.Time > DateTime.Now)
             .OrderByDescending(s => s.Time).Select(s =>
         {

@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
 @inject EventMgr EventMgr
+@inject StateCache StateCache
 @implements IAsyncDisposable
 
 <PageTitle>喵票票</PageTitle>
@@ -11,6 +12,10 @@
     <input type="text" placeholder="输入关键词搜索电影" value="@_filter" 
            class="form-control"
            @oninput="e => FilterChanged((string)e.Value!)"/>
+    @if (StateCache.User is not null && StateCache.User.IsMgr)
+    {
+        <p>总票房: @_sumBox.ToString("N2")</p>
+    }
 </div>
 
 <div class="container-index">
@@ -33,7 +38,7 @@
                     <b>@m.Name</b>
                     <small class="text-secondary px-1">(@(m.ReleaseDate.ToString("yyyy-M")))</small>
                 </h3>
-                <p class="text-secondary">
+                <div class="text-secondary">
                     @if (m.Duration == TimeSpan.Zero)
                     {
                         <span>时长未知</span>
@@ -43,8 +48,13 @@
                         <span>@m.Duration.TotalMinutes 分钟</span>
                     }
                     <span class="px-2">@m.Type</span>
-                </p>
+                </div>
+                @if (StateCache.User is not null && StateCache.User.IsMgr)
+                {
+                    <div>票房: @((m.BoxOffice / 100.0).ToString("N2"))</div>
+                }
                 @* <p>@m.Introduction</p> *@
+                <p></p>
                 <p style="display: inline-flex; justify-content: center; width: 100%">
                     @if (m.Status == 1)
                     {
@@ -72,16 +82,27 @@
     string _filter = "";
     List<Movie> _movies = new();
 
+    double _sumBox;
+
     async Task Load()
     {
-        _movies = await _db
+        var keys = _filter.Split(' ').Where(s => s != "").ToList();
+        _db.ChangeTracker.Clear();
+        _movies = (await _db
             .Movies
-            .Where(m => 
-                m.Name.Contains(_filter) || 
-                m.Type.Contains(_filter) || 
-                m.ReleaseDate.Year.ToString() == _filter)
             .DisplayMovie()
-            .ToListAsync();
+            .ToListAsync())
+            .Where(m => keys.Count == 0 || keys.Any(key => FindMovie(m, key)))
+            .OrderByDescending(m => keys.All(key => FindMovie(m, key)))
+            .ToList();
+        _sumBox = _movies.Sum(m => m.BoxOffice) / 100.0;
+    }
+
+    private static bool FindMovie(Movie m, string key)
+    {
+        return m.Name.Contains(key) || 
+               m.Type.Contains(key) || 
+               m.ReleaseDate.Year.ToString() == key;
     }
 
     void FilterChanged(string s)

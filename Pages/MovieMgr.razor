@@ -111,6 +111,7 @@
 
     async Task LoadLabel()
     {
+        _db.ChangeTracker.Clear();
         if (_status != 0)
         {
             _msg = $"[{DateTime.Now}] Busyyyyyyyyyy!!!";

@@ -32,7 +32,7 @@
         var user = await db.Users.Where(u => u.Name == _user).FirstOrDefaultAsync();
         if (user is not null)
         {
-            _msg = "username is occupied";
+            _msg = $"<small>[{DateTime.Now}]</small>\n\n用户名已被占用";
             return;
         }
         var newUser = new User

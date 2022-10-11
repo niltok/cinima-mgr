@@ -53,18 +53,25 @@
                     
                         @if (t.Status == 1)
                         {
-                            <button class="btn btn-primary px-3" id=@t.Id
+                            <span>
+                                <button class="btn btn-primary px-3"
+                                        @onclick=@(() => NavigationManager.NavigateTo($"/MyOrders/{t.Order.Id}"))>
+                                    <span class="oi"><Icon Name="IconName.Receipt"/></span>
+                                </button>
+                                <button class="btn btn-primary px-3" id=@t.Id
                                     @onclick=@(() => Pop(t.Id))>
-                                <span class="oi"><Icon Name="IconName.Fingerprint"/></span>
-                                <span class="px-1">验票码</span>
-                            </button>
+                                    <span class="oi"><Icon Name="IconName.Fingerprint"/></span>
+                                    <span class="px-1">验票码</span>
+                                </button>
+                            </span>
                         }
                         @if (t.Status == 0)
                         {
                             @switch (t.Order.State)
                             {
                                 case 0:
-                                    <button class="btn btn-info px-3" id=@t.Id>
+                                    <button class="btn btn-info px-3" id=@t.Id 
+                                            @onclick=@(() => NavigationManager.NavigateTo($"/MyOrders/{t.Order.Id}"))>
                                         <span class="oi"><Icon Name="@IconName.MoneyBillAlt"/></span>
                                         <span class="px-1">待付款</span>
                                     </button>
@@ -91,7 +98,8 @@
                         }
                         @if (t.Status == 2)
                         {
-                            <button class="btn btn-success px-3" id=@t.Id>
+                            <button class="btn btn-success px-3" id=@t.Id 
+                                    @onclick=@(() => NavigationManager.NavigateTo($"/MyOrders/{t.Order.Id}"))>
                                 <span class="oi"><Icon Name="IconName.Check"/></span>
                                 <span class="px-1">已使用</span>
                             </button>

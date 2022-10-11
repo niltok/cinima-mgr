@@ -33,6 +33,15 @@
     transition: box-shadow .15s ease-in-out;
 }
 
+.focus {
+    border-radius: 10px;
+}
+
+.focus:focus, .focus:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgb(38 143 255 / 50%);
+    outline: 0;
+}
+
 @media (max-width: 550px) {
     .it-container {
         display: flex;

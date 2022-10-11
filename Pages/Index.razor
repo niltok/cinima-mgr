@@ -9,7 +9,7 @@
 @* <h1 style="margin: 3rem;">欢迎来到喵票票</h1> *@
 
 <div class="container-form">
-    <input type="text" placeholder="输入关键词搜索电影" value="@_filter" 
+    <input type="text" placeholder="输入关键词搜索电影" @bind="@_filter" 
            class="form-control"
            @oninput="e => FilterChanged((string)e.Value!)"/>
     @if (StateCache.User is not null && StateCache.User.IsMgr)

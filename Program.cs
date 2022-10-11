@@ -16,6 +16,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<StateCache>();
 builder.Services.AddSingleton<EventMgr>();
+builder.Services.AddSingleton<DbCorrect>();
 builder.Services.AddSession();
 builder.Services
     .AddBlazorise()
@@ -60,5 +61,9 @@ app.MapGet("/Binary/Img/{id:guid}",  async (Guid id) =>
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+//不要删除这几个没用到的服务，用于触发事件系统的启动
+app.Services.GetService<EventMgr>();
+app.Services.GetService<DbCorrect>();
 
 app.Run();

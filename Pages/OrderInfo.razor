@@ -20,8 +20,8 @@
     }
     @foreach (var i in _orders)
     {
-        <LayoutHeader Style="margin-top: 30px" ElementId="@i.Id">
-            <h6 style="margin-left: 10px"><small> 订单号:@i.Id </small></h6>
+        <LayoutHeader Style="margin-top: 30px">
+            <h6 style="margin-left: 10px" tabindex="0" id="@i.Id"><small> 订单号:@i.Id </small></h6>
         </LayoutHeader>
 
         if (i.Type == 0)

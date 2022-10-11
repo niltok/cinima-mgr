@@ -224,6 +224,7 @@
             if (_lock) return;
             _lock = true;
             _msg = $"[{DateTime.Now}] 保存中";
+            await InvokeAsync(StateHasChanged);
             if (_selectedShow == "")
             {
                 _show.Movie.Shows.Add(_show);
@@ -260,7 +261,7 @@
                 try
                 {
                     await _db.SaveChangesAsync();
-                    fail = true;
+                    fail = false;
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {

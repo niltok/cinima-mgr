@@ -17,13 +17,18 @@ public class DbCorrect : IAsyncDisposable
     {
         while (await _timer.WaitForNextTickAsync())
         {
+            _db.ChangeTracker.Clear();
             (await _db.Shows.Where(s => s.Time < DateTime.Now)
-                    .Include(s => s.Movie).ToListAsync())
+                    .Include(s => s.Movie)
+                    .Include(s => s.Tickets)
+                    .ToListAsync())
                 .Where(s => s.Time + s.Movie.Duration < DateTime.Now).ToList()
                 .Select(s => s.Tickets
                     .Where(t => t.Status == 1)
                     .ToList()
-                    .Select(t => t.Status = 3));
+                    .Select(t => t.Status = 3)
+                    .ToList())
+                .ToList();
             await _db.SaveChangesAsync();
         }
     }

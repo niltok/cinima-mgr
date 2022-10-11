@@ -192,7 +192,7 @@
 
     async Task SelectRoom(string s)
     {
-        if (_selected != "") await _db.Entry(_room).ReloadAsync();
+        // if (_selected != "") await _db.Entry(_room).ReloadAsync();
         _selected = s;
         _room = _selected != "" ? _rooms[_selected] : new()
         {

@@ -44,7 +44,7 @@
                                  Value="_selectedDT">
                         @foreach (var i in _discounttickets)
                         {
-                            _tempinfo = (i.Type == 1 ? $"满{i.Satisfy}减{i.Rate}" : $"{i.Rate * 10}折") + i.Name;
+                            _tempinfo = (i.Type == 1 ? $"满 {i.Satisfy} 减{i.Rate} " : $"{i.Rate * 10} 折 ") + $"「{i.Name}」";
                             <option value="@i.Id"> @_tempinfo </option>
                         }
                     </InputSelect>
@@ -178,7 +178,7 @@
                     // await db.SaveChangesAsync();
                     _order.Tickets.Add(ticket);
                     await db.SaveChangesAsync();
-                    _pos.Add($"{ticket.Row+1}排{ticket.Column+1}座");
+                    _pos.Add($"{ticket.Row+1} 排 {ticket.Column+1} 座");
                 }
                 cnt++;
             }

@@ -148,8 +148,10 @@
                                             @onclick="@(() => { _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result; _popoutresult = true;})">
                                         我要退款
                                     </button>
+                                    string _buttoninfo = "查看电影票";
+                                    @foreach (var t in i.Tickets) { if (t.Status == 1) _buttoninfo = "立即使用"; }
                                     <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
-                                        立即使用
+                                        @_buttoninfo
                                     </button>
                                     break;
                                 case 2:

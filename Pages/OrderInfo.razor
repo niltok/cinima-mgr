@@ -27,10 +27,10 @@
         if (i.Type == 0)
         {
             <div class="focus" tabindex="0" id="@i.Id">
-                <Layout Sider Style="height: 410px; background: #e9ecef; border-radius: 10px; padding: 1px">
+                <Layout Sider Style="height: fit-content; background: #e9ecef; border-radius: 10px; padding: 1px" Class="order-layout">
                 
                     <div class="item-container">
-                        <LayoutSider Style="height: 400px; background: transparent; margin-left: 20px; z-index: 0">
+                        <LayoutSider Style="height: fit-content; background: transparent; margin-left: 20px; z-index: 0">
                             <LayoutSiderContent>
                                 <p>
                                     <img class="movie-cover" src=@($"/Movie/Cover/{i.Tickets.First().Show.Movie.Id}")/>
@@ -64,13 +64,6 @@
                                         </Tooltip>
                                     </Badge>
                                     <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
-                                    <button class="btn btn-primary" @onclick="() => _topay = true">
-                                        立即付款
-                                    </button>
-                                    if (_topay)
-                                    {
-                                        <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
-                                    }
                                     break;
                                 case 1:
                                     <Badge Color="Color.Success">
@@ -79,17 +72,6 @@
                                         </Tooltip>
                                     </Badge>
                                     <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
-                                    @if (_popoutresult)
-                                    {
-                                        <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
-                                    }
-                                    <button class="btn btn-secondary" style="margin-right: 10px"
-                                            @onclick="@(() => { _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result; _popoutresult = true;})">
-                                        我要退款
-                                    </button>
-                                    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
-                                        立即使用
-                                    </button>
                                     break;
                                 case 2:
                                     <Badge Color="Color.Dark">
@@ -131,9 +113,38 @@
                             </div>
                         }
                         <div class="info-item">
-                            <h6> 应付金额: @i.OriginalPrice </h6><br/>
-                            <h6>  </h6><br/>
-                            <h5 class="text-primary"> 实付金额: @i.Price </h5>
+                            <label> 实付金额: @i.Price </label>
+                        </div>
+                        <div class="info-item">
+                            @switch (i.State)
+                            {
+                                case 0:
+                                    <button class="btn btn-primary" @onclick="() => _topay = true">
+                                        立即付款
+                                    </button>
+                                    if (_topay)
+                                    {
+                                        <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                    }
+                                    break;
+                                case 1:
+                                    @if (_popoutresult)
+                                    {
+                                        <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
+                                    }
+                                    <button class="btn btn-secondary" style="margin-right: 10px"
+                                            @onclick="@(() => { _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result; _popoutresult = true;})">
+                                        我要退款
+                                    </button>
+                                    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
+                                        立即使用
+                                    </button>
+                                    break;
+                                case 2:
+                                    break;
+                                case 3:
+                                    break;
+                            }
                         </div>
                         <div class=""></div>
                     </LayoutContent>
@@ -145,7 +156,7 @@
         }
         else
         {
-            <Layout Style="height: 300px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
+            <Layout Style="height: fit-content; background: #e9ecef; border-radius: 10px; margin-left: 5px">
                 <div style="padding: 1px">
                     <div class="info-item">
                         @switch (i.State)

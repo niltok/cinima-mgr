@@ -60,6 +60,17 @@ blockquote {
     }
 }
 
+@media (max-width: 550px) {
+    .order-layout {
+        flex-direction: column!important;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 800px) {
+    .order-layout {
+        flex-direction: column!important;
+    }
+}
 
 .container-center {
     display: flex;

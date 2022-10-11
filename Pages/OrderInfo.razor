@@ -109,7 +109,7 @@
                         }
                     </div>
                     <div class="info-item">
-                        <lable> </lable>
+                        
                     </div>
                     <div style="height: auto; width: auto; margin-left:auto; 
                             margin-right: 10px;
@@ -130,6 +130,49 @@
             <Layout Style="height: 300px; background: #e9ecef; border-radius: 10px; margin-left: 5px">
                 <div style="padding: 1px">
                     <div class="info-item">
+                        @switch (i.State)
+                        {
+                            case 0:
+                                <Badge Color="Color.Warning">
+                                    <Tooltip Text="待支付！">
+                                        <Icon Name="IconName.CreditCard" IconSize="IconSize.Large"/>
+                                    </Tooltip>
+                                </Badge>
+                                <lable style="margin-left: 5px; margin-right: auto"> 创建时间: @i.CreateTime </lable>
+                                <button class="btn btn-primary" @onclick="() => _topay = true">
+                                    立即付款
+                                </button>
+                                if (_topay)
+                                {
+                                    <Alipay Enable="_topay" out_trade_no="@i.Id" TaskId="@i.TaskId"/>
+                                }
+                                break;
+                            case 1:
+                                <Badge Color="Color.Success">
+                                    <Tooltip Text="已付款">
+                                        <Icon Name="IconName.Check" IconSize="IconSize.Large"/>
+                                    </Tooltip>
+                                </Badge>
+                                <lable style="margin-left: 5px; margin-right: auto"> 支付时间: @i.PayTime </lable>
+                                @if (_popoutresult)
+                                {
+                                    <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
+                                }
+                                <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"/MyTickets/{i.Tickets.First().Id}"))">
+                                    立即使用
+                                </button>
+                                break;
+                            case 3:
+                                <Badge Color="Color.Danger">
+                                    <Tooltip Text="已取消">
+                                        <Icon Name="IconName.Times" IconSize="IconSize.Large"/>
+                                    </Tooltip>
+                                </Badge>
+                                <lable style="margin-left: 5px; margin-right: auto"> 取消时间: @i.CancelTime </lable>
+                                break;
+                        }
+                    </div>    
+                    <div class="info-item">
                         <lable> 创建时间: @i.CreateTime </lable>
                     </div>
                     <div class="info-item">
@@ -139,20 +182,8 @@
                         <lable> 充值天数: @i.Days </lable>
                     </div>
                     <div class="info-item">
-                        <lable> 应付金额: @i.Price 元 </lable>
+                        <lable> 实付金额: @i.Price 元 </lable>
                     </div>
-                    @if (i.State == 0)
-                    {
-                        <div class="info-item">
-                            <lable> 状态: 待支付！ </lable>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="info-item">
-                            <lable> 状态: 已支付！ </lable>
-                        </div>
-                    }
                 </div>
             </Layout>
         }

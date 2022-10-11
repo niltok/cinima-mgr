@@ -213,32 +213,34 @@
     async Task Payment()
     {
         _order.CreateTime = DateTime.Now;
-        
-        bool _savefailed;
-        do
-        {
-            _savefailed = false;
-            show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
-                Include(t => t.Movie).SingleAsync();
-            foreach (var i in _order.Tickets)
-            {
-                if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
-                    _poserror = true;
-            }
-            if (!_poserror)
-            {
-                try
-                {
-                    show.PosState = new string(_posstate);
-                    await db.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException e)
-                {
-                    _savefailed = true;
-                }
-            }
-        } while (_savefailed);
 
+        if (_order.Type == 0)
+        {
+            bool _savefailed;
+            do
+            {
+                _savefailed = false;
+                show = await db.Shows.Where(t => t.Id == ShowId).Include(t => t.Room).
+                    Include(t => t.Movie).SingleAsync();
+                foreach (var i in _order.Tickets)
+                {
+                    if (show.PosState[i.Row * show.Room.Width + i.Column] != '0')
+                        _poserror = true;
+                }
+                if (!_poserror)
+                {
+                    try
+                    {
+                        show.PosState = new string(_posstate);
+                        await db.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException e)
+                    {
+                        _savefailed = true;
+                    }
+                }
+            } while (_savefailed);
+        }
         if (!_poserror)
         {
             if (_selectedDT != null)

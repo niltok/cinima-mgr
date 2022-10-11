@@ -80,9 +80,8 @@
                                 @if (_popoutresult)
                                 {
                                     <MsgBox Msg="@(_refund ? "退款成功" : "退款失败")" OnClosed="() => { _popoutresult = false; _refund = false; Load(); }"/>
-                                    
                                 }
-                                <button class="btn btn-secondary" 
+                                <button class="btn btn-secondary" style="margin-right: 10px"
                                         @onclick="@( () => {   _refund = Refund.refund(i.Id, (i.Price * 0.9).ToString()).Result;
                                                                _popoutresult = true;} )">
                                     我要退款

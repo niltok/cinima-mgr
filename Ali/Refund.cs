@@ -34,8 +34,14 @@ public static class Refund
         {
             throw new Exception("订单不存在");
         }
-
+        foreach (var t in data.Tickets)
+        {
+            t.Status = 0;
+            t.Show.PosState = "0";
+        }
+        data.RefundTime = DateTime.Now;
         //设置订单信息：已退款
         data.State = 2;
+        await db.SaveChangesAsync();
     }
 }

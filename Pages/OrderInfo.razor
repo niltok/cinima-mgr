@@ -1,4 +1,4 @@
-﻿@page "/MyOrders"
+﻿@page "/MyOrders/{{Id:guid?}}"
 @using cinima_mgr.Data
 @using cinima_mgr.Service
 @using Microsoft.EntityFrameworkCore
@@ -7,6 +7,7 @@
 @using Blazorise
 @using System.Text
 @using cinima_mgr.Ali
+@inject IJSRuntime JS
 
 <AuthUser/>
 
@@ -19,7 +20,7 @@
     }
     @foreach (var i in _orders)
     {
-        <LayoutHeader Style="margin-top: 30px">
+        <LayoutHeader Style="margin-top: 30px" ElementId="@i.Id">
             <h6 style="margin-left: 10px"><small> 订单号:@i.Id </small></h6>
         </LayoutHeader>
 
@@ -109,17 +110,21 @@
                         }
                     </div>
                     <div class="info-item">
-                        
+                        <lable> 购票数量: @i.Tickets.Count() 张 </lable>
                     </div>
-                    <div style="height: auto; width: auto; margin-left:auto; 
-                            margin-right: 10px;
-                            margin-top: auto;
-                            margin-bottom: 10px">
-                        @* <Badge Color="Color.Success"> *@
-                        @*     <Tooltip Text="Confirmed"> *@
-                        @*         <Icon Name="IconName.Check" aria-label="Confirmed"/> *@
-                        @*     </Tooltip> *@
-                        @* </Badge> *@
+                    <div class="info-item">
+                        @{
+                            string _tempinfo = "";
+                            foreach (var t in i.Tickets) _tempinfo += $"{t.Row+1}排{t.Column+1}座" + "、";
+                            if (i.Tickets.Count() != 0) _tempinfo = _tempinfo.Substring(0, _tempinfo.Length - 1);
+                        }
+                        <lable> 位置: @_tempinfo </lable>
+                    </div>
+                    <div class="info-item">
+                        <label> 应付金额: @i.OriginalPrice </label>
+                    </div>
+                    <div class="info-item">
+                        <label> 实付金额: @i.Price </label>
                     </div>
                 </LayoutContent>
                 <span class="px-1"></span>
@@ -191,6 +196,8 @@
 </div>
 
 @code {
+    [Parameter]
+    public string Id { get; set; }
     MgrContext db = new();
     List<Order> _orders = new List<Order>();
     bool _topay = false;
@@ -207,6 +214,15 @@
             return;
         }
         Load();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("focusTo", Id);
+        }
     }
 
     async Task Load()

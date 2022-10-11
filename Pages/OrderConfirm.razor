@@ -38,7 +38,10 @@
                 <p> 选择优惠卷: </p>
                 @if (_discounttickets.Count != 0)
                 {
-                    <InputSelect TValue="string" @bind-Value="_selectedDT">
+                    <InputSelect class="form-control" 
+                                 ValueChanged="(string sdt ) => SelectedDiscTi(sdt)"
+                                 ValueExpression="() => _selectedDT"
+                                 Value="_selectedDT">
                         @foreach (var i in _discounttickets)
                         {
                             _tempinfo = (i.Type == 1 ? $"满{i.Satisfy}减{i.Rate}" : $"{i.Rate * 10}折") + i.Name;
@@ -172,8 +175,12 @@
             _discounttickets = (await db.DiscountTickets.Include(t => t.UsedIn).Where(t => t.User == StateCache.User 
                                                                    && t.Type != 0 
                                                                    && t.UsedIn == null 
-                                                                   && _order.OriginalPrice  > t.Satisfy).ToListAsync())
+                                                                   && _order.OriginalPrice >= t.Satisfy).ToListAsync())
                                                                     .Where(t => t.ExpireTime > DateTime.Now).ToList();
+            if (_discounttickets.Count != 0)
+            {
+                SelectedDiscTi(_discounttickets.First().Id);
+            }
             // todo: order dist  
             // _discounttickets.OrderBy(t => t.Type == 1 ? t.Rate)
             
@@ -208,6 +215,14 @@
             _order.CancelTime = DateTime.Now;
             await _db.SaveChangesAsync();
         }
+    }
+
+    private async Task SelectedDiscTi(string sdt)
+    {
+        _selectedDT = sdt;
+        DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
+        _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
+            : (_order.OriginalPrice * _sdt.Rate);
     }
 
     async Task Payment()
@@ -246,15 +261,10 @@
             if (_selectedDT != null)
             {
                 DiscountTicket _sdt = await db.DiscountTickets.Where(t => t.Id == _selectedDT).SingleAsync();
+                _sdt.UsedIn = _order;
                 _order.Discounts.Add(_sdt);
-                _order.Price = _sdt.Type == 1 ? ((_order.OriginalPrice - _sdt.Rate) > 0 ? (_order.OriginalPrice - _sdt.Rate) : 0)
-                    : (_order.OriginalPrice * _sdt.Rate);
             }
-            else
-            {
-                _order.Price = _order.OriginalPrice;
-            }
-
+            
             // todo: !!!TaskTime!!! : cansel ticket 
             _order.TaskId = await Global.App.Services.GetService<EventMgr>()!.Subscribe(
                 DateTime.Now + TimeSpan.FromMinutes(15),

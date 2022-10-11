@@ -49,6 +49,10 @@ public static class Refund
                 .Entry(t.Tickets.First().Show)
                 .Reference(s => s.Room)
                 .LoadAsync()));
+            await Task.WhenAll(data.Select(t => db
+                .Entry(t.Tickets.First().Show)
+                .Reference(s => s.Movie)
+                .LoadAsync()));
 
             char[,] _pos = PosStateHelper.Unpack(data.First().Tickets.First().Show.PosState,
                 data.First().Tickets.First().Show.Room.Height,
@@ -60,6 +64,7 @@ public static class Refund
                 _pos[t.Row, t.Column] = '0';
             }
             
+            data.First().Tickets.First().Show.Movie.BoxOffice -= (long)(data.First().Price*100);
             data.First().Tickets.First().Show.PosState = (PosStateHelper.Pack(_pos));
             data.First().RefundTime = DateTime.Now;
             //设置订单信息：已退款

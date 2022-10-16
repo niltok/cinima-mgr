@@ -120,6 +120,15 @@
                 ? $"{r.Name} (创建于 {r.CreateTime:yyyy-MM-dd HH:mm:ss})" 
                 : r.Name)
             ).ToList();
+        _room = _rooms.GetValueOrDefault(_selected) ?? new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            Height = 10,
+            Width = 10,
+            Status = 1,
+            PosState = PosStateHelper.GenAll0(10, 10)
+        };
     }
 
     protected override async Task OnInitializedAsync()
@@ -192,9 +201,9 @@
 
     async Task SelectRoom(string s)
     {
-        // if (_selected != "") await _db.Entry(_room).ReloadAsync();
+        if (_selected != "") await _db.Entry(_room).ReloadAsync();
         _selected = s;
-        _room = _selected != "" ? _rooms[_selected] : new()
+        _room = _rooms.GetValueOrDefault(_selected) ?? new()
         {
             Id = Guid.NewGuid().ToString(),
             Name = "",

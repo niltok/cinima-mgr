@@ -123,6 +123,24 @@
             .DisplayMovie(true)
             .Select(m => (m.Id, $"{m.Name}({m.ReleaseDate:yyyy-M}){m.StatusLabel()}"))
             .ToList();
+        _movie = _movies.GetValueOrDefault(_selected) ?? new Movie
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "",
+            BoxOffice = 0,
+            Type = "",
+            Introduction = "",
+            ReleaseDate = DateTime.Today,
+            Status = 0,
+            Preview = "",
+            Cover = new Binary
+            {
+                Id = Guid.NewGuid().ToString()
+            }
+        };
+        if (_selected != "") 
+            await _db.Entry(_movie).Reference(m => m.Cover).LoadAsync();
+        _duration = (int)_movie.Duration.TotalMinutes;
         _status = 0;
     }
 

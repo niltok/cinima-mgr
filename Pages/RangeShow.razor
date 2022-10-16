@@ -137,6 +137,17 @@
             _shows = _room.Shows.ToDictionary(s => s.Id);
             LoadLabel();
         }
+        _show = _shows.GetValueOrDefault(_selectedShow) ?? new Show
+        {
+            Id = Guid.NewGuid().ToString(),
+            Time = DateTime.Now,
+            PosState = _room.PosState,
+            Room = _room,
+            Movie = _movies.First(),
+            BasePrice = 0,
+            CanBuyAfter = DateTime.Now,
+            Status = 0
+        };
     }
     
     protected override async Task OnInitializedAsync()
@@ -189,7 +200,7 @@
     {
         if (_selectedShow != "") await _db.Entry(_show).ReloadAsync();
         _selectedShow = s;
-        _show = s != "" ? _shows[s] : new Show
+        _show = _shows.GetValueOrDefault(s) ?? new Show
         {
             Id = Guid.NewGuid().ToString(),
             Time = DateTime.Now,
